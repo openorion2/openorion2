@@ -1,5 +1,5 @@
 # Original game files are copyrighted and large; keep them out of history.
-/game/
+/game
 /build/
 .idea/
 __pycache__/
