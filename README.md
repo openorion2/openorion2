@@ -120,6 +120,8 @@ has no right to do. Host it for yourself, on your own machine or behind
 - Open the source of the online lobby's server, so that anyone can run
   one.
 - Bring in as much of the community's unofficial 1.50 patch as possible.
+- Sign and notarize the macOS builds, so that macOS starts them without
+  a warning.
 
 ## Documentation
 
