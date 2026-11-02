@@ -140,5 +140,16 @@ run against a fake lobby with real SRP.
 ## Not done
 
 The lobby's chat during a game, a lobby in the browser build (it would
-need WSS), a lost creator not ending the game, reconnecting into a
-running game.
+need WSS).
+
+## A lost player's return
+
+A player whose link is lost may come back (`docs/net/hardening.md`, "A
+lost player comes back"). The machine that resumes opens the started game
+again (`SetOpen(true)`, any member: `endpoint.SetOpen` only starts the
+game the first time the creator closes it); the server then shows it to
+its former players alone, in the snapshot of their next login and as a
+`GameUpdate` in state STARTED, and lets only them join. The client lists
+such a game with a note ("Your game waits for you to come back"); its
+join is a joiner's of a loaded game. Closed again, it leaves their list
+(`GameRemoved`).

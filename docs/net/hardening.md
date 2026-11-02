@@ -8,7 +8,8 @@ through `Endpoint.Send` outside `Mox_Send_Message_`, so they never show in
 `NetLog`.
 
 Code: `internal/netplay` (links), `internal/game/netdrop.go` (lost
-players), `internal/game/netcheck.go` (the desync check).
+players), `internal/game/netresume.go` (their return),
+`internal/game/netcheck.go` (the desync check).
 
 ## What the original does
 
@@ -25,7 +26,8 @@ after `Make_Player_Into_AI_`, and every other machine's
 | Item | Default | Flag | Why |
 |---|---|---|---|
 | Pings, read and write deadlines, TCP keepalive | on | — | transport only, invisible to the game (`transport.md`, "Dead links") |
-| A lost player becomes an AI, the game goes on | on | `-netdrop end` (`Options.NetDropEnd`) ends the game for everyone instead | the original's behaviour (an endless wait) is not worth keeping; it reuses the original's own quit path and adds nothing to a game without drops |
+| A lost player may come back: the game goes back to the start of the turn and waits for him; START NET GAME goes on without him | on | `-netdrop end` (`Options.NetDropEnd`) ends the game for everyone instead | a game runs for hours: one dropped link must not cost a human his empire; it reuses the original's loading of a network game |
+| A lost player becomes an AI at once | only where he cannot come back (before the first turn's start) | — | the original's own quit path (msg 0x37) |
 | A message naming who was lost | on | — | replaces "net send error!" where the port ended the game anyway |
 | The relay outlives its creator's quit | on | — | the original's others go on after any quit; the relay is transport |
 | The desync check | off, on in a lobby game | `-netcheck`, `-netcheckdir DIR` (`Options.NetCheck`, `NetCheckDir`) | a debugging aid; it adds frames; a lobby game reports a mismatch to the lobby |
@@ -56,6 +58,53 @@ set, not eliminated):
 
 *X* is "emperor (race)" from the player record, as the network screens
 name players.
+
+### A lost player comes back (`netresume.go`)
+
+Once the game has started, a station that leaves while its net id is a
+human player's starts his return instead of his drop-out. Every machine
+keeps the state at the start of each turn as a save in memory
+(`netKeepTurnStart`: on reaching the main screen of a started, loaded or
+resumed game, and after each turn's broadcast, where the desync check
+hashes it).
+
+1. **Unwind.** `netCheckLost` panics with `netResume`; `screenControl`
+   recovers it whatever screen, turn step or battle ran, and runs
+   `netResumeScreen`. A machine that has not seen the loss yet unwinds as
+   soon as the resumer's frame 0xfe04 comes.
+2. **The resumer** is the station that would send the drop-outs (the
+   lowest net id still a human player's; in the lobby, any machine, the
+   creator's too: the lobby relays). It loads its snapshot
+   (`loadSaveFile`, as `Load_Game_`), takes the net ids of the stations
+   gone off their empires, sends 0xfe04 {stardate}, opens the game again
+   (`Endpoint.SetOpen(true)`: any member may now) and runs
+   `Load_Net_Screen_`'s waiting screen: msg 0x20 to each new station
+   without an empire, whose msg 0x21 picks one. Done when every human
+   empire has a station again, or on START NET GAME and a confirmation
+   ("Go on without *X*? The computer will play the empire."), or when
+   another machine's START sent 0xfe05. Then the end of `Load_Net_Screen_`
+   (`netStartLoadedGame`): the unclaimed humans become AIs, msg 0x2a and
+   the full broadcast to every human, the main screen.
+3. **The others** show the same waiting screen (START sends 0xfe05 to the
+   resumer, after the same confirmation) and take msg 0x2a and the full
+   broadcast as a joiner of a loaded game does (`netTakeLoadedGame`).
+   Until 0xfe04 they drop every game message (what was under way when the
+   player was lost), then they take the resumer's alone; the resumer
+   takes msgs 0x21, 0x42 and chat lines.
+4. **The lost player** sees his own link lost and his game end ("The
+   connection to the lobby is lost. The others go back to the start of
+   the turn and wait for you: join the game again from the lobby to go
+   on."). He starts the game again and joins: the lobby lists a started
+   game open again to its former players only (and lets only them in);
+   over TCP `-join` finds it on the relay. His screen is the joiner's of a
+   loaded game: he picks his empire.
+5. Should the resumer itself be lost while waiting, the next lowest
+   station unwinds again and resumes; a station that turns resumer
+   (`netResumer` changes) starts over the same way.
+
+The waiting screen says who was lost and that START NET GAME goes on
+without the player (`drawResumeText`). Nothing of this changes a game
+without lost links.
 
 ### The drop-out sent for him
 
@@ -200,6 +249,8 @@ the fields above: what it prints is the desync.
 | 0xfe01 | the message, text | a machine that ends the game for everyone |
 | 0xfe02 | u32 stardate, 32-byte SHA-256 | every machine, with `-netcheck` or in a lobby game |
 | 0xfe03 | u32 stardate | a machine that starts the turn over |
+| 0xfe04 | u32 stardate | the resumer: the game goes back to that turn's start |
+| 0xfe05 | — | to the resumer: START NET GAME was pressed, go on without the lost |
 
 ## Tests
 
@@ -231,10 +282,24 @@ the fields above: what it prints is the desync.
 - `TestNetDesyncCheck`: equal states (but for per-viewer fields) are
   silent; a changed BC fires on both sides, which write their saves.
 - `TestNetDisconnect`, `TestNetSendRouting`: `-netdrop end`.
+- The drop-out tests above (`TestNetSoak`'s drop modes, `netDropRun`) set
+  `netResumeState.off`: the lost player becomes an AI at once, as before
+  the return existed.
+- `TestNetResume` (in-memory transport and the lobby's, `lobbytest`): two
+  or three humans, a player lost on the second turn on the main screen or
+  as that turn's host while the uploads come in, the creator too (in the
+  lobby). With a returner, a new machine joins and picks the empire; the
+  desync check then compares every machine with it at least twice and
+  never fires. Without one, START NET GAME and Yes: the computer plays the
+  empire everywhere. Every case plays on to the fifth turn.
 
 ## Limits
 
-- No relay migration: a lost creator ends the game.
+- No relay migration: over TCP a lost creator (the relay) ends the game.
+  In the lobby the server relays, so he is lost like anyone and may come
+  back.
+- A lost player's return replays the turn: orders given in it since its
+  start are lost on every machine.
 - A drop in the lockstep, or of the attacker a human defender waits for,
   ends the game.
 - A host lost in the middle of sending his broadcast ends the game when

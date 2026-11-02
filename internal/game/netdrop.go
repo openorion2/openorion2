@@ -56,7 +56,12 @@ func (g *Game) netCheckLost() {
 			// port-only: the lobby relays; the others wait for him (netresume.go).
 			g.netEnd("The connection to the lobby is lost. The others go back to the start of the turn and wait for you: join the game again from the lobby to go on.")
 		}
-		g.netEnd(fmt.Sprintf("The connection to %s, who relays the game, is lost. The game ends.", who))
+		msg := fmt.Sprintf("The connection to %s, who relays the game, is lost. The game ends.", who)
+		if g.netCanResume() {
+			// port-only: only this machine's link may be gone (netresume.go).
+			msg = fmt.Sprintf("The connection to %s, who relays the game, is lost. If only your own link went, the others wait for you at the start of the turn: join the game again to go on.", who)
+		}
+		g.netEnd(msg)
 	}
 	for _, id := range n.ep.Dropped() {
 		k := int(g.netIDToPlayerID(int32(id)))

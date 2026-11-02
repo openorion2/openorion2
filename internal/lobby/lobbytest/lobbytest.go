@@ -84,6 +84,7 @@ func (s *Server) everyone(env *lobbyv1.Envelope) {
 type room struct {
 	id, description       string
 	members               map[uint32]*link
+	players               map[string]bool // who was a member: who may come back
 	next, gen             uint32
 	open, started, public bool
 }
@@ -186,7 +187,9 @@ func (s *Server) serve(l *link) {
 		case *lobbyv1.Envelope_JoinGame:
 			s.mu.Lock()
 			r := s.rooms[m.JoinGame.Game]
-			if r == nil || !r.open || r.started {
+			// A started game takes back its own players only (the real
+			// server's waiting rooms, the game's netresume.go).
+			if r == nil || !r.open || r.started && !r.players[l.user] {
 				s.mu.Unlock()
 				fail(l, env, lobbyv1.ErrorCode_ERROR_CODE_GAME_CLOSED, "closed")
 				continue
@@ -265,6 +268,10 @@ func (s *Server) add(r *room, l *link) *lobbyv1.Envelope {
 	id := r.next
 	r.next++
 	r.members[id] = l
+	if r.players == nil {
+		r.players = map[string]bool{}
+	}
+	r.players[l.user] = true
 	l.room, l.netID = r, id
 	s.members(r)
 	return &lobbyv1.Envelope{Msg: &lobbyv1.Envelope_GameJoined{GameJoined: &lobbyv1.GameJoined{
@@ -275,7 +282,7 @@ func (s *Server) add(r *room, l *link) *lobbyv1.Envelope {
 func (s *Server) members(r *room) {
 	r.gen++
 	env := &lobbyv1.Envelope{Msg: &lobbyv1.Envelope_Members{Members: &lobbyv1.Members{
-		Generation: r.gen, Open: r.open && !r.started, Ids: r.ids()}}}
+		Generation: r.gen, Open: r.open, Ids: r.ids()}}}
 	for _, m := range r.members {
 		m.send(env)
 	}

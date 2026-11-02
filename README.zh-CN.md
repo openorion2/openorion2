@@ -91,6 +91,10 @@ go build ./cmd/openorion2
   Galactic Council Online Lobby。在那里创建或加入游戏；大厅会中转数据，所以
   任何人都不需要开放端口。私信：点击名字，或输入 `/w 名字 内容`。
 
+如果某位玩家断线，其他人会回到本回合开始时等待：该玩家重新启动 OpenOrion2
+并再次加入游戏（从大厅的列表，或用 `-join`）即可继续。在等待界面上按 START NET
+GAME 会不等他继续游戏，由电脑接管他的帝国。
+
 ## 浏览器版本
 
 OpenOrion2 也能以 WebAssembly 的形式在浏览器中运行：同样的游戏代码，存档保存在

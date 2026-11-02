@@ -49,8 +49,16 @@ func NewSave(gameDir string, r SaveRecipe) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err := os.Symlink(from, filepath.Join(dir, e.Name())); err != nil {
-			return nil, err
+		to := filepath.Join(dir, e.Name())
+		if os.Symlink(from, to) != nil {
+			// Windows without the right to make links: a copy.
+			b, err := os.ReadFile(from)
+			if err != nil {
+				return nil, err
+			}
+			if err := os.WriteFile(to, b, 0o644); err != nil {
+				return nil, err
+			}
 		}
 	}
 	var data []byte

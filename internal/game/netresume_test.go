@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/openorion2/openorion2/internal/host"
+	"github.com/openorion2/openorion2/internal/lobby"
+	"github.com/openorion2/openorion2/internal/lobby/lobbytest"
 	"github.com/openorion2/openorion2/internal/netplay"
 )
 
@@ -20,12 +22,15 @@ import (
 // machine more joins the game again and takes his empire; else the first
 // machine left presses START and the computer plays it.
 type netResumeCase struct {
-	humans, lost int
-	turn, back   bool
+	humans, lost      int
+	turn, back, lobby bool // lobby: through lobbytest, the real server's rooms
 }
 
 func (c netResumeCase) String() string {
 	s := fmt.Sprintf("%dh-lost%d", c.humans, c.lost)
+	if c.lobby {
+		s = "lobby-" + s
+	}
 	if c.turn {
 		s += "-turnhost"
 	}
@@ -85,6 +90,14 @@ func netResumeRun(t *testing.T, c netResumeCase) ([]*Game, int) {
 			{"banner", func(g *Game) bool { return g.e.FieldsCount() >= 4 && g.e.FieldsCount() <= 10 }, pushKey('1')},
 		}
 	}
+	var nets []netplay.Network
+	var conns []*lobby.Conn
+	var srv *lobbytest.Server
+	if c.lobby {
+		srv = lobbytest.Start(t)
+		nets, conns = lobbyConns(t, srv, c.humans)
+		scripts = append(lobbyScripts(c.humans, steps[:c.humans]), scripts[c.humans:]...)
+	}
 	var games []*Game
 	waiting := func() bool {
 		mu.Lock()
@@ -99,24 +112,55 @@ func netResumeRun(t *testing.T, c netResumeCase) ([]*Game, int) {
 		}
 		return false
 	}
-	if c.back {
+	if c.back && c.lobby {
+		// The lost player logs in again and joins his started game.
+		scripts[c.humans] = []lobbyStep{
+			{"multiplayer", func(g *Game) bool { return g.mpSetup != nil && waiting() }, func(g *Game, sys *host.System) {
+				conn, err := lobby.Dial(lobby.Settings{Server: srv.Addr, TLS: srv.TLS})
+				if err != nil {
+					t.Error(err)
+					return
+				}
+				t.Cleanup(func() { conn.Close() })
+				if err := conn.Resume(string(rune('a' + c.lost))); err != nil {
+					t.Error(err)
+					return
+				}
+				conn.Poll()
+				j, err := conn.JoinGame(nets[0].(*lobby.Network).GameID())
+				if err != nil {
+					t.Errorf("the lost player joins again: %v", err)
+					return
+				}
+				g.net.network = lobby.NewNetwork(conn, j)
+				sys.PushKey(letterKey('j'))
+			}},
+		}
+	} else if c.back {
 		scripts[c.humans] = []lobbyStep{
 			{"multiplayer", func(g *Game) bool { return g.mpSetup != nil && waiting() }, pushKey('j')},
 			{"game list", func(g *Game) bool { return g.netScr != nil && g.netScr.rows[0] > 0 },
 				clickFieldOf(func(g *Game) int { return g.netScr.rows[0] })},
+		}
+	}
+	if c.back {
+		scripts[c.humans] = append(scripts[c.humans], []lobbyStep{
 			{"pick", func(g *Game) bool {
 				mu.Lock()
 				p := lost
 				mu.Unlock()
 				return p >= 0 && g.hs.mp != nil && g.hs.mp.nameField[p] > 0
 			}, clickFieldOf(func(g *Game) int { return g.hs.mp.nameField[lost] })},
-		}
+		}...)
 	}
 	setup := func(m int, g *Game, opt *Options) {
 		if opt != nil {
 			opt.ListKey = true
 			opt.Seed = uint32(7000 + m)
 			opt.NetCheck = true
+			if c.lobby && m < c.humans {
+				opt.Net = nets[m]
+			}
 			return
 		}
 		g.settings[0xd5] = byte(c.humans)
@@ -175,7 +219,11 @@ func netResumeRun(t *testing.T, c netResumeCase) ([]*Game, int) {
 				mu.Lock()
 				dropped, lost = true, int(g.state.PlayerNum)
 				mu.Unlock()
-				mem.Drop(g.net.ep.Game().Name, g.net.ep.ID())
+				if c.lobby {
+					conns[m].Close() // his link to the lobby goes
+				} else {
+					mem.Drop(g.net.ep.Game().Name, g.net.ep.ID())
+				}
 				return true
 			}
 		}
@@ -209,6 +257,9 @@ func TestNetResume(t *testing.T) {
 		{humans: 3, lost: 0, back: true}, // the creator, in the lobby: another machine resumes
 		{humans: 3, lost: 1, turn: true, back: true},
 		{humans: 3, lost: 2, turn: true},
+		{humans: 2, lost: 1, back: true, lobby: true},
+		{humans: 3, lost: 0, back: true, lobby: true},
+		{humans: 3, lost: 1, lobby: true},
 	} {
 		t.Run(c.String(), func(t *testing.T) {
 			t.Parallel()

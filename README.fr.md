@@ -116,6 +116,11 @@ jour. Publier une version : [docs/release.md](docs/release.md).
   relaie, donc personne n'a besoin d'ouvrir un port. Messages privés :
   cliquez sur un nom, ou tapez `/w nom texte`.
 
+Si la connexion d'un joueur coupe, les autres reviennent au début du tour
+et attendent : le joueur relance OpenOrion2 et rejoint la partie (depuis la
+liste du salon, ou avec `-join`) pour continuer. START NET GAME sur l'écran
+d'attente continue sans lui, et l'ordinateur joue son empire.
+
 ## Version navigateur
 
 OpenOrion2 tourne aussi dans un navigateur, en WebAssembly : le même code

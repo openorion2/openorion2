@@ -105,6 +105,11 @@ Builds of your own never look for updates. Making a release:
   the lobby relays it, so nobody needs an open port. Private messages: click
   a name, or type `/w name text`.
 
+If a player's connection drops, the others go back to the start of the
+turn and wait: the player starts OpenOrion2 again and joins the game (from
+the lobby's list, or with `-join`) to go on. START NET GAME on the waiting
+screen goes on without the player, and the computer plays the empire.
+
 ## Browser build
 
 OpenOrion2 also runs in a browser, as WebAssembly: the same game code,

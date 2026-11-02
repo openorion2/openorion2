@@ -116,6 +116,12 @@ Eigene Builds suchen nie nach Updates. Wie ein Release entsteht:
   Private Nachrichten: auf einen Namen klicken oder `/w name text`
   eingeben.
 
+Bricht die Verbindung eines Spielers ab, kehren die anderen zum Anfang des
+Zuges zurück und warten: Der Spieler startet OpenOrion2 neu und tritt dem
+Spiel wieder bei (aus der Liste der Lobby oder mit `-join`), und es geht
+weiter. START NET GAME auf dem Warte-Bildschirm spielt ohne ihn weiter, der
+Computer übernimmt sein Reich.
+
 ## Browser-Version
 
 OpenOrion2 läuft auch im Browser, als WebAssembly: derselbe Spielcode,
