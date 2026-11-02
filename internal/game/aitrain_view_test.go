@@ -4,7 +4,6 @@ package game
 
 import (
 	"fmt"
-	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -16,8 +15,8 @@ import (
 // network plays the game as it was trained.
 func TestSimObserveControl(t *testing.T) {
 	t.Parallel()
-	for _, sv := range []string{"SAVE1.GAM", "SAVE2.GAM", "SAVE3.GAM"} {
-		withGames(t, []string{filepath.Join(savesDir(), sv)}, func(gs []*Game) error {
+	for _, sv := range []string{"start", "mid", "late"} {
+		withGames(t, []string{recipeSaveFile(t, sv, 1)}, func(gs []*Game) error {
 			g := gs[0]
 			g.currentScreen = ScreenMain
 			me := int(g.state.PlayerNum)

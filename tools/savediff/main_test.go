@@ -5,15 +5,21 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/openorion2/openorion2/internal/game"
 	"github.com/openorion2/openorion2/internal/save"
 )
 
 // TestNetNormalize: what differs by design between machines is gone, a
 // real difference stays.
 func TestNetNormalize(t *testing.T) {
-	b, err := os.ReadFile(filepath.Join("..", "..", "build", "saves", "SAVE1.GAM"))
-	if err != nil {
+	dir := filepath.Join("..", "..", "game")
+	if _, err := os.Stat(filepath.Join(dir, "FONTS.LBX")); err != nil {
 		t.Skip(err)
+	}
+	// A network game of two humans, made from the game files (no one's save).
+	b, err := game.NewSave(dir, game.SaveRecipe{Seed: 21, Difficulty: 1, Size: 1, Age: 1, Players: 4, TechLevel: 1, Race: 3, Turns: 20, Network: 2})
+	if err != nil {
+		t.Fatal(err)
 	}
 	a, _ := save.Parse(b)
 	c, _ := save.Parse(b)

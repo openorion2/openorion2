@@ -155,10 +155,7 @@ func TestNetReceiveRouting(t *testing.T) {
 // nobody else, and a send to a gone station ending the game.
 func TestNetSendRouting(t *testing.T) {
 	t.Parallel()
-	s1 := filepath.Join(savesDir(), "SAVE1.GAM")
-	if !fileExists(s1) {
-		t.Skip("no SAVE1.GAM")
-	}
+	s1 := recipeSaveFile(t, "net3", 1)
 	withGames(t, []string{s1, s1, s1}, func(gs []*Game) error {
 		mem := netplay.NewMem()
 		logs := make([][]NetRecord, 3)
@@ -243,10 +240,7 @@ func TestNetSendRouting(t *testing.T) {
 // ends the creator's game naming him (mem, TCP); a lost relay the joiner's.
 func TestNetDisconnect(t *testing.T) {
 	t.Parallel()
-	s1 := filepath.Join(savesDir(), "SAVE1.GAM")
-	if !fileExists(s1) {
-		t.Skip("no SAVE1.GAM")
-	}
+	s1 := recipeSaveFile(t, "net3", 1)
 	for _, kind := range []string{"mem", "tcp"} {
 		t.Run(kind, func(t *testing.T) {
 			t.Parallel()
@@ -367,10 +361,7 @@ func TestNetSinglePlayerUntouched(t *testing.T) {
 // and three runs log the same frames.
 func TestNetLockstep(t *testing.T) {
 	t.Parallel()
-	s1 := filepath.Join(savesDir(), "SAVE1.GAM")
-	if !fileExists(s1) {
-		t.Skip("no SAVE1.GAM")
-	}
+	s1 := recipeSaveFile(t, "net3", 1)
 	var first []string
 	for run := range 3 {
 		got := netMachines(t, s1, 2, 12)

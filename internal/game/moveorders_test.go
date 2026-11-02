@@ -2,30 +2,15 @@ package game
 
 import (
 	"math"
-	"path/filepath"
 	"testing"
 
-	"github.com/openorion2/openorion2/internal/lbx"
 	"github.com/openorion2/openorion2/internal/save"
 )
 
 func moveOrderGames(t *testing.T) map[string]*Game {
-	dir := filepath.Join("..", "..", "game")
-	files, _ := filepath.Glob(filepath.Join(savesDir(), "SAVE*.GAM"))
-	if len(files) == 0 {
-		t.Skip("no saves in game/")
-	}
 	gs := map[string]*Game{}
-	for _, p := range files {
-		f, err := save.Open(p)
-		if err != nil {
-			t.Fatal(err)
-		}
-		g := &Game{dir: dir, lbx: map[string]*lbx.Archive{}, Log: t.Logf}
-		if err := g.state.readBlocks(f, 9); err != nil {
-			t.Fatalf("%s: %v", p, err)
-		}
-		gs[filepath.Base(p)] = g
+	for _, n := range singleRecipes {
+		gs[n], _ = recipeState(t, n)
 	}
 	return gs
 }
@@ -205,7 +190,7 @@ func TestShipsTryToMoveToTurns(t *testing.T) {
 		}
 	}
 	if checked == 0 {
-		t.Skip("no suitable ship")
+		t.Fatal("no suitable ship")
 	}
 }
 

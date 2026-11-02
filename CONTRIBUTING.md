@@ -10,11 +10,10 @@ things are; `CLAUDE.md` holds the same rules in short form.
 - Go 1.27 or newer. SDL3 is embedded: nothing else to install.
 - For most game tests: your own copy of Master of Orion II, version
   1.40b23 (the GOG release), in `game/` at the root of the checkout. A
-  symlink to your install will do. Without it those tests skip.
-- Saves for the tests in `build/saves` (`SAVE1.GAM` … `SAVE10.GAM`, and
-  optionally `MOX.SET` and `HOF.M2`). Without them the tests use the saves
-  in `game/`. Those change whenever you play, and some tests then wait
-  forever, so keep a fixed copy in `build/saves`.
+  symlink to your install will do. Without it those tests skip. That is
+  all they need: no saves. The tests make their own from the game files
+  (a new game by a fixed seed, played on by the AI; `gensave_test.go`),
+  the same on every machine, and never read the saves in `game/`.
 
 `game/` and `build/` are gitignored. Never commit anything from them.
 
@@ -89,7 +88,7 @@ disagree, say so in the issue or PR; do not just pick one.
 
 How to check that you kept the behaviour:
 
-- the tests above, with your own `game/` and `build/saves`;
+- the tests above, with your own `game/`;
 - a characterization test of the routine you changed (see the recipe
   below), written before the change;
 - for whole turns: two headless runs from the same save and seed, before
@@ -175,15 +174,17 @@ depends on the routine:
   negative, the limits of the integer type.
 - **A routine that changes the game state**: load the saves, run the
   routine, and record the result. `moveOrderGames` (in
-  `moveorders_test.go`) and `techGame` (in `tech_test.go`) load each save
-  from `savesDir()` into a `Game` without a screen. After the call,
+  `moveorders_test.go`) and `techGame` (in `tech_test.go`) load the
+  tests' saves (the recipes of `gensave_test.go`: `recipeState`,
+  `recipeSave`) into a `Game` without a screen. After the call,
   `g.netStateHash()` is a hash of almost the whole state, and
   `g.state.Random.Get()` is the RNG seed. Record both for each save
   before the change and compare after it. If the routine touches the
   fields `netStateHash` leaves out (the viewer's player, map position,
   settings), check those fields directly.
 - **A screen or a whole turn**: a headless run with `host.Run`, as in
-  `internal/game/logos_test.go`: `scratchGameDir`, copy a save in,
+  `internal/game/logos_test.go`: `scratchGameDir`, a recipe's save in
+  (`putRecipeSave`),
   `newGame`, `continueSave`, run, compare what you can observe (the
   state, the frames shown). For a manual check, run
   the same headless script (`-headless -game COPY -load N -seed S
@@ -192,9 +193,11 @@ depends on the routine:
   `go run ./tools/savediff -all`.
 
 A characterization test may stay in the repository if it is fast and
-skips without `game/`. Values captured from your own saves depend on those
-saves: then keep the test local, or check properties that hold for any
-save.
+skips without `game/`. It uses the recipes' saves, never your own: a
+recipe's save is the same for everyone with the GOG files, so values
+captured from it may be pinned. A situation no recipe reaches (a given
+combat, a building) is made by editing the loaded state in the test; a
+new recipe goes into `saveRecipes`.
 
 ### 3. Refactor
 

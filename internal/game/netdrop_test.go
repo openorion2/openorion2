@@ -97,10 +97,7 @@ func pumpUntil(gs []*Game, cond func() bool) error {
 // an AI with the same record. In the lobby both end, naming him.
 func TestNetDropOut(t *testing.T) {
 	t.Parallel()
-	s1 := filepath.Join(savesDir(), "SAVE1.GAM")
-	if !fileExists(s1) {
-		t.Skip("no SAVE1.GAM")
-	}
+	s1 := recipeSaveFile(t, "net3", 1)
 	for _, kind := range []string{"mem", "tcp"} {
 		t.Run(kind, func(t *testing.T) {
 			t.Parallel()
@@ -163,10 +160,7 @@ func TestNetDropOut(t *testing.T) {
 // difference fires the check on both sides, which keep their saves.
 func TestNetDesyncCheck(t *testing.T) {
 	t.Parallel()
-	s1 := filepath.Join(savesDir(), "SAVE1.GAM")
-	if !fileExists(s1) {
-		t.Skip("no SAVE1.GAM")
-	}
+	s1 := recipeSaveFile(t, "net3", 1)
 	dir := t.TempDir()
 	withGames(t, []string{s1, s1}, func(gs []*Game) error {
 		netStations(t, "mem", gs)

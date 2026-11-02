@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/openorion2/openorion2/internal/playview"
-	"path/filepath"
 	"testing"
 )
 
@@ -13,7 +12,7 @@ import (
 // screens would.
 func TestAgentView(t *testing.T) {
 	t.Parallel()
-	withGames(t, []string{filepath.Join(savesDir(), "SAVE1.GAM")}, func(gs []*Game) error {
+	withGames(t, []string{recipeSaveFile(t, "mid", 1)}, func(gs []*Game) error {
 		g := gs[0]
 		g.currentScreen = ScreenMain
 		s := &g.state

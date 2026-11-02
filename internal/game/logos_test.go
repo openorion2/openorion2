@@ -10,7 +10,7 @@ import (
 )
 
 // TestPopupFlicsPlay plays the popup wrappers no trace reaches (amoeba,
-// dimensional portal, Antaran attack, Orion) over SAVE1's galaxy: their
+// dimensional portal, Antaran attack, Orion) over a mid-game's galaxy: their
 // files resolve and each ends on its last frame but one. Not compared with
 // the original.
 func TestPopupFlicsPlay(t *testing.T) {
@@ -19,7 +19,7 @@ func TestPopupFlicsPlay(t *testing.T) {
 		t.Skip("plays videos in real time")
 	}
 	dir := scratchGameDir(t, filepath.Join("..", "..", "game"))
-	copyFile(t, filepath.Join(savesDir(), "SAVE1.GAM"), filepath.Join(dir, "SAVE1.GAM"))
+	putRecipeSave(t, "mid", dir, 1)
 	flips := 0
 	err := host.Run(host.Options{Headless: true, Frames: 60 * 300}, func(sys *host.System) error {
 		g, err := newGame(sys, dir)
@@ -57,7 +57,7 @@ func TestCinematicSound(t *testing.T) {
 		t.Skip("plays a video in real time")
 	}
 	dir := scratchGameDir(t, filepath.Join("..", "..", "game"))
-	copyFile(t, filepath.Join(savesDir(), "SAVE1.GAM"), filepath.Join(dir, "SAVE1.GAM"))
+	putRecipeSave(t, "mid", dir, 1)
 	var played, frames int
 	err := host.Run(host.Options{Headless: true, Frames: 60 * 120}, func(sys *host.System) error {
 		g, err := newGame(sys, dir)

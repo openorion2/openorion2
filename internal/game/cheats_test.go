@@ -10,18 +10,13 @@ import (
 	"github.com/openorion2/openorion2/internal/save"
 )
 
+// TestEncodeSaveRoundTrip: a save read into the state and written again by
+// Save_Game_ comes out byte for byte, a network game's too.
 func TestEncodeSaveRoundTrip(t *testing.T) {
 	t.Parallel()
 	dir := filepath.Join("..", "..", "game")
-	files, _ := filepath.Glob(filepath.Join(savesDir(), "SAVE*.GAM"))
-	if len(files) == 0 {
-		t.Skip("no saves in game/")
-	}
-	for _, p := range files {
-		data, err := os.ReadFile(p)
-		if err != nil {
-			t.Fatal(err)
-		}
+	for _, p := range recipeNames() {
+		data := recipeSave(t, p)
 		f, err := save.Parse(data)
 		if err != nil {
 			t.Fatal(err)

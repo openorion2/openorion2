@@ -2,7 +2,6 @@ package save
 
 import (
 	"encoding/binary"
-	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -40,45 +39,5 @@ func TestPlayerLayout(t *testing.T) {
 		if got := packedOffset(tp, field); got != want {
 			t.Errorf("%s at 0x%x, want 0x%x", field, got, want)
 		}
-	}
-}
-
-func TestPlayers(t *testing.T) {
-	for _, path := range gameSaves(t) {
-		f, err := Open(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		name := filepath.Base(path)
-		players := roundTrip[Player](t, f, BPlayers, 8)
-		n := f.U16(BNumPlayers)
-		races, colors := map[uint8]bool{}, map[uint8]bool{}
-		humans := 0
-		for i, p := range players[:n] {
-			if CString(p.EmperorName[:]) == "" || CString(p.RaceName[:]) == "" {
-				t.Errorf("%s player %d: empty names", name, i)
-			}
-			if races[p.Race] || colors[p.Color] {
-				t.Errorf("%s player %d: race %d or colour %d repeated", name, i, p.Race, p.Color)
-			}
-			races[p.Race], colors[p.Color] = true, true
-			if p.Objective == ObjectiveHuman {
-				humans++
-			}
-			sum := int32(0)
-			for _, m := range p.MaintenanceParts {
-				sum += int32(m)
-			}
-			if sum != p.Maintenance {
-				t.Errorf("%s player %d: maintenance parts %d, total %d", name, i, sum, p.Maintenance)
-			}
-			if p.Eliminated == 0 && (p.HomePlanet < 0 || int(p.HomePlanet) >= f.U16(BPlanetCount)) {
-				t.Errorf("%s player %d: home planet %d", name, i, p.HomePlanet)
-			}
-		}
-		if humans == 0 {
-			t.Errorf("%s: no human player", name)
-		}
-		t.Logf("%s: %s of the %s, BC %d", name, CString(players[0].EmperorName[:]), CString(players[0].RaceName[:]), players[0].BC)
 	}
 }

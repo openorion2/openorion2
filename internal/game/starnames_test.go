@@ -8,16 +8,12 @@ import (
 	"github.com/openorion2/openorion2/internal/font"
 	"github.com/openorion2/openorion2/internal/gfx"
 	"github.com/openorion2/openorion2/internal/lbx"
-	"github.com/openorion2/openorion2/internal/save"
 )
 
-// starsGame loads SAVE<n>.GAM into a Game with a video page and the font.
+// starsGame loads recipe n's save into a Game with a video page and the font.
 func starsGame(t *testing.T, n string) *Game {
 	dir := filepath.Join("..", "..", "game")
-	f, err := save.Open(filepath.Join(savesDir(), "SAVE"+n+".GAM"))
-	if err != nil {
-		t.Skip(err)
-	}
+	f := recipeFile(t, n)
 	g := &Game{dir: dir, lbx: map[string]*lbx.Archive{}, cache: map[cacheKey]*gfx.Picture{}, Log: t.Logf,
 		e: &engine.Engine{V: engine.NewVideo()}}
 	if err := g.state.readBlocks(f, 9); err != nil {
@@ -39,15 +35,15 @@ func starsGame(t *testing.T, n string) *Game {
 	return g
 }
 
-// SAVE5 star 70 (Dorado) has one colony of player 0 and one of player 5:
+// The late game's star 4 (Nazin) has one colony of player 0 and one of player 2:
 // the name bitmap is split in two equal shares of the string width.
 func TestStarNameSplitByOwners(t *testing.T) {
 	t.Parallel()
-	g := starsGame(t, "5")
-	const star = 70
+	g := starsGame(t, "late")
+	const star = 4
 	name, bm, ok := g.starName(star, false)
-	if !ok || bm == nil || name != "Dorado" {
-		t.Fatalf("starName = %q, %v, %v; want Dorado with a bitmap", name, bm != nil, ok)
+	if !ok || bm == nil || name != "Nazin" {
+		t.Fatalf("starName = %q, %v, %v; want Nazin with a bitmap", name, bm != nil, ok)
 	}
 	tx := g.e.Text()
 	w := tx.Width([]byte(name))
@@ -60,7 +56,7 @@ func TestStarNameSplitByOwners(t *testing.T) {
 		}
 		return m
 	}
-	left, right := set(0), set(5)
+	left, right := set(0), set(2)
 	pix := bm.Pixels()
 	var nl, nr int
 	for y := 0; y < bm.Height; y++ {
@@ -101,7 +97,7 @@ func TestStarNameSplitByOwners(t *testing.T) {
 // Gate icons: portal left of the star (two pixels lower), net right of it.
 func TestGateIcons(t *testing.T) {
 	t.Parallel()
-	g := starsGame(t, "5")
+	g := starsGame(t, "late")
 	s := &g.state
 	p := int(s.PlayerNum)
 	star := -1
@@ -112,7 +108,7 @@ func TestGateIcons(t *testing.T) {
 		}
 	}
 	if star < 0 {
-		t.Skip("no visited star on screen")
+		t.Fatal("no visited star on screen")
 	}
 	st := &s.Stars[star]
 	st.DimensionalPortal |= 1 << p

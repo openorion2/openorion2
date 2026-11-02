@@ -1,10 +1,8 @@
 package game
 
 import (
-	"path/filepath"
 	"testing"
 
-	"github.com/openorion2/openorion2/internal/lbx"
 	"github.com/openorion2/openorion2/internal/save"
 )
 
@@ -77,25 +75,14 @@ func TestShipStatsTables(t *testing.T) {
 
 func TestShipStatsSaves(t *testing.T) {
 	t.Parallel()
-	dir := filepath.Join("..", "..", "game")
-	files, _ := filepath.Glob(filepath.Join(savesDir(), "SAVE*.GAM"))
-	if len(files) == 0 {
-		t.Skip("no saves in game/")
-	}
 	x, err := newExeImage("", nil)
 	if err != nil {
 		t.Skip(err)
 	}
-	for _, p := range files {
-		f, err := save.Open(p)
-		if err != nil {
-			t.Fatal(err)
-		}
-		g := &Game{dir: dir, lbx: map[string]*lbx.Archive{}, Log: t.Logf, exe: x}
+	for _, p := range singleRecipes {
+		g, _ := recipeState(t, p)
+		g.exe = x
 		s := &g.state
-		if err := s.readBlocks(f, 9); err != nil {
-			t.Fatalf("%s: %v", p, err)
-		}
 		for i := 0; i < int(s.NumPlayers); i++ {
 			if b := g.bestArmor(i); b < 1 || b > 6 {
 				t.Errorf("%s: player %d best armour %d", p, i, b)
@@ -121,7 +108,7 @@ func TestShipStatsSaves(t *testing.T) {
 				}
 			}
 			if simple == 0 {
-				t.Logf("%s: %d ships, %d combat", filepath.Base(p), s.NumShips, n)
+				t.Logf("%s: %d ships, %d combat", p, s.NumShips, n)
 			}
 		}
 	}

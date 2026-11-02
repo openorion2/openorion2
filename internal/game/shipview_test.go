@@ -50,7 +50,7 @@ func TestShipViewNames(t *testing.T) {
 // save; with strategic combat off it must not touch the save state.
 func TestLoadDisplayCombatShip(t *testing.T) {
 	t.Parallel()
-	g := sysInfoGame(t, "1")
+	g := sysInfoGame(t, "mid")
 	g.settings[0xd8] = 0
 	before := g.state.Ships
 	n := 0
@@ -73,7 +73,7 @@ func TestLoadDisplayCombatShip(t *testing.T) {
 		n++
 	}
 	if n == 0 {
-		t.Skip("no player combat ships in SAVE1.GAM")
+		t.Fatal("no player combat ships in the mid-game")
 	}
 	if g.state.Ships != before {
 		t.Error("the save state changed")
@@ -84,7 +84,7 @@ func TestLoadDisplayCombatShip(t *testing.T) {
 // OPENORION2_SHIPVIEW_PNG names a file to write the page to.
 func TestCombatDrawViewShip(t *testing.T) {
 	t.Parallel()
-	g := sysInfoGame(t, "1")
+	g := sysInfoGame(t, "mid")
 	g.settings[0xd8] = 0
 	fonts, err := g.archive("FONTS.LBX")
 	if err != nil {
@@ -107,7 +107,7 @@ func TestCombatDrawViewShip(t *testing.T) {
 		}
 	}
 	if ship < 0 {
-		t.Skip("no player combat ship")
+		t.Fatal("no player combat ship")
 	}
 	sv := &shipView{}
 	if err := g.loadDisplayCombatShip(&sv.rec, ship); err != nil {

@@ -12,10 +12,7 @@ import (
 
 func galaxyMapGame(t *testing.T) *Game {
 	dir := filepath.Join("..", "..", "game")
-	f, err := save.Open(filepath.Join(savesDir(), "SAVE1.GAM"))
-	if err != nil {
-		t.Skip(err)
-	}
+	f := recipeFile(t, "mid")
 	g := &Game{dir: dir, lbx: map[string]*lbx.Archive{}, cache: map[cacheKey]*gfx.Picture{}, Log: t.Logf,
 		e: &engine.Engine{V: engine.NewVideo()}}
 	if err := g.state.readBlocks(f, 9); err != nil {

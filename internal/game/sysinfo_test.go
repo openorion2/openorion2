@@ -13,7 +13,7 @@ import (
 )
 
 // sysInfoGame is a Game with the exe, the H strings, a video page and the
-// font, and SAVE<n>.GAM loaded when n is not empty.
+// font, and recipe n's save loaded when n is not empty.
 func sysInfoGame(t *testing.T, n string) *Game {
 	dir := filepath.Join("..", "..", "game")
 	x, err := newExeImage("", nil)
@@ -39,10 +39,7 @@ func sysInfoGame(t *testing.T, n string) *Game {
 	}
 	g.e.SetFont(fnt)
 	if n != "" {
-		f, err := save.Open(filepath.Join(savesDir(), "SAVE"+n+".GAM"))
-		if err != nil {
-			t.Skip(err)
-		}
+		f := recipeFile(t, n)
 		if err := g.state.readBlocks(f, 9); err != nil {
 			t.Fatal(err)
 		}
@@ -123,7 +120,7 @@ func TestPlanetMaxPopulation(t *testing.T) {
 	check("outpost uses the planet climate", 4) // (25*15+50)/100
 
 	// In the saves no live colony has more pop than its limit.
-	for _, n := range []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"} {
+	for _, n := range singleRecipes {
 		g := sysInfoGame(t, n)
 		s := &g.state
 		over := 0
@@ -134,35 +131,36 @@ func TestPlanetMaxPopulation(t *testing.T) {
 			}
 			if m := g.planetMaxPopulationForPlayer(int(col.Planet), int(col.Owner)); int16(col.PopCount) > m {
 				over++
-				t.Logf("SAVE%s colony %d: pop %d > max %d", n, c, col.PopCount, m)
+				t.Logf("%s colony %d: pop %d > max %d", n, c, col.PopCount, m)
 			}
 		}
 		if over > 0 {
-			t.Errorf("SAVE%s: %d colonies over their limit", n, over)
+			t.Errorf("%s: %d colonies over their limit", n, over)
 		}
 	}
 }
 
-// SAVE1, Beta Ceti III: a human colony with a battlestation.
-func TestPlanetInfoBetaCeti(t *testing.T) {
+// The late game's Dhira I: a Darlok (the human) colony with a battlestation, its one
+// special building, and no planet special.
+func TestPlanetInfoBattlestation(t *testing.T) {
 	t.Parallel()
-	g := sysInfoGame(t, "1")
+	g := sysInfoGame(t, "late")
 	s, tx := &g.state, g.e.Text()
 	pl := -1
 	for i := 0; i < int(s.PlanetCount); i++ {
-		if g.planetNameNoPrime(i) == "Beta Ceti III" {
+		if g.planetNameNoPrime(i) == "Dhira I" {
 			pl = i
 		}
 	}
-	if pl < 0 {
-		t.Skip("no Beta Ceti III")
+	if pl < 0 || s.Planets[pl].Colony < 0 || s.Colonies[s.Planets[pl].Colony].Buildings[8] == 0 {
+		t.Fatal("no Dhira I with a battlestation")
 	}
 	w, h, err := g.doPrintPlanetInfo(0, 0, pl, false)
 	if err != nil {
 		t.Fatal(err)
 	}
 	lh := int16(tx.Height() + 1)
-	if ww := int16(tx.Width([]byte("Beta Ceti III (Human)"))); w != ww {
+	if ww := int16(tx.Width([]byte("Dhira I (Darlok)"))); w != ww {
 		t.Errorf("w = %d, want %d", w, ww)
 	}
 	// Four lines, the building gap (style + 3), one building line, +2.
@@ -177,7 +175,7 @@ func TestPlanetInfoBetaCeti(t *testing.T) {
 // Every planet and every ship stack of the saves measures and prints.
 func TestSysInfoAllSaves(t *testing.T) {
 	t.Parallel()
-	for _, n := range []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"} {
+	for _, n := range singleRecipes {
 		g := sysInfoGame(t, n)
 		s, tx := &g.state, g.e.Text()
 		for pl := 0; pl < int(s.PlanetCount); pl++ {
@@ -187,7 +185,7 @@ func TestSysInfoAllSaves(t *testing.T) {
 			}
 			lh := int16(tx.Height() + 1)
 			if w <= 0 || w > 0x13f || h < 0xe || (s.Planets[pl].Type == 3 && h < 0xc+3*lh+2) {
-				t.Errorf("SAVE%s planet %d: %dx%d", n, pl, w, h)
+				t.Errorf("%s planet %d: %dx%d", n, pl, w, h)
 			}
 			if err := g.drawPlanetInfoBox(20, 40, pl); err != nil {
 				t.Fatal(err)
@@ -201,7 +199,7 @@ func TestSysInfoAllSaves(t *testing.T) {
 				t.Fatal(err)
 			}
 			if w <= 0 || h <= 0 {
-				t.Errorf("SAVE%s node %d: %dx%d", n, node, w, h)
+				t.Errorf("%s node %d: %dx%d", n, node, w, h)
 			}
 			if err := g.drawShipInfoBox(20, 40, node); err != nil {
 				t.Fatal(err)

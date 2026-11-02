@@ -43,9 +43,12 @@ are not part of this repository.
   through `Options`).
 - Tests never write into `game/`: they copy it (`scratchGameDir`); a
   scratch dir must be a real directory, not a symlink to `game/`.
-- Tests load saves from `build/saves` (`savesDir`), else `game/`'s, on
-  which some wait forever: a fresh worktree needs `build/saves` (a link
-  to the main checkout's will do).
+- Tests need only `game/` (the GOG 1.40b23 files), no saves: they make
+  their own (`internal/game/gensave_test.go`: named recipes of a new game
+  by a fixed seed, played on by the AI through `NewSave`, once per
+  process) and never read `game/`'s. A recipe's save is the same on every
+  machine, so its values may be pinned; a situation no recipe reaches is
+  made by editing the loaded state.
 - `OPENORION2_WATCH=1 go test ./internal/game -run X` shows a test's headless
   runs in a window.
 - `OPENORION2_NO_EXE=1 go test ./internal/...` runs as players do, without

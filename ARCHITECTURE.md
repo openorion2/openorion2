@@ -201,4 +201,6 @@ The reverse engineering tools (the disassembly the specs cite as
 `build/orion2.dis`, the traces of the original the port was checked
 against) are not part of this repository. The specs and the tests are
 what is left of them. The original's game files are never in the
-repository either: `game/` and `build/` are gitignored.
+repository either: `game/` and `build/` are gitignored. Nor are saves:
+the tests need only `game/`'s archives and make their saves from them
+(`internal/game/gensave.go`, a new game played on by the AI).

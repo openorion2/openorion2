@@ -27,11 +27,6 @@ func scratchGameDir(t *testing.T, src string) string {
 			continue // the player's lobby settings: a test writes its own, never through a link
 		}
 		if up == "HOF.M2" { // written on an entry: a copy, never game/'s file
-			// The user's games write game/'s HOF.M2; tests start from the
-			// fixed copy next to the saves when there is one.
-			if fixed := filepath.Join(savesDir(), "HOF.M2"); fileExists(fixed) {
-				from = fixed
-			}
 			copyFile(t, from, filepath.Join(dir, name))
 			continue
 		}

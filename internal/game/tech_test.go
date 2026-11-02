@@ -3,30 +3,20 @@ package game
 import (
 	"bytes"
 	"encoding/binary"
-	"os"
-	"path/filepath"
 	"testing"
 
-	"github.com/openorion2/openorion2/internal/lbx"
 	"github.com/openorion2/openorion2/internal/save"
 )
 
-// techGame loads SAVE<n>.GAM with its settings and the executable.
+// techGame loads recipe n's save with its settings and the executable.
 func techGame(t *testing.T, n string) *Game {
 	t.Helper()
-	dir := filepath.Join("..", "..", "game")
 	x, err := newExeImage("", nil)
 	if err != nil {
 		t.Skip(err)
 	}
-	f, err := save.Open(filepath.Join(savesDir(), "SAVE"+n+".GAM"))
-	if err != nil {
-		t.Skip(err)
-	}
-	g := &Game{dir: dir, lbx: map[string]*lbx.Archive{}, Log: t.Logf, exe: x}
-	if err := g.state.readBlocks(f, 9); err != nil {
-		t.Fatal(err)
-	}
+	g, f := recipeState(t, n)
+	g.exe = x
 	g.settings = f.Settings()
 	g.state.Random.Set(f.RandomSeed())
 	if err := g.loadHStrings(); err != nil {
@@ -34,8 +24,6 @@ func techGame(t *testing.T, n string) *Game {
 	}
 	return g
 }
-
-var saveNumbers = []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
 
 func recordBytes(v any) []byte {
 	var b bytes.Buffer
@@ -61,30 +49,30 @@ func diffRecord(a, b any) []int {
 // are recomputed whenever they can change, so the saved ones must agree.
 func TestStarAndRangeRecalculationMatchSaves(t *testing.T) {
 	t.Parallel()
-	for _, n := range saveNumbers {
+	for _, n := range singleRecipes {
 		g := techGame(t, n)
 		s := &g.state
 		before := *s
 		for i := 0; i < int(s.NumStars); i++ {
 			s.computeStarColonyStuff(i)
 			if d := diffRecord(before.Stars[i], s.Stars[i]); len(d) > 0 {
-				t.Errorf("SAVE%s star %d: offsets %#x differ", n, i, d)
+				t.Errorf("%s star %d: offsets %#x differ", n, i, d)
 			}
 		}
 		g.updateAllShipRanges()
 		for p := 0; p < int(s.NumPlayers); p++ {
 			if d := diffRecord(before.Players[p], s.Players[p]); len(d) > 0 {
-				t.Errorf("SAVE%s player %d: offsets %#x differ", n, p, d)
+				t.Errorf("%s player %d: offsets %#x differ", n, p, d)
 			}
 		}
 	}
 }
 
 // TestStrategicDesigns checks Update_Player_Strategic_Ship_Designs_ by hand
-// on SAVE1's human player with settings 0xd8 = 1.
+// on the mid-game's human player with settings 0xd8 = 1.
 func TestStrategicDesigns(t *testing.T) {
 	t.Parallel()
-	g := techGame(t, "1")
+	g := techGame(t, "mid")
 	g.settings[0xd8] = 1
 	s := &g.state
 	p := int(s.PlayerNum)
@@ -118,7 +106,7 @@ func TestStrategicDesigns(t *testing.T) {
 func TestEinsteinUncreative(t *testing.T) {
 	t.Parallel()
 	for _, pick := range []int{save.PickUncreative, save.PickCreative} {
-		g := techGame(t, "10")
+		g := techGame(t, "late")
 		s := &g.state
 		p := int(s.PlayerNum)
 		pl := &s.Players[p]
@@ -137,14 +125,4 @@ func TestEinsteinUncreative(t *testing.T) {
 			t.Errorf("pick %d: RNG moved %v", pick, moved)
 		}
 	}
-}
-
-// savesDir holds the user's ten saves as the tests expect them: a fixed copy
-// in build/saves, since playing the port autosaves into game/.
-func savesDir() string {
-	d := filepath.Join("..", "..", "build", "saves")
-	if _, err := os.Stat(filepath.Join(d, "SAVE1.GAM")); err == nil {
-		return d
-	}
-	return filepath.Join("..", "..", "game")
 }
