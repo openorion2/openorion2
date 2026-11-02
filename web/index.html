@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Master of Orion II</title>
+<style>
+	html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+	body { display: flex; align-items: center; justify-content: center; }
+	#screen { display: block; cursor: none; touch-action: none; }
+	#status {
+		position: fixed; left: 0; right: 0; top: 45%; text-align: center;
+		color: #bbb; font: 16px/1.4 system-ui, sans-serif; white-space: pre-line;
+	}
+</style>
+</head>
+<body>
+<canvas id="screen" width="640" height="480"></canvas>
+<div id="status">Loading…</div>
+<script src="fs.js"></script>
+<script src="wasm_exec.js"></script>
+<script src="host.js"></script>
+<script>
+"use strict";
+(async () => {
+	const status = document.getElementById("status");
+	try {
+		await fs.init("game/", "game.json");
+		// The game runs from /game; ?load=N continues SAVE<N>.GAM.
+		process.cwd = () => "/";
+		const go = new Go();
+		let code = 0;
+		go.exit = (c) => { code = c; };
+		go.argv = ["openorion2", "-game", "/game"];
+		const q = new URLSearchParams(location.search);
+		if (q.get("load")) go.argv.push("-load", q.get("load"));
+		if (q.get("logos")) go.argv.push("-logos", q.get("logos"));
+		// Network play (docs/net/web.md): ?host[=:port], ?join=host[:port], ?name=NAME.
+		if (q.has("host")) go.argv.push(q.get("host") ? "-host=" + q.get("host") : "-host");
+		if (q.get("join")) go.argv.push("-join", q.get("join"));
+		if (q.get("name")) go.argv.push("-name", q.get("name"));
+		const { instance } = await WebAssembly.instantiateStreaming(fetch("openorion2.wasm"), go.importObject);
+		status.textContent = "";
+		await go.run(instance);
+		status.textContent = code ? "The game stopped with an error (see the console)." : "Game over.\nReload the page to play again.";
+	} catch (e) {
+		console.error(e);
+		status.textContent = "Could not start: " + e.message;
+	}
+})();
+</script>
+</body>
+</html>

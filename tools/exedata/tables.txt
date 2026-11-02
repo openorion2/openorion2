@@ -1,0 +1,20 @@
+# Tables the game indexes past the span after their constant: each runs to the next constant.
+17d998
+17eb4b
+17ec16
+17ed3e
+17ee5b
+17ef44
+17f178
+17f3db
+17f582
+17f644
+17f6c1
+17f81d
+17fb71
+17fc41
+17fe00
+17feee
+18120c
+1812b0
+180184

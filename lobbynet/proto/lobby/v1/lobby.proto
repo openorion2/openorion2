@@ -1,0 +1,312 @@
+// The lobby protocol between the game and the lobby server.
+//
+// One TLS connection per client. Each direction is a stream of frames: a
+// big-endian u32 length, then one Envelope of that many bytes. The client
+// opens with Hello; everything else waits for the Welcome.
+syntax = "proto3";
+
+package lobby.v1;
+
+option go_package = "github.com/openorion2/openorion2/lobbynet/lobbyv1;lobbyv1";
+
+message Envelope {
+  // A request's id, echoed by its reply; 0 for pushes and one-way messages.
+  uint32 id = 1;
+
+  oneof msg {
+    // Either way.
+    Ping ping = 2;
+    GameFrame frame = 3;
+    Error error = 4;
+
+    // Client to server.
+    Hello hello = 10;
+    LoginStart login_start = 11;
+    LoginProof login_proof = 12;
+    Resume resume = 13;
+    Logout logout = 14;
+    Say say = 15;
+    CreateGame create_game = 16;
+    JoinGame join_game = 17;
+    LeaveGame leave_game = 18;
+    StartGame start_game = 19;
+    SetOpen set_open = 20;
+    ContinueGame continue_game = 21;
+    Whisper whisper = 22;
+    ReadPrivate read_private = 23;
+    DesyncReport desync_report = 24;
+
+    // Server to client.
+    Welcome welcome = 40;
+    VersionMismatch version_mismatch = 41;
+    LoginChallenge login_challenge = 42;
+    LoginOk login_ok = 43;
+    LoginFailed login_failed = 44;
+    LobbySnapshot snapshot = 45;
+    ChatLine chat = 46;
+    GameUpdate game_update = 47;
+    GameRemoved game_removed = 48;
+    UserOnline user_online = 49;
+    UserOffline user_offline = 50;
+    GameJoined game_joined = 51;
+    Members members = 52;
+    MemberLost member_lost = 53;
+    Ok ok = 54;
+    PrivateLine private = 55;
+  }
+}
+
+// Keeps an idle link alive; never answered.
+message Ping {}
+
+// A reply that carries nothing but success.
+message Ok {}
+
+// A request failed; text is for the player.
+message Error {
+  ErrorCode code = 1;
+  string text = 2;
+}
+
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+  ERROR_CODE_BAD_REQUEST = 1;       // malformed, or not valid in this state
+  ERROR_CODE_NOT_LOGGED_IN = 2;
+  ERROR_CODE_NO_SUCH_GAME = 3;
+  ERROR_CODE_GAME_CLOSED = 4;       // started, or the creator closed it
+  ERROR_CODE_GAME_FULL = 5;
+  ERROR_CODE_INTERNAL = 6;
+  ERROR_CODE_NO_SUCH_USER = 7;
+}
+
+// The first message of a connection.
+message Hello {
+  uint32 protocol = 1; // lobbyv1.Protocol of the client
+  string build = 2;    // the client's build, for the logs
+}
+
+// The answer to a Hello with the server's protocol.
+message Welcome {
+  uint32 protocol = 1;
+}
+
+// The answer to a Hello with another protocol; the server closes the link.
+message VersionMismatch {
+  uint32 server_protocol = 1;
+  string text = 2;
+}
+
+// SRP-6a login (package srp): LoginStart, LoginChallenge, LoginProof,
+// then LoginOk or LoginFailed.
+message LoginStart {
+  string username = 1;
+}
+
+// The Argon2id parameters that turn the password into SRP's x.
+message Kdf {
+  uint32 time = 1;
+  uint32 memory_kib = 2;
+  uint32 threads = 3;
+}
+
+message LoginChallenge {
+  bytes salt = 1;
+  Kdf kdf = 2;
+  bytes b = 3; // the server's public value B
+}
+
+message LoginProof {
+  bytes a = 1;  // the client's public value A
+  bytes m1 = 2; // the client's proof
+}
+
+message LoginOk {
+  bytes m2 = 1;       // the server's proof, which the client checks
+  string session = 2; // the session's UUID, for Resume
+  User user = 3;
+}
+
+message LoginFailed {
+  LoginFailure reason = 1;
+  uint32 retry_after_ms = 2; // the wait before the next attempt is taken
+}
+
+enum LoginFailure {
+  LOGIN_FAILURE_UNSPECIFIED = 0;
+  LOGIN_FAILURE_WRONG = 1;          // wrong username or password
+  LOGIN_FAILURE_TOO_MANY = 2;       // wait retry_after_ms
+  LOGIN_FAILURE_NOT_CONFIRMED = 3;  // the e-mail code was not entered yet
+  LOGIN_FAILURE_SESSION_GONE = 4;   // Resume: expired or logged out
+  LOGIN_FAILURE_BANNED = 5;         // a moderator banned the account (for retry_after_ms, or 0: for good)
+}
+
+// Logs in with a session from an earlier LoginOk; answered by LoginOk
+// (without m2) or LoginFailed.
+message Resume {
+  string session = 1;
+}
+
+// Ends the session; answered by Ok.
+message Logout {}
+
+message User {
+  string name = 1;
+}
+
+// After a login: the lobby as it is now; pushes follow.
+message LobbySnapshot {
+  repeated GameInfo games = 1; // open public games
+  repeated ChatLine chat = 2;  // the latest lines, oldest first
+  repeated User online = 3;
+  repeated PrivateLine private = 4; // the latest lines to or from this user, oldest first
+}
+
+message Say {
+  string text = 1;
+}
+
+message ChatLine {
+  uint64 id = 1;
+  string user = 2;
+  string text = 3;
+  int64 time_ms = 4; // Unix time
+}
+
+// A private line to one user, online or not (kept until he reads it);
+// answered by Ok or Error (NO_SUCH_USER). Both get it as a PrivateLine,
+// on each of their links.
+message Whisper {
+  string to = 1; // a user's name, any case
+  string text = 2;
+}
+
+message PrivateLine {
+  uint64 id = 1;
+  string from = 2; // names as the accounts have them
+  string to = 3;
+  string text = 4;
+  int64 time_ms = 5; // Unix time
+  bool unread = 6;   // in a snapshot: to this user and not read yet
+}
+
+// The player has read the private lines from a user up to an id; answered
+// by Ok.
+message ReadPrivate {
+  string from = 1;
+  uint64 up_to = 2;
+}
+
+message UserOnline {
+  User user = 1;
+}
+
+message UserOffline {
+  User user = 1;
+}
+
+enum GameState {
+  GAME_STATE_UNSPECIFIED = 0;
+  GAME_STATE_OPEN = 1;
+  GAME_STATE_STARTED = 2;
+  GAME_STATE_FINISHED = 3;
+}
+
+message Player {
+  string name = 1;
+  uint32 net_id = 2;
+}
+
+message GameInfo {
+  string id = 1; // UUID
+  string description = 2;
+  string creator = 3;
+  bool public = 4;
+  GameState state = 5;
+  repeated Player players = 6;
+  int64 created_ms = 7;
+}
+
+// A public game appeared or changed (pushed to everyone in the lobby), or
+// the member's own game changed; state FINISHED tells its members it is
+// over (the creator left before the start, or the last one left).
+message GameUpdate {
+  GameInfo game = 1;
+}
+
+// A public game left the list: started, finished or abandoned. Only the
+// list: a member's game ends with a GameUpdate whose state is FINISHED.
+message GameRemoved {
+  string id = 1;
+}
+
+// Creates a game and joins it as its creator; answered by GameJoined.
+message CreateGame {
+  string description = 1;
+  bool public = 2;
+}
+
+// Joins a game by its UUID; answered by GameJoined or Error.
+message JoinGame {
+  string game = 1;
+}
+
+// Leaves the current game; answered by Ok.
+message LeaveGame {}
+
+// The creator starts the game: it leaves the list and takes no more
+// joiners; answered by Ok.
+message StartGame {}
+
+// The creator of a game made for a saved one names the lobby game the save
+// was made in, to link the evenings of one long game; answered by Ok.
+message ContinueGame {
+  string previous = 1; // UUID
+}
+
+// The creator lets joiners in or not (Net_Enable/Disable_New_Players_).
+message SetOpen {
+  bool open = 1;
+}
+
+// The game's room as the new member sees it (netplay's Welcome).
+message GameJoined {
+  GameInfo game = 1;
+  uint32 net_id = 2;
+  uint32 generation = 3;
+  bool open = 4;
+  repeated uint32 members = 5;
+}
+
+// The room's members after a change (netplay's Users).
+message Members {
+  uint32 generation = 1;
+  bool open = 2;
+  repeated uint32 ids = 3;
+}
+
+// A member left the room (netplay's Lost).
+message MemberLost {
+  uint32 net_id = 1;
+}
+
+// One message of the game, relayed by the server: netplay's frame. to is
+// a net id or 0x7ffe for every human; from is set by the server.
+message GameFrame {
+  uint32 from = 1;
+  uint32 to = 2;
+  uint32 msg = 3;
+  bytes payload = 4;
+}
+
+// A member's game found its state differs from another member's after a
+// turn (the game's desync check, docs/net/hardening.md): the server keeps
+// the report with the game, for the developers. Answered by Ok; a server
+// that does not know it answers an Error, which the game ignores.
+message DesyncReport {
+  uint32 stardate = 1;
+  uint32 other_net_id = 2; // whose hash differs from this member's
+  bytes hash = 3;          // this member's state hash (SHA-256)
+  bytes other_hash = 4;
+  string build = 5;        // the game's version
+  bytes save = 6;          // this member's state that stardate, a save, gzip
+}

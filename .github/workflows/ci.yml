@@ -1,0 +1,47 @@
+# What CI can check without the original game's files: the build on every
+# platform (the browser's too), vet, formatting, and the tests that do not
+# need them (those that do skip without game/).
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build
+        run: go build ./...
+      - name: Vet
+        run: go vet ./...
+      - name: Test
+        run: go test ./...
+
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Formatting
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - name: The browser build
+        run: GOOS=js GOARCH=wasm go build -o /dev/null ./cmd/openorion2
+      - name: The release platforms
+        run: |
+          for p in darwin/amd64 darwin/arm64 windows/amd64 windows/arm64 linux/amd64 linux/arm64; do
+            GOOS=${p%/*} GOARCH=${p#*/} CGO_ENABLED=0 go build -o /dev/null ./cmd/openorion2 || exit 1
+          done
+      - name: The training simulator (tag aitrain)
+        run: go vet -tags aitrain ./internal/game ./tools/aitrain
+      - name: Race
+        run: go test -race ./...
