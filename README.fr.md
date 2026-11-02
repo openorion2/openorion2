@@ -146,6 +146,10 @@ reconstruit : les formats de fichiers, le moteur, chaque écran, le tour,
 le combat, le jeu en réseau et le salon, avec les noms et adresses des
 routines de l'original (en anglais).
 
+- [ARCHITECTURE.md](ARCHITECTURE.md) : une carte du code, et par où commencer dans chaque partie (en anglais).
+- [CONTRIBUTING.md](CONTRIBUTING.md) : compiler, tester, les règles, et comment modifier sans risque une routine portée (en anglais).
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) : le code de conduite, le Contributor Covenant (en anglais).
+
 ## Licence
 
 OpenOrion2 est un logiciel libre sous la GNU General Public License,

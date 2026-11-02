@@ -145,6 +145,10 @@ nachgebaut wurde: die Dateiformate, die Engine, jeder Bildschirm, der Zug,
 der Kampf, das Netzwerkspiel und die Lobby, mit den Namen und Adressen der
 Routinen des Originals (auf Englisch).
 
+- [ARCHITECTURE.md](ARCHITECTURE.md): eine Karte des Codes und wo man in jedem Teil anfängt (auf Englisch).
+- [CONTRIBUTING.md](CONTRIBUTING.md): Bauen, Testen, die Regeln und wie man eine portierte Routine sicher ändert (auf Englisch).
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md): der Verhaltenskodex, der Contributor Covenant (auf Englisch).
+
 ## Lizenz
 
 OpenOrion2 ist freie Software unter der GNU General Public License,

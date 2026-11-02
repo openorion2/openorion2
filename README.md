@@ -131,6 +131,10 @@ has no right to do. Host it for yourself, on your own machine or behind
 formats, the engine, every screen, the turn, combat, network play and the
 lobby, with the original's routine names and addresses.
 
+- [ARCHITECTURE.md](ARCHITECTURE.md): a map of the code, and where to start for each part.
+- [CONTRIBUTING.md](CONTRIBUTING.md): building, testing, the rules, and how to change a ported routine safely.
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md): the Contributor Covenant.
+
 ## License
 
 OpenOrion2 is free software under the GNU General Public License,

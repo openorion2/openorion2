@@ -112,6 +112,10 @@ OpenOrion2 也能以 WebAssembly 的形式在浏览器中运行：同样的游�
 [docs/](docs) 中存放着重建游戏所依据的规格说明：文件格式、引擎、每个界面、回合、
 战斗、联网对战和大厅，并附有原版例程的名称和地址（英文）。
 
+- [ARCHITECTURE.md](ARCHITECTURE.md)：代码地图，以及每个部分从哪里入手（英文）。
+- [CONTRIBUTING.md](CONTRIBUTING.md)：构建、测试、规则，以及如何安全地修改移植的例程（英文）。
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)：行为准则，Contributor Covenant（英文）。
+
 ## 许可证
 
 OpenOrion2 是自由软件，采用 GNU 通用公共许可证第 3 版：见 [LICENSE](LICENSE)。
