@@ -2,6 +2,8 @@
 
 [English](README.md) · [Русский](README.ru.md) · [中文](README.zh-CN.md) · **Deutsch** · [Français](README.fr.md)
 
+![OpenOrion2](https://github.com/openorion2/openorion2/releases/download/v0.9.0/openorion2-play.gif)
+
 OpenOrion2 ist eine quelloffene Neuimplementierung von **Master of Orion
 II: Battle at Antares** (1996): das Spiel als Quellcode, den jeder lesen,
 korrigieren, verändern und am Leben halten kann. Es läuft auf aktuellem

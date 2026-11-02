@@ -2,6 +2,8 @@
 
 **English** · [Русский](README.ru.md) · [中文](README.zh-CN.md) · [Deutsch](README.de.md) · [Français](README.fr.md)
 
+![OpenOrion2](https://github.com/openorion2/openorion2/releases/download/v0.9.0/openorion2-play.gif)
+
 OpenOrion2 is an open-source reimplementation of **Master of Orion II:
 Battle at Antares** (1996): the game as source code anyone can read, fix,
 change and keep alive. It runs on modern macOS, Windows and Linux without

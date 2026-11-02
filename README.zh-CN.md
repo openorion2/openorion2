@@ -2,6 +2,8 @@
 
 [English](README.md) · [Русский](README.ru.md) · **中文** · [Deutsch](README.de.md) · [Français](README.fr.md)
 
+![OpenOrion2](https://github.com/openorion2/openorion2/releases/download/v0.9.0/openorion2-play.gif)
+
 OpenOrion2 是 **Master of Orion II: Battle at Antares**（《银河霸主 2》，1996
 年）的开源重新实现：游戏以源代码的形式存在，任何人都可以阅读、修复、修改并让它
 延续下去。它无需 DOSBox 即可在现代的 macOS、Windows 和 Linux 上运行。它的玩法
