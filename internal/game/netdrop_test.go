@@ -231,6 +231,7 @@ func netDropRun(t *testing.T, n int, setup func(m int, g *Game), drop func(m int
 		g.settings[0xd5] = byte(n)
 		g.settings[2] = 0
 		g.settings[0xd3] = 0
+		g.net.resume.off = true // the drop-outs at once (TestNetResume: the return)
 		if setup != nil {
 			setup(m, g)
 		}

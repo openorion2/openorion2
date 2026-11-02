@@ -21,6 +21,9 @@ type Mem struct {
 	// Order (tests) is the order Users lists these ids in, as an oracle
 	// run's IPX listed its stations (not by id); others follow by id.
 	Order []uint16
+	// Hosted (tests): the relay is not the creator's machine, as with the
+	// lobby or a hosted relay: Drop of the creator loses him alone.
+	Hosted bool
 }
 
 // NewMem makes an empty in-memory network.
@@ -88,7 +91,7 @@ func (m *Mem) Drop(game string, id uint16) {
 	if !ok {
 		return
 	}
-	if l, ok := mb.(*local); ok && l.creator {
+	if l, ok := mb.(*local); ok && l.creator && !m.Hosted {
 		h.close()
 		return
 	}

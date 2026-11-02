@@ -270,6 +270,9 @@ func (g *Game) drawWaitForNewJoinersScreen() error {
 	if err := e.Text().Print(m.x+0x78, m.y+0x47, msg); err != nil {
 		return err
 	}
+	if err := g.drawResumeText(); err != nil { // port-only: a lost player's return
+		return err
+	}
 	return g.drawNetJoinersList() // port-only
 }
 
@@ -593,6 +596,7 @@ func (g *Game) netEnterMainScreen() error {
 	g.setDefaults()
 	g.ms.fadeInFlag = true
 	g.updateShipIconsInBetweenTurns()
+	g.netKeepTurnStart() // port-only: where a lost player's return goes back to
 	return nil
 }
 

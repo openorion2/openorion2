@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/openorion2/openorion2/internal/lobby"
 	"github.com/openorion2/openorion2/internal/netplay"
 	"github.com/openorion2/openorion2/internal/save"
 )
@@ -51,6 +52,10 @@ func (g *Game) netCheckLost() {
 		if who == "" {
 			who = "the game's creator"
 		}
+		if _, ok := g.net.network.(*lobby.Network); ok && g.netCanResume() {
+			// port-only: the lobby relays; the others wait for him (netresume.go).
+			g.netEnd("The connection to the lobby is lost. The others go back to the start of the turn and wait for you: join the game again from the lobby to go on.")
+		}
 		g.netEnd(fmt.Sprintf("The connection to %s, who relays the game, is lost. The game ends.", who))
 	}
 	for _, id := range n.ep.Dropped() {
@@ -64,6 +69,8 @@ func (g *Game) netCheckLost() {
 			g.netEnd(fmt.Sprintf("%s has lost the connection. The game ends.", who))
 		case !n.inGame:
 			g.netAbort(fmt.Sprintf("%s left before the game started. The game ends.", who))
+		case g.netCanResume():
+			g.netLose(k) // port-only: he may come back (netresume.go)
 		case g.netInjector():
 			g.netSendDropOut(k, int16(id))
 		}

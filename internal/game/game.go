@@ -423,6 +423,25 @@ func (g *Game) continueSave(n int) error {
 // _previous_screen. Screens not ported yet go back to the main menu as if
 // they had run.
 func (g *Game) screenControl() error {
+	for {
+		if again, err := g.netResumable(g.screenLoop); !again {
+			return err
+		}
+		// port-only: a player was lost; the game goes back to the turn's start.
+		for {
+			again, err := g.netResumable(g.netResumeScreen)
+			if err != nil {
+				return err
+			}
+			if !again {
+				break
+			}
+		}
+	}
+}
+
+// screenLoop is Screen_Control_'s loop.
+func (g *Game) screenLoop() error {
 	for g.currentScreen != ScreenQuit {
 		g.globalEsc = false
 		if g.currentScreen == ScreenMainMenu && g.net.lobbyPlaying {

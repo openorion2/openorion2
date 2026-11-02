@@ -272,7 +272,8 @@ func (g *Game) hostNextTurn() error {
 	if n.turnHook != nil {
 		n.turnHook(true)
 	}
-	g.netCheckState() // port-only: the desync check (-netcheck)
+	g.netCheckState()    // port-only: the desync check (-netcheck)
+	g.netKeepTurnStart() // port-only: a lost player's return goes back here
 	if s.Players[me].Eliminated != 0 {
 		return nil
 	}
@@ -357,7 +358,8 @@ func (g *Game) clientNextTurn() error {
 	if n.turnHook != nil {
 		n.turnHook(false)
 	}
-	g.netCheckState() // port-only: the desync check (-netcheck)
+	g.netCheckState()    // port-only: the desync check (-netcheck)
+	g.netKeepTurnStart() // port-only: a lost player's return goes back here
 	for i := uint32(0); i < 8; i++ {
 		n.set8(netSent36+i, 0)
 	}

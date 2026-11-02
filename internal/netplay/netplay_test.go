@@ -191,10 +191,12 @@ func testRouting(t *testing.T, s session) {
 	if err := a.Send(9, 1, nil); err != ErrNoUser {
 		t.Fatalf("send to 9: %v", err)
 	}
-	// Closing the game to new players shows in the game info.
-	if err := b.SetOpen(false); err == nil {
-		t.Fatal("a joiner closed the game")
-	}
+	// Closing the game to new players shows in the game info; any member
+	// may (a started game takes a lost player back that way).
+	must(b.SetOpen(false))
+	until(t, "closed by a joiner", func() bool { return !c.Game().Open })
+	must(b.SetOpen(true))
+	until(t, "open again", func() bool { return c.Game().Open })
 	must(a.SetOpen(false))
 	until(t, "closed", func() bool { return !c.Game().Open })
 	for _, ep := range s.eps {

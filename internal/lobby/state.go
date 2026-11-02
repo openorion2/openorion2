@@ -140,7 +140,8 @@ func (s *State) apply(env *lobbyv1.Envelope) bool {
 				s.Mine, s.MyID = nil, 0
 			}
 		}
-		if !g.Public || g.State != lobbyv1.GameState_GAME_STATE_OPEN {
+		back := g.State == lobbyv1.GameState_GAME_STATE_STARTED && (s.Mine == nil || s.Mine.Id != g.Id)
+		if !back && (!g.Public || g.State != lobbyv1.GameState_GAME_STATE_OPEN) {
 			return true // a private game of his: Mine only
 		}
 		for i, old := range s.Games {
@@ -150,7 +151,11 @@ func (s *State) apply(env *lobbyv1.Envelope) bool {
 			}
 		}
 		s.Games = append(s.Games, g)
-		if s.Mine == nil || s.Mine.Id != g.Id {
+		switch {
+		case back:
+			// port-only: a started game of his takes him back (netresume.go).
+			s.Note("Your game waits for you to come back: " + g.Description)
+		case s.Mine == nil || s.Mine.Id != g.Id:
 			s.Note(g.Creator + " created a game: " + g.Description)
 		}
 	case *lobbyv1.Envelope_GameRemoved:

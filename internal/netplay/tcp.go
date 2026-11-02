@@ -2,7 +2,6 @@ package netplay
 
 import (
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"net"
 	"slices"
@@ -385,7 +384,7 @@ func (r *Relay) serve(c net.Conn, creator bool) {
 			return
 		}
 		if f.To == RelayID {
-			if creator && f.ID == ctlOpen && len(f.Payload) == 1 {
+			if f.ID == ctlOpen && len(f.Payload) == 1 { // any member (SetOpen)
 				r.h.setOpen(f.Payload[0] != 0)
 			}
 			continue // a ping, or a control frame the relay does not take
@@ -571,9 +570,6 @@ func (cl *client) Send(to, id uint16, payload []byte) error {
 }
 
 func (cl *client) SetOpen(open bool) error {
-	if !cl.creator {
-		return errors.New("netplay: only the creator opens or closes the game")
-	}
 	return cl.write(Frame{ID: ctlOpen, From: cl.id, To: RelayID, Payload: []byte{b2u8(open)}})
 }
 

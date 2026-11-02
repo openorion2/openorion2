@@ -173,9 +173,16 @@ func (g *Game) loadGame(slot int) (bool, error) {
 		g.e.V.Fill(0, 0, 0x27f, 0x1df, 0)
 		return false, nil
 	}
+	return true, g.loadSaveFile(f, slot)
+}
+
+// loadSaveFile is Load_Game_ from the file read on: the state and the
+// post-load fix-ups (port-only split: a network game's turn-start snapshot
+// loads from memory, netresume.go).
+func (g *Game) loadSaveFile(f *save.File, slot int) error {
 	s := &g.state
 	if err := s.readBlocks(f, slot); err != nil {
-		return false, err
+		return err
 	}
 	saved := f.Settings()
 	seed := f.RandomSeed()
@@ -188,7 +195,7 @@ func (g *Game) loadGame(slot int) (bool, error) {
 	// Not ported yet: Cache_Player_Scientist_Anim_, Rebuild_WFI_List_.
 	if s.NumNebulas != 0 {
 		if err := g.loadNebulaPictures(); err != nil {
-			return false, err
+			return err
 		}
 	}
 	for i := 0; i < int(s.NumStars); i++ {
@@ -203,7 +210,7 @@ func (g *Game) loadGame(slot int) (bool, error) {
 	// Confirm_Planet_And_Star_Index_Link_ only reports broken links.
 	s.updateStarOwners()
 	if err := g.loadLeaderTitles(); err != nil {
-		return false, err
+		return err
 	}
 	for p := range s.Players {
 		pl := &s.Players[p]
@@ -217,7 +224,7 @@ func (g *Game) loadGame(slot int) (bool, error) {
 			s.Players[p].DelayedOrder[j] = -1
 		}
 	}
-	return true, nil
+	return nil
 }
 
 // setDefaults is Set_Defaults_ with the part of Harold_Defaults_ that

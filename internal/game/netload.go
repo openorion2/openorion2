@@ -809,6 +809,14 @@ func (g *Game) loadNetScreen() (bool, error) {
 	if conn == 0 || conn == 3 {
 		g.netDisableNewPlayers()
 	}
+	return true, g.netStartLoadedGame()
+}
+
+// netStartLoadedGame is Load_Net_Screen_ once every human is placed: the
+// unplaced become AIs, msg 0x2a and the full broadcast go out, the main
+// screen (port-only split: a lost player's return ends the same way).
+func (g *Game) netStartLoadedGame() error {
+	e, n, s := g.e, &g.net, &g.state
 	e.AssignAutoFunction(func() error { return nil }, 2) // Null_Autofunction_
 	n.set8(netHumans, 0)
 	for k := int(s.NumPlayers) - 1; k >= 0; k-- {
@@ -833,15 +841,15 @@ func (g *Game) loadNetScreen() (bool, error) {
 	}
 	n.tempString = ""
 	if err := g.reloadSendingDataInfo(); err != nil {
-		return false, err
+		return err
 	}
 	e.V.SetPageOff()
 	if err := g.drawSendGetNetInfoScreen(); err != nil {
-		return false, err
+		return err
 	}
 	e.AssignAutoFunction(g.drawSendGetNetInfoScreen, 2)
 	if err := e.TogglePages(); err != nil {
-		return false, err
+		return err
 	}
 	for k := int(s.NumPlayers) - 1; k >= 0; k-- {
 		n.set8(netCombat+12*uint32(k), 4)
@@ -860,14 +868,14 @@ func (g *Game) loadNetScreen() (bool, error) {
 	n.numNetPlayers = int32(n.u8(netHumans))
 	n.set16(netLastHost, n.i16(netOwnID))
 	if err := g.broadcastGameDataDifferential(true); err != nil {
-		return false, err
+		return err
 	}
 	n.set8(netGets22+uint32(s.PlayerNum), 1)
 	for i := uint32(0); i < 8; i++ {
 		n.set8(netSent36+i, 0)
 	}
 	n.set8(netState, 4)
-	return true, g.netEnterMainScreen()
+	return g.netEnterMainScreen()
 }
 
 // netPickPosition is Net_Pick_Position_ (0xfac85): the joiner of a loaded
@@ -894,34 +902,41 @@ func (g *Game) netPickPosition() (bool, error) {
 	}
 	n.set8(netState, 7)
 	g.moxSendMessage(int32(n.i16(netGameHost)), 0x21, binary.LittleEndian.AppendUint32(nil, uint32(int32(pos))))
+	return true, g.netTakeLoadedGame()
+}
+
+// netTakeLoadedGame is Net_Pick_Position_ after the pick: the creator's full
+// broadcast, PLAYER_NUM, the main screen (port-only split, as above).
+func (g *Game) netTakeLoadedGame() error {
+	e, n, s := g.e, &g.net, &g.state
 	e.AssignAutoFunction(g.drawSendGetNetInfoScreen, 2)
 	if err := g.reloadGettingDataInfo(); err != nil {
-		return false, err
+		return err
 	}
 	n.tempString = g.netRString(netWaitingS, "waiting ...")
 	for n.i16(netChunks) == 0 {
 		if _, err := e.GetInput(); err != nil {
-			return false, err
+			return err
 		}
 		e.V.SetPageOff()
 		if err := g.drawSendGetNetInfoScreen(); err != nil {
-			return false, err
+			return err
 		}
 		if err := e.TogglePages(); err != nil {
-			return false, err
+			return err
 		}
 	}
 	for n.i16(netRecvChunks) < n.i16(netChunks) {
 		n.tempString = fmt.Sprintf(cFormat(g.netRString(netReceivingS, "Receiving chunk %d of %d")),
 			int(n.i16(netRecvChunks))+1, int(n.i16(netChunks)))
 		if _, err := e.GetInput(); err != nil {
-			return false, err
+			return err
 		}
 		if err := g.drawSendGetNetInfoScreen(); err != nil {
-			return false, err
+			return err
 		}
 		if err := e.TogglePages(); err != nil {
-			return false, err
+			return err
 		}
 	}
 	g.decodeBroadcastGameDataDifferential(n.recv, int(binary.LittleEndian.Uint32(n.mem[netRecvLen-netBase:])), true)
@@ -944,7 +959,7 @@ func (g *Game) netPickPosition() (bool, error) {
 	}
 	n.set8(netState, 4)
 	if err := g.loadNebulaPictures(); err != nil { // Init_New_Session_
-		return false, err
+		return err
 	}
-	return true, g.netEnterMainScreen()
+	return g.netEnterMainScreen()
 }

@@ -121,6 +121,7 @@ type endpoint struct {
 	creator bool
 
 	mu      sync.Mutex
+	started bool // the creator has started the game (StartGame)
 	frames  []netplay.Frame
 	users   []uint16
 	dropped []uint16
@@ -224,14 +225,20 @@ func (e *endpoint) Recv() (netplay.Frame, bool) {
 
 // SetOpen is Net_Enable/Disable_New_Players_. The game closes a lobby game
 // only to start it: that is the lobby's StartGame (off the list for good).
+//
+// After the start any member may open and close the started game again,
+// to take a lost player back (port-only, the game's netresume.go).
 func (e *endpoint) SetOpen(open bool) error {
-	if !e.creator {
-		return errors.New("lobby: only the creator opens or closes the game")
+	e.mu.Lock()
+	start := e.creator && !e.started && !open
+	if start {
+		e.started = true
 	}
-	if open {
-		return e.conn.SetOpen(true)
+	e.mu.Unlock()
+	if start {
+		return e.conn.StartGame()
 	}
-	return e.conn.StartGame()
+	return e.conn.SetOpen(open)
 }
 
 func (e *endpoint) Err() error {

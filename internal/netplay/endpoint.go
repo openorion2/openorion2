@@ -35,7 +35,7 @@ type Endpoint interface {
 	// member. It fails once the station's own link is gone.
 	Send(to, id uint16, payload []byte) error
 	Recv() (Frame, bool)     // the next queued frame, if any
-	SetOpen(open bool) error // the creator only: accept joiners or not
+	SetOpen(open bool) error // accept joiners or not (the creator, or who takes a lost player back)
 	Err() error              // nil, ErrLost or ErrClosed
 	Close() error
 }
@@ -357,10 +357,9 @@ func (l *local) Send(to, id uint16, payload []byte) error {
 	return l.h.route(f)
 }
 
+// SetOpen: any member may (the creator before the start; whoever takes a
+// lost player back after it).
 func (l *local) SetOpen(open bool) error {
-	if !l.creator {
-		return errors.New("netplay: only the creator opens or closes the game")
-	}
 	l.h.setOpen(open)
 	return nil
 }

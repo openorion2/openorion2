@@ -114,6 +114,7 @@ type netGame struct {
 	dropHook  func(p int)    // tests: a drop-out sent for a lost player was applied
 	checkHook func(sd uint32, from uint16, same bool)
 	abortHook func(msg string) // tests: the game ends with msg
+	resume    netResumeState   // a lost player's return (netresume.go)
 }
 
 func (n *netGame) u8(a uint32) uint8  { return n.mem[a-netBase] }
@@ -247,6 +248,13 @@ func (g *Game) netUpdate() {
 		if f.ID >= netCtlDropOut && f.ID <= netCtlRestart {
 			g.netPortFrame(f) // port-only (netdrop.go)
 			continue
+		}
+		if f.ID == netCtlResume || f.ID == netCtlGoOn {
+			g.netResumeFrame(f) // port-only (netresume.go)
+			continue
+		}
+		if n.resume.active && !g.netResumeTakes(f.From, f.ID) {
+			continue // what was under way when the player was lost
 		}
 		if n.receive != nil {
 			n.receive(f.From, f.ID, f.Payload)

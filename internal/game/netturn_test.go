@@ -496,6 +496,7 @@ func netSoak(t *testing.T, n, ais, turns, battles int) {
 			dropOuts++
 			mu.Unlock()
 		}
+		g.net.resume.off = drop          // the drop-outs at once (TestNetResume: the return)
 		g.settings[0xd5] = byte(n + ais) // players
 		g.settings[2] = 0                // no random events
 		g.settings[0xd3] = 0             // no Antarans
