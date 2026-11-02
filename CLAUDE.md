@@ -125,5 +125,7 @@ are not part of this repository.
 ## Code style
 
 - Comments in English, at most two lines in a row; `any`, not `interface{}`.
+- `README.md` has translations (`README.ru.md`, `README.zh-CN.md`,
+  `README.de.md`, `README.fr.md`): a change to it goes into them too.
 - Commit messages explain why; no `game/` content or derived binaries in
   git, but the trained networks (`tools/aiplay/models`).
