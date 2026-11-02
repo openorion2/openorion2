@@ -1,10 +1,21 @@
 # What CI can check without the original game's files: the build on every
 # platform (the browser's too), vet, formatting, and the tests that do not
 # need them (those that do skip without game/).
+# Not for changes of the docs alone (tags always run: GitHub does not apply
+# path filters to them); a newer push cancels the run of an older one.
 name: CI
 on:
   push:
+    branches: [master]
+    tags: ['v*']
+    paths-ignore: ['**.md', 'docs/**']
   pull_request:
+    paths-ignore: ['**.md', 'docs/**']
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
