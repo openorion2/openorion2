@@ -40,6 +40,20 @@ type Server struct {
 	frames    int               // relayed so far
 	continues map[string]string // game id → the game it continues (ContinueGame)
 	desyncs   []Desync          // the desync reports
+	crashes   []Crash           // the crash reports
+}
+
+// Crash is a CrashReport as the server took it, with its sender.
+type Crash struct {
+	User   string
+	Report *lobbyv1.CrashReport
+}
+
+// Crashes is the crash reports taken so far.
+func (s *Server) Crashes() []Crash {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return append([]Crash(nil), s.crashes...)
 }
 
 // Desync is a DesyncReport as the server took it: its game and member.
@@ -239,6 +253,11 @@ func (s *Server) serve(l *link) {
 				fail(l, env, lobbyv1.ErrorCode_ERROR_CODE_BAD_REQUEST, "not in a game")
 				continue
 			}
+			reply(l, env, ok())
+		case *lobbyv1.Envelope_CrashReport:
+			s.mu.Lock()
+			s.crashes = append(s.crashes, Crash{User: l.user, Report: m.CrashReport})
+			s.mu.Unlock()
 			reply(l, env, ok())
 		case *lobbyv1.Envelope_Frame:
 			s.relay(l, m.Frame)

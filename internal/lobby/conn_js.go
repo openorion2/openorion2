@@ -3,6 +3,7 @@
 package lobby
 
 import (
+	"crypto/tls"
 	"errors"
 
 	"github.com/openorion2/openorion2/internal/netplay"
@@ -47,5 +48,9 @@ func (c *Conn) StartGame() error                              { return ErrUnavai
 func (c *Conn) SetOpen(bool) error                            { return ErrUnavailable }
 func (c *Conn) Alive() bool                                   { return false }
 func (c *Conn) ContinueGame(string) error                     { return ErrUnavailable }
-func (n *Network) GameID() string                             { return "" }
-func (n *Network) Continue(string) error                      { return ErrUnavailable }
+func (c *Conn) ReportCrash(*lobbyv1.CrashReport) error        { return ErrUnavailable }
+
+// SendCrash: no lobby in the browser.
+func SendCrash(string, *tls.Config, *lobbyv1.CrashReport) error { return ErrUnavailable }
+func (n *Network) GameID() string                               { return "" }
+func (n *Network) Continue(string) error                        { return ErrUnavailable }

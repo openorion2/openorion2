@@ -35,6 +35,7 @@ message Envelope {
     Whisper whisper = 22;
     ReadPrivate read_private = 23;
     DesyncReport desync_report = 24;
+    CrashReport crash_report = 25;
 
     // Server to client.
     Welcome welcome = 40;
@@ -302,6 +303,15 @@ message GameFrame {
 // turn (the game's desync check, docs/net/hardening.md): the server keeps
 // the report with the game, for the developers. Answered by Ok; a server
 // that does not know it answers an Error, which the game ignores.
+// The game crashed (a Go panic or fatal error): what the player agreed to
+// send at the next start. Answered Ok. Not tied to a game.
+message CrashReport {
+  string build = 1; // the game's version
+  string os = 2;    // GOOS/GOARCH
+  bytes crash = 3;  // the runtime's crash output and the game's last log lines, text, gzip
+  bytes save = 4;   // the state when it crashed, a save, gzip; empty outside a game
+}
+
 message DesyncReport {
   uint32 stardate = 1;
   uint32 other_net_id = 2; // whose hash differs from this member's

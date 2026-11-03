@@ -59,6 +59,9 @@ the drop handling (`docs/net/`) are the same over the lobby as over TCP.
 - `SAVEn.LBY`: beside a save made in a lobby game, that game's UUID; LOAD
   through the lobby sends it as `ContinueGame`, so the server links the
   evenings of one long game. A save made outside the lobby removes it.
+- `CRASH.TXT`, `CRASHLOG.TXT`, `CRASH.GAM`: what a crash of this run
+  leaves; `CRASHREP.TXT`, `CRASHREP.GAM`: the report pending from an
+  earlier one (below).
 
 ## Screens
 
@@ -129,13 +132,37 @@ of that stardate, gzipped. The server keeps it with the game for the
 developers; one that does not know the message answers an Error, which the
 game ignores, so it needs no new protocol version.
 
+## Crash reports
+
+`main` calls `crash.Start` (`internal/crash`) with the game's directory:
+what an earlier run's crash left there becomes the pending report
+(`CRASHREP.TXT`: the runtime's output, then the log's tail; `CRASHREP.GAM`:
+the save), and `debug.SetCrashOutput` sends this run's unhandled panics and
+fatal errors to `CRASH.TXT` (besides standard error), from any goroutine.
+A panic in the game's goroutine first passes `recoverRunExit`, which has
+the game write its last 200 log lines (`CRASHLOG.TXT`, `Game.logTail`) and,
+in a game, the state as a save (`CRASH.GAM`). A crash inside C code (SDL)
+may leave the runtime's output only, or nothing.
+
+With a window (`Options.CrashReports`) the main menu offers a pending
+report once (`crashui.go`): "OpenOrion2 crashed last time. Send the crash
+report to the online lobby?". Yes sends a `CrashReport` (the text and the
+save, gzipped, with the version and GOOS/GOARCH) over a connection of its
+own with the saved session (`lobby.SendCrash`; none: "log in to the online
+lobby once"); sent, the report is dropped, failed, it stays for the next
+start. No drops it. The server keeps reports 90 days (the lobby
+repository's `docs/crashes.md`). A server that does not know the message
+answers an Error: the report stays.
+
 ## Tests
 
 `internal/lobby/lobbytest` is a test server with the real server's rooms
 and relay (any session resumes, as the user it names); the game's tests
 play games through it (`TestNetTurnsLobby`, `TestNetDropLobby`,
 `TestNetLoadLobby`, `TestNetDesyncLobby`). The screens' tests (`internal/game/lobbyui_test.go`)
-run against a fake lobby with real SRP.
+run against a fake lobby with real SRP. Crash reports: `internal/crash`
+`TestPending`, the game's `TestCrashWrite`, `TestCrashOffer` (Yes, No, a
+failed send) and `TestSendCrash` (through `lobbytest`).
 
 ## Not done
 

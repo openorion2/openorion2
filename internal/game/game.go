@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/openorion2/openorion2/internal/announce"
+	"github.com/openorion2/openorion2/internal/crash"
 	"image"
 	"os"
 	"path/filepath"
@@ -106,6 +107,8 @@ type Game struct {
 	ub                 userBoxState  // MSGBOX and TEXTBOX.C statics
 	lobbyTLS           *tls.Config   // port-only: the online lobby's TLS settings (tests); nil: the system's
 	update             *updateCheck  // port-only: the lookup for a newer release
+	crash              *crashOffer   // port-only: crash reports (crashui.go)
+	logTail            crash.Tail    // port-only: the log's last lines, for a crash report
 	lobbyScr           *lobbyHomeScr // port-only: the lobby's screen while it is up
 	lobbyJoinScr       *lobbyJoinScr // port-only: the lobby's JOIN box while it is up
 	lobbyConn          *lobby.Conn   // port-only: the lobby, while a game made there is played
@@ -285,6 +288,10 @@ type Options struct {
 	// Announce, if set, is the project's announcements (port-only,
 	// announce.go).
 	Announce *announce.Feed
+	// CrashReports: a panic leaves the log's tail and the state for a crash
+	// report, and the main menu offers to send a pending one (port-only,
+	// crashui.go; main has crash.Start record the runtime's output).
+	CrashReports bool
 
 	// testHook (tests) sees the game before the save loads.
 	testHook func(g *Game)
@@ -333,6 +340,9 @@ func Run(sys *host.System, dir string, opt Options) (err error) {
 		g.randomize()
 	}
 	g.startUpdateCheck(opt.Update)
+	if opt.CrashReports {
+		g.crash = &crashOffer{send: g.sendCrashReport}
+	}
 	g.announceFeed = opt.Announce
 	g.e.ControlState, g.e.ControlAct = g.agentState, g.agentAct
 	if opt.testHook != nil {
@@ -350,9 +360,12 @@ func Run(sys *host.System, dir string, opt Options) (err error) {
 // palette, cursor, the executable's tables and the global pictures and
 // strings. It starts on the main menu with the panel sliding out.
 func newGame(sys *host.System, dir string) (*Game, error) {
-	g := &Game{dir: dir, lbx: map[string]*lbx.Archive{}, cache: map[cacheKey]*gfx.Picture{}, release: update.Version, Log: func(f string, a ...any) {
-		fmt.Fprintf(os.Stderr, "openorion2: "+f+"\n", a...)
-	}}
+	g := &Game{dir: dir, lbx: map[string]*lbx.Archive{}, cache: map[cacheKey]*gfx.Picture{}, release: update.Version}
+	g.Log = func(f string, a ...any) {
+		line := fmt.Sprintf(f, a...)
+		g.logTail.Add(line)
+		fmt.Fprintln(os.Stderr, "openorion2: "+line)
+	}
 	fonts, err := g.archive("FONTS.LBX")
 	if err != nil {
 		return nil, err

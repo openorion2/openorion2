@@ -164,6 +164,13 @@ func (g *Game) MainMenuScreen() error {
 			g.currentScreen, g.fullDrawScreen, done = ScreenMainMenu, true, true
 			continue
 		}
+		// port-only: a crash report from the last run, offered once (crashui.go).
+		if shown, err := g.offerCrashReport(); err != nil {
+			return err
+		} else if shown {
+			g.currentScreen, g.fullDrawScreen, done = ScreenMainMenu, true, true
+			continue
+		}
 		e.MarkTime()
 		b := &m.buttons
 		switch {

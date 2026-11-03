@@ -424,6 +424,7 @@ func (g *Game) recoverRunExit(err *error) {
 		*err = e
 		return
 	}
+	g.crashWrite() // port-only: what a crash report takes (crashui.go)
 	panic(r)
 }
 

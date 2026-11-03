@@ -286,6 +286,12 @@ func (c *Client) ReportDesync(ctx context.Context, r *lobbyv1.DesyncReport) erro
 	return err
 }
 
+// ReportCrash sends a crash report (the player agreed); answered Ok.
+func (c *Client) ReportCrash(ctx context.Context, r *lobbyv1.CrashReport) error {
+	_, err := c.Request(ctx, &lobbyv1.Envelope{Msg: &lobbyv1.Envelope_CrashReport{CrashReport: r}})
+	return err
+}
+
 // Say sends a line to the lobby's chat; it comes back as a ChatLine push
 // like everyone's.
 func (c *Client) Say(ctx context.Context, text string) error {

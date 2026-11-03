@@ -104,6 +104,9 @@ are not part of this repository.
 - `internal/lobby`, `lobbynet/` — the online lobby's client side;
   `tools/lobbyfake` a lobby without accounts for development
 - `internal/announce` — the project's announcements (`docs/announce.md`)
+- `internal/crash` — crash reports: the runtime's output, the log's tail
+  and the state, offered to the lobby at the next start
+  (`docs/lobby/client.md`, "Crash reports")
 - `internal/update`, `tools/release` — the update check and the release
   builds and signatures (`docs/release.md`)
 - `tools/monkey` — plays a running game (`-control`) at random: a fuzzer of

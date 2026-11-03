@@ -225,6 +225,7 @@ type Envelope struct {
 	//	*Envelope_Whisper
 	//	*Envelope_ReadPrivate
 	//	*Envelope_DesyncReport
+	//	*Envelope_CrashReport
 	//	*Envelope_Welcome
 	//	*Envelope_VersionMismatch
 	//	*Envelope_LoginChallenge
@@ -452,6 +453,15 @@ func (x *Envelope) GetDesyncReport() *DesyncReport {
 	return nil
 }
 
+func (x *Envelope) GetCrashReport() *CrashReport {
+	if x != nil {
+		if x, ok := x.Msg.(*Envelope_CrashReport); ok {
+			return x.CrashReport
+		}
+	}
+	return nil
+}
+
 func (x *Envelope) GetWelcome() *Welcome {
 	if x != nil {
 		if x, ok := x.Msg.(*Envelope_Welcome); ok {
@@ -674,6 +684,10 @@ type Envelope_DesyncReport struct {
 	DesyncReport *DesyncReport `protobuf:"bytes,24,opt,name=desync_report,json=desyncReport,proto3,oneof"`
 }
 
+type Envelope_CrashReport struct {
+	CrashReport *CrashReport `protobuf:"bytes,25,opt,name=crash_report,json=crashReport,proto3,oneof"`
+}
+
 type Envelope_Welcome struct {
 	// Server to client.
 	Welcome *Welcome `protobuf:"bytes,40,opt,name=welcome,proto3,oneof"`
@@ -774,6 +788,8 @@ func (*Envelope_Whisper) isEnvelope_Msg() {}
 func (*Envelope_ReadPrivate) isEnvelope_Msg() {}
 
 func (*Envelope_DesyncReport) isEnvelope_Msg() {}
+
+func (*Envelope_CrashReport) isEnvelope_Msg() {}
 
 func (*Envelope_Welcome) isEnvelope_Msg() {}
 
@@ -2763,6 +2779,76 @@ func (x *GameFrame) GetPayload() []byte {
 // turn (the game's desync check, docs/net/hardening.md): the server keeps
 // the report with the game, for the developers. Answered by Ok; a server
 // that does not know it answers an Error, which the game ignores.
+// The game crashed (a Go panic or fatal error): what the player agreed to
+// send at the next start. Answered Ok. Not tied to a game.
+type CrashReport struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Build         string                 `protobuf:"bytes,1,opt,name=build,proto3" json:"build,omitempty"` // the game's version
+	Os            string                 `protobuf:"bytes,2,opt,name=os,proto3" json:"os,omitempty"`       // GOOS/GOARCH
+	Crash         []byte                 `protobuf:"bytes,3,opt,name=crash,proto3" json:"crash,omitempty"` // the runtime's crash output and the game's last log lines, text, gzip
+	Save          []byte                 `protobuf:"bytes,4,opt,name=save,proto3" json:"save,omitempty"`   // the state when it crashed, a save, gzip; empty outside a game
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CrashReport) Reset() {
+	*x = CrashReport{}
+	mi := &file_lobby_v1_lobby_proto_msgTypes[38]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CrashReport) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CrashReport) ProtoMessage() {}
+
+func (x *CrashReport) ProtoReflect() protoreflect.Message {
+	mi := &file_lobby_v1_lobby_proto_msgTypes[38]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CrashReport.ProtoReflect.Descriptor instead.
+func (*CrashReport) Descriptor() ([]byte, []int) {
+	return file_lobby_v1_lobby_proto_rawDescGZIP(), []int{38}
+}
+
+func (x *CrashReport) GetBuild() string {
+	if x != nil {
+		return x.Build
+	}
+	return ""
+}
+
+func (x *CrashReport) GetOs() string {
+	if x != nil {
+		return x.Os
+	}
+	return ""
+}
+
+func (x *CrashReport) GetCrash() []byte {
+	if x != nil {
+		return x.Crash
+	}
+	return nil
+}
+
+func (x *CrashReport) GetSave() []byte {
+	if x != nil {
+		return x.Save
+	}
+	return nil
+}
+
 type DesyncReport struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Stardate      uint32                 `protobuf:"varint,1,opt,name=stardate,proto3" json:"stardate,omitempty"`
@@ -2777,7 +2863,7 @@ type DesyncReport struct {
 
 func (x *DesyncReport) Reset() {
 	*x = DesyncReport{}
-	mi := &file_lobby_v1_lobby_proto_msgTypes[38]
+	mi := &file_lobby_v1_lobby_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2789,7 +2875,7 @@ func (x *DesyncReport) String() string {
 func (*DesyncReport) ProtoMessage() {}
 
 func (x *DesyncReport) ProtoReflect() protoreflect.Message {
-	mi := &file_lobby_v1_lobby_proto_msgTypes[38]
+	mi := &file_lobby_v1_lobby_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2802,7 +2888,7 @@ func (x *DesyncReport) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DesyncReport.ProtoReflect.Descriptor instead.
 func (*DesyncReport) Descriptor() ([]byte, []int) {
-	return file_lobby_v1_lobby_proto_rawDescGZIP(), []int{38}
+	return file_lobby_v1_lobby_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *DesyncReport) GetStardate() uint32 {
@@ -2851,7 +2937,7 @@ var File_lobby_v1_lobby_proto protoreflect.FileDescriptor
 
 const file_lobby_v1_lobby_proto_rawDesc = "" +
 	"\n" +
-	"\x14lobby/v1/lobby.proto\x12\blobby.v1\"\x8b\x0e\n" +
+	"\x14lobby/v1/lobby.proto\x12\blobby.v1\"\xc7\x0e\n" +
 	"\bEnvelope\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\rR\x02id\x12$\n" +
 	"\x04ping\x18\x02 \x01(\v2\x0e.lobby.v1.PingH\x00R\x04ping\x12+\n" +
@@ -2877,7 +2963,8 @@ const file_lobby_v1_lobby_proto_rawDesc = "" +
 	"\rcontinue_game\x18\x15 \x01(\v2\x16.lobby.v1.ContinueGameH\x00R\fcontinueGame\x12-\n" +
 	"\awhisper\x18\x16 \x01(\v2\x11.lobby.v1.WhisperH\x00R\awhisper\x12:\n" +
 	"\fread_private\x18\x17 \x01(\v2\x15.lobby.v1.ReadPrivateH\x00R\vreadPrivate\x12=\n" +
-	"\rdesync_report\x18\x18 \x01(\v2\x16.lobby.v1.DesyncReportH\x00R\fdesyncReport\x12-\n" +
+	"\rdesync_report\x18\x18 \x01(\v2\x16.lobby.v1.DesyncReportH\x00R\fdesyncReport\x12:\n" +
+	"\fcrash_report\x18\x19 \x01(\v2\x15.lobby.v1.CrashReportH\x00R\vcrashReport\x12-\n" +
 	"\awelcome\x18( \x01(\v2\x11.lobby.v1.WelcomeH\x00R\awelcome\x12F\n" +
 	"\x10version_mismatch\x18) \x01(\v2\x19.lobby.v1.VersionMismatchH\x00R\x0fversionMismatch\x12C\n" +
 	"\x0flogin_challenge\x18* \x01(\v2\x18.lobby.v1.LoginChallengeH\x00R\x0eloginChallenge\x12.\n" +
@@ -3021,7 +3108,12 @@ const file_lobby_v1_lobby_proto_rawDesc = "" +
 	"\x04from\x18\x01 \x01(\rR\x04from\x12\x0e\n" +
 	"\x02to\x18\x02 \x01(\rR\x02to\x12\x10\n" +
 	"\x03msg\x18\x03 \x01(\rR\x03msg\x12\x18\n" +
-	"\apayload\x18\x04 \x01(\fR\apayload\"\xa9\x01\n" +
+	"\apayload\x18\x04 \x01(\fR\apayload\"]\n" +
+	"\vCrashReport\x12\x14\n" +
+	"\x05build\x18\x01 \x01(\tR\x05build\x12\x0e\n" +
+	"\x02os\x18\x02 \x01(\tR\x02os\x12\x14\n" +
+	"\x05crash\x18\x03 \x01(\fR\x05crash\x12\x12\n" +
+	"\x04save\x18\x04 \x01(\fR\x04save\"\xa9\x01\n" +
 	"\fDesyncReport\x12\x1a\n" +
 	"\bstardate\x18\x01 \x01(\rR\bstardate\x12 \n" +
 	"\fother_net_id\x18\x02 \x01(\rR\n" +
@@ -3066,7 +3158,7 @@ func file_lobby_v1_lobby_proto_rawDescGZIP() []byte {
 }
 
 var file_lobby_v1_lobby_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_lobby_v1_lobby_proto_msgTypes = make([]protoimpl.MessageInfo, 39)
+var file_lobby_v1_lobby_proto_msgTypes = make([]protoimpl.MessageInfo, 40)
 var file_lobby_v1_lobby_proto_goTypes = []any{
 	(ErrorCode)(0),          // 0: lobby.v1.ErrorCode
 	(LoginFailure)(0),       // 1: lobby.v1.LoginFailure
@@ -3109,7 +3201,8 @@ var file_lobby_v1_lobby_proto_goTypes = []any{
 	(*Members)(nil),         // 38: lobby.v1.Members
 	(*MemberLost)(nil),      // 39: lobby.v1.MemberLost
 	(*GameFrame)(nil),       // 40: lobby.v1.GameFrame
-	(*DesyncReport)(nil),    // 41: lobby.v1.DesyncReport
+	(*CrashReport)(nil),     // 41: lobby.v1.CrashReport
+	(*DesyncReport)(nil),    // 42: lobby.v1.DesyncReport
 }
 var file_lobby_v1_lobby_proto_depIdxs = []int32{
 	4,  // 0: lobby.v1.Envelope.ping:type_name -> lobby.v1.Ping
@@ -3129,42 +3222,43 @@ var file_lobby_v1_lobby_proto_depIdxs = []int32{
 	35, // 14: lobby.v1.Envelope.continue_game:type_name -> lobby.v1.ContinueGame
 	22, // 15: lobby.v1.Envelope.whisper:type_name -> lobby.v1.Whisper
 	24, // 16: lobby.v1.Envelope.read_private:type_name -> lobby.v1.ReadPrivate
-	41, // 17: lobby.v1.Envelope.desync_report:type_name -> lobby.v1.DesyncReport
-	8,  // 18: lobby.v1.Envelope.welcome:type_name -> lobby.v1.Welcome
-	9,  // 19: lobby.v1.Envelope.version_mismatch:type_name -> lobby.v1.VersionMismatch
-	12, // 20: lobby.v1.Envelope.login_challenge:type_name -> lobby.v1.LoginChallenge
-	14, // 21: lobby.v1.Envelope.login_ok:type_name -> lobby.v1.LoginOk
-	15, // 22: lobby.v1.Envelope.login_failed:type_name -> lobby.v1.LoginFailed
-	19, // 23: lobby.v1.Envelope.snapshot:type_name -> lobby.v1.LobbySnapshot
-	21, // 24: lobby.v1.Envelope.chat:type_name -> lobby.v1.ChatLine
-	29, // 25: lobby.v1.Envelope.game_update:type_name -> lobby.v1.GameUpdate
-	30, // 26: lobby.v1.Envelope.game_removed:type_name -> lobby.v1.GameRemoved
-	25, // 27: lobby.v1.Envelope.user_online:type_name -> lobby.v1.UserOnline
-	26, // 28: lobby.v1.Envelope.user_offline:type_name -> lobby.v1.UserOffline
-	37, // 29: lobby.v1.Envelope.game_joined:type_name -> lobby.v1.GameJoined
-	38, // 30: lobby.v1.Envelope.members:type_name -> lobby.v1.Members
-	39, // 31: lobby.v1.Envelope.member_lost:type_name -> lobby.v1.MemberLost
-	5,  // 32: lobby.v1.Envelope.ok:type_name -> lobby.v1.Ok
-	23, // 33: lobby.v1.Envelope.private:type_name -> lobby.v1.PrivateLine
-	0,  // 34: lobby.v1.Error.code:type_name -> lobby.v1.ErrorCode
-	11, // 35: lobby.v1.LoginChallenge.kdf:type_name -> lobby.v1.Kdf
-	18, // 36: lobby.v1.LoginOk.user:type_name -> lobby.v1.User
-	1,  // 37: lobby.v1.LoginFailed.reason:type_name -> lobby.v1.LoginFailure
-	28, // 38: lobby.v1.LobbySnapshot.games:type_name -> lobby.v1.GameInfo
-	21, // 39: lobby.v1.LobbySnapshot.chat:type_name -> lobby.v1.ChatLine
-	18, // 40: lobby.v1.LobbySnapshot.online:type_name -> lobby.v1.User
-	23, // 41: lobby.v1.LobbySnapshot.private:type_name -> lobby.v1.PrivateLine
-	18, // 42: lobby.v1.UserOnline.user:type_name -> lobby.v1.User
-	18, // 43: lobby.v1.UserOffline.user:type_name -> lobby.v1.User
-	2,  // 44: lobby.v1.GameInfo.state:type_name -> lobby.v1.GameState
-	27, // 45: lobby.v1.GameInfo.players:type_name -> lobby.v1.Player
-	28, // 46: lobby.v1.GameUpdate.game:type_name -> lobby.v1.GameInfo
-	28, // 47: lobby.v1.GameJoined.game:type_name -> lobby.v1.GameInfo
-	48, // [48:48] is the sub-list for method output_type
-	48, // [48:48] is the sub-list for method input_type
-	48, // [48:48] is the sub-list for extension type_name
-	48, // [48:48] is the sub-list for extension extendee
-	0,  // [0:48] is the sub-list for field type_name
+	42, // 17: lobby.v1.Envelope.desync_report:type_name -> lobby.v1.DesyncReport
+	41, // 18: lobby.v1.Envelope.crash_report:type_name -> lobby.v1.CrashReport
+	8,  // 19: lobby.v1.Envelope.welcome:type_name -> lobby.v1.Welcome
+	9,  // 20: lobby.v1.Envelope.version_mismatch:type_name -> lobby.v1.VersionMismatch
+	12, // 21: lobby.v1.Envelope.login_challenge:type_name -> lobby.v1.LoginChallenge
+	14, // 22: lobby.v1.Envelope.login_ok:type_name -> lobby.v1.LoginOk
+	15, // 23: lobby.v1.Envelope.login_failed:type_name -> lobby.v1.LoginFailed
+	19, // 24: lobby.v1.Envelope.snapshot:type_name -> lobby.v1.LobbySnapshot
+	21, // 25: lobby.v1.Envelope.chat:type_name -> lobby.v1.ChatLine
+	29, // 26: lobby.v1.Envelope.game_update:type_name -> lobby.v1.GameUpdate
+	30, // 27: lobby.v1.Envelope.game_removed:type_name -> lobby.v1.GameRemoved
+	25, // 28: lobby.v1.Envelope.user_online:type_name -> lobby.v1.UserOnline
+	26, // 29: lobby.v1.Envelope.user_offline:type_name -> lobby.v1.UserOffline
+	37, // 30: lobby.v1.Envelope.game_joined:type_name -> lobby.v1.GameJoined
+	38, // 31: lobby.v1.Envelope.members:type_name -> lobby.v1.Members
+	39, // 32: lobby.v1.Envelope.member_lost:type_name -> lobby.v1.MemberLost
+	5,  // 33: lobby.v1.Envelope.ok:type_name -> lobby.v1.Ok
+	23, // 34: lobby.v1.Envelope.private:type_name -> lobby.v1.PrivateLine
+	0,  // 35: lobby.v1.Error.code:type_name -> lobby.v1.ErrorCode
+	11, // 36: lobby.v1.LoginChallenge.kdf:type_name -> lobby.v1.Kdf
+	18, // 37: lobby.v1.LoginOk.user:type_name -> lobby.v1.User
+	1,  // 38: lobby.v1.LoginFailed.reason:type_name -> lobby.v1.LoginFailure
+	28, // 39: lobby.v1.LobbySnapshot.games:type_name -> lobby.v1.GameInfo
+	21, // 40: lobby.v1.LobbySnapshot.chat:type_name -> lobby.v1.ChatLine
+	18, // 41: lobby.v1.LobbySnapshot.online:type_name -> lobby.v1.User
+	23, // 42: lobby.v1.LobbySnapshot.private:type_name -> lobby.v1.PrivateLine
+	18, // 43: lobby.v1.UserOnline.user:type_name -> lobby.v1.User
+	18, // 44: lobby.v1.UserOffline.user:type_name -> lobby.v1.User
+	2,  // 45: lobby.v1.GameInfo.state:type_name -> lobby.v1.GameState
+	27, // 46: lobby.v1.GameInfo.players:type_name -> lobby.v1.Player
+	28, // 47: lobby.v1.GameUpdate.game:type_name -> lobby.v1.GameInfo
+	28, // 48: lobby.v1.GameJoined.game:type_name -> lobby.v1.GameInfo
+	49, // [49:49] is the sub-list for method output_type
+	49, // [49:49] is the sub-list for method input_type
+	49, // [49:49] is the sub-list for extension type_name
+	49, // [49:49] is the sub-list for extension extendee
+	0,  // [0:49] is the sub-list for field type_name
 }
 
 func init() { file_lobby_v1_lobby_proto_init() }
@@ -3191,6 +3285,7 @@ func file_lobby_v1_lobby_proto_init() {
 		(*Envelope_Whisper)(nil),
 		(*Envelope_ReadPrivate)(nil),
 		(*Envelope_DesyncReport)(nil),
+		(*Envelope_CrashReport)(nil),
 		(*Envelope_Welcome)(nil),
 		(*Envelope_VersionMismatch)(nil),
 		(*Envelope_LoginChallenge)(nil),
@@ -3214,7 +3309,7 @@ func file_lobby_v1_lobby_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_lobby_v1_lobby_proto_rawDesc), len(file_lobby_v1_lobby_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   39,
+			NumMessages:   40,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

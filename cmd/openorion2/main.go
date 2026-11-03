@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/openorion2/openorion2/internal/announce"
+	"github.com/openorion2/openorion2/internal/crash"
 	"os"
 	"runtime"
 	"strconv"
@@ -102,6 +103,12 @@ func main() {
 			host.ShowError("OpenOrion2", msg)
 		}
 		os.Exit(1)
+	}
+	if runtime.GOOS != "js" {
+		// port-only: a crash leaves its report in the game's directory; the
+		// main menu offers a pending one (docs/lobby/client.md).
+		crash.Start(*dir)
+		opt.CrashReports = !*headless
 	}
 	err := host.Run(host.Options{Title: "OpenOrion2", Scale: *scale, Frames: *frames, HideCursor: true, Shot: *shot, WindowShot: *wshot, Clicks: clicks, Keys: keys, Headless: *headless, Control: *control},
 		func(sys *host.System) error { return game.Run(sys, *dir, opt) })
