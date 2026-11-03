@@ -250,6 +250,13 @@ func (e *endpoint) Err() error {
 	return e.err
 }
 
+// UserName is the lobby account that has (or had) net id id in this game,
+// "" if unknown (port-only: the game hands a lost player his own empire
+// back). The game's goroutine only, as Recv.
+func (e *endpoint) UserName(id uint16) string {
+	return e.conn.State.Names[uint32(id)]
+}
+
 // Close leaves the game; the lobby connection stays.
 func (e *endpoint) Close() error {
 	e.fail(netplay.ErrClosed)

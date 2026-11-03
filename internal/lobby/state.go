@@ -36,6 +36,9 @@ type State struct {
 	Games  []*lobbyv1.GameInfo // the listed games, oldest first
 	Mine   *lobbyv1.GameInfo   // the game this player is in, if any
 	MyID   uint32              // his net id in it
+	// Names is who had each net id of Mine while he was in it, kept after
+	// they left (port-only: a lost player gets his own empire back).
+	Names map[uint32]string
 
 	Me      string    // the player's name, as the server spells it
 	Dialogs []*Dialog // his private lines by the other user, oldest dialog first
@@ -136,6 +139,7 @@ func (s *State) apply(env *lobbyv1.Envelope) bool {
 		g := m.GameUpdate.Game
 		if s.Mine != nil && s.Mine.Id == g.Id {
 			s.Mine = g
+			s.noteNames(g)
 			if g.State == lobbyv1.GameState_GAME_STATE_FINISHED {
 				s.Mine, s.MyID = nil, 0
 			}
@@ -182,5 +186,16 @@ func (s *State) sortOnline() {
 }
 
 func (s *State) joined(j *lobbyv1.GameJoined) {
-	s.Mine, s.MyID = j.Game, j.NetId
+	s.Mine, s.MyID, s.Names = j.Game, j.NetId, nil
+	s.noteNames(j.Game)
+}
+
+// noteNames adds g's members to Names.
+func (s *State) noteNames(g *lobbyv1.GameInfo) {
+	if s.Names == nil {
+		s.Names = map[uint32]string{}
+	}
+	for _, p := range g.Players {
+		s.Names[p.NetId] = p.Name
+	}
 }

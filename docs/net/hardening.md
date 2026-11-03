@@ -79,7 +79,12 @@ hashes it).
    gone off their empires, sends 0xfe04 {stardate}, opens the game again
    (`Endpoint.SetOpen(true)`: any member may now) and runs
    `Load_Net_Screen_`'s waiting screen: msg 0x20 to each new station
-   without an empire, whose msg 0x21 picks one. Done when every human
+   without an empire, whose msg 0x21 picks one. Where the endpoint knows
+   the account behind a net id (`netUserNames`: the lobby's, from the
+   room's player lists, kept after they leave) the resumer keeps each
+   waiting empire's account, and in the msg 0x20 to a returner of one the
+   other waiting empires show as taken (net id 0x7ffd): he can only pick
+   his own. Over TCP there are no accounts: he picks among them. Done when every human
    empire has a station again, or on START NET GAME and a confirmation
    ("Go on without *X*? The computer will play the empire."), or when
    another machine's START sent 0xfe05. Then the end of `Load_Net_Screen_`
@@ -285,13 +290,20 @@ the fields above: what it prints is the desync.
 - The drop-out tests above (`TestNetSoak`'s drop modes, `netDropRun`) set
   `netResumeState.off`: the lost player becomes an AI at once, as before
   the return existed.
-- `TestNetResume` (in-memory transport and the lobby's, `lobbytest`): two
-  or three humans, a player lost on the second turn on the main screen or
-  as that turn's host while the uploads come in, the creator too (in the
-  lobby). With a returner, a new machine joins and picks the empire; the
-  desync check then compares every machine with it at least twice and
-  never fires. Without one, START NET GAME and Yes: the computer plays the
-  empire everywhere. Every case plays on to the fifth turn.
+- `TestNetResume` (the in-memory transport, the lobby's `lobbytest` and
+  TCP on localhost), 15 cases of two or three humans: a player lost on the
+  main screen of the first or second turn, as a turn's host while the
+  uploads come in, in a tactical lockstep battle; the creator (where the
+  relay is not his); two at once (in the lobby each returner gets his own
+  empire back); the resumer lost too while it waits; the returner lost
+  again two turns later. Returners join on new machines and pick an
+  empire; the desync check then compares every machine with them at least
+  twice and never fires. The empires nobody comes back for go to the
+  computer after START NET GAME and Yes. Every case plays on to the sixth
+  turn.
+- `internal/lobby` `TestStateWaitingGame` (the list and its note, the
+  names kept); the lobby repository's `TestRejoinStarted` (the server's
+  rules).
 
 ## Limits
 

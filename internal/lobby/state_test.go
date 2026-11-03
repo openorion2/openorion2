@@ -29,3 +29,37 @@ func TestStatePrivate(t *testing.T) {
 		t.Fatalf("bob's dialog %+v", d)
 	}
 }
+
+// TestStateWaitingGame: a started game the server lists (open again for a
+// lost player) shows in a former player's list with a note, private or
+// not; a member's own started game does not; its removal takes it off.
+// Names keeps who had each net id of his game after they left.
+func TestStateWaitingGame(t *testing.T) {
+	s := &State{Me: "bob"}
+	g := &lobbyv1.GameInfo{Id: "g1", Description: "long one", State: lobbyv1.GameState_GAME_STATE_STARTED}
+	s.apply(&lobbyv1.Envelope{Msg: &lobbyv1.Envelope_GameUpdate{GameUpdate: &lobbyv1.GameUpdate{Game: g}}})
+	if len(s.Games) != 1 || s.Games[0].Id != "g1" {
+		t.Fatalf("games %v", s.Games)
+	}
+	if n := len(s.Chat); n == 0 || s.Chat[n-1].Text != "Your game waits for you to come back: long one" {
+		t.Fatalf("chat %+v", s.Chat)
+	}
+	s.apply(&lobbyv1.Envelope{Msg: &lobbyv1.Envelope_GameRemoved{GameRemoved: &lobbyv1.GameRemoved{Id: "g1"}}})
+	if len(s.Games) != 0 {
+		t.Fatalf("games after the removal %v", s.Games)
+	}
+
+	m := &State{Me: "alice"}
+	m.joined(&lobbyv1.GameJoined{Game: &lobbyv1.GameInfo{Id: "g2", Players: []*lobbyv1.Player{{Name: "alice", NetId: 1}}}, NetId: 1})
+	mine := &lobbyv1.GameInfo{Id: "g2", State: lobbyv1.GameState_GAME_STATE_STARTED,
+		Players: []*lobbyv1.Player{{Name: "alice", NetId: 1}, {Name: "bob", NetId: 2}}}
+	m.apply(&lobbyv1.Envelope{Msg: &lobbyv1.Envelope_GameUpdate{GameUpdate: &lobbyv1.GameUpdate{Game: mine}}})
+	if len(m.Games) != 0 {
+		t.Fatalf("his own started game listed: %v", m.Games)
+	}
+	left := &lobbyv1.GameInfo{Id: "g2", State: lobbyv1.GameState_GAME_STATE_STARTED, Players: []*lobbyv1.Player{{Name: "alice", NetId: 1}}}
+	m.apply(&lobbyv1.Envelope{Msg: &lobbyv1.Envelope_GameUpdate{GameUpdate: &lobbyv1.GameUpdate{Game: left}}})
+	if m.Names[2] != "bob" || m.Names[1] != "alice" {
+		t.Fatalf("names %v", m.Names)
+	}
+}

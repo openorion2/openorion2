@@ -27,16 +27,23 @@ const (
 // when a player is lost: netResumeScreen runs next.
 type netResume struct{}
 
+// netUserNames is an endpoint that knows the account behind a net id (the
+// lobby's): a lost player then gets his own empire back, no other.
+type netUserNames interface {
+	UserName(id uint16) string
+}
+
 type netResumeState struct {
-	start    []byte   // the state at the start of the turn, as a save
-	active   bool     // netResumeScreen runs
-	from     uint16   // the resumer, once its netCtlResume came
-	goOn     bool     // the resumer: someone pressed START
-	lost     []string // the lost players' names, for the notice
-	resumed  int      // tests: completed resumes
-	off      bool     // tests: a lost player becomes an AI at once, as before
-	checked  int      // tests: desync checks passed against a returner
-	waitHook func()   // tests: the waiting screen runs once more
+	start    []byte    // the state at the start of the turn, as a save
+	owner    [8]string // the resumer: the account of each empire waiting, if known
+	active   bool      // netResumeScreen runs
+	from     uint16    // the resumer, once its netCtlResume came
+	goOn     bool      // the resumer: someone pressed START
+	lost     []string  // the lost players' names, for the notice
+	resumed  int       // tests: completed resumes
+	off      bool      // tests: a lost player becomes an AI at once, as before
+	checked  int       // tests: desync checks passed against a returner
+	waitHook func()    // tests: the waiting screen runs once more
 }
 
 // netResumable runs f; a lost player's netResume panic reports again.
@@ -137,6 +144,11 @@ func (g *Game) netResumeScreen() error {
 	n.resume.active = true
 	n.chat = nil
 	n.notices = nil
+	// What the unwound screens left: a battle's lockstep, the turn's buffers.
+	g.tc, n.tac = nil, netTac{}
+	n.recv, n.resBuf, g.asked = nil, nil, nil
+	n.set16(netChunks, 0)
+	n.set16(netRecvChunks, 0)
 	e.ClearFields()
 	e.DeactivateAutoFunction()
 	g.Log("network game: resuming (%s)", strings.Join(n.resume.lost, ", "))
@@ -187,12 +199,7 @@ func (g *Game) netResumeHost() error {
 		return err
 	}
 	s.PlayerNum = me
-	users := n.ep.Users()
-	for k := 0; k < int(s.NumPlayers); k++ {
-		if id := s.Players[k].NetID; id != -1 && !slices.Contains(users, uint16(id)) {
-			s.Players[k].NetID = -1
-		}
-	}
+	g.netResumeFreeLost()
 	n.ep.Send(netplay.Broadcast, netCtlResume, binary.LittleEndian.AppendUint32(nil, s.Stardate))
 	if err := n.ep.SetOpen(true); err != nil {
 		g.Log("network game: the game cannot take the lost player back: %v", err)
@@ -226,13 +233,10 @@ func (g *Game) netResumeHost() error {
 			panic(netResume{}) // a lower station is back in charge
 		}
 		// A station placed may be lost too: its empire waits as well.
-		users := n.ep.Users()
+		users := g.netResumeFreeLost()
 		placed = 0
 		for k := 0; k < int(s.NumPlayers); k++ {
 			pl := &s.Players[k]
-			if pl.NetID != -1 && !slices.Contains(users, uint16(pl.NetID)) {
-				pl.NetID = -1
-			}
 			if pl.Objective == save.ObjectiveHuman && pl.NetID != -1 {
 				placed++
 			}
@@ -244,7 +248,7 @@ func (g *Game) netResumeHost() error {
 			for i := len(users) - 1; i >= 0; i-- {
 				if g.netIDToPlayerID(int32(users[i])) == -1 {
 					n.set32(netPicking, int32(users[i]))
-					g.sendPickYourPosition(int32(users[i]))
+					g.netResumeAsk(users[i])
 					break
 				}
 			}
@@ -281,6 +285,60 @@ func (g *Game) netResumeHost() error {
 	g.netDisableNewPlayers()
 	return g.netStartLoadedGame()
 }
+
+// netResumeFreeLost takes the net ids of the stations gone off their
+// empires, keeping who played them where the network knows; it returns the
+// stations there.
+func (g *Game) netResumeFreeLost() []uint16 {
+	n, s := &g.net, &g.state
+	users := n.ep.Users()
+	names, _ := n.ep.(netUserNames)
+	for k := 0; k < int(s.NumPlayers); k++ {
+		pl := &s.Players[k]
+		if pl.NetID == -1 || slices.Contains(users, uint16(pl.NetID)) {
+			continue
+		}
+		if names != nil {
+			n.resume.owner[k] = names.UserName(uint16(pl.NetID))
+		}
+		pl.NetID = -1
+	}
+	return users
+}
+
+// netResumeAsk sends msg 0x20 to station id. Where the network knows him
+// as one lost player's account, the other empires waiting show as taken:
+// he can pick his own only.
+func (g *Game) netResumeAsk(id uint16) {
+	n, s := &g.net, &g.state
+	who := ""
+	if names, ok := n.ep.(netUserNames); ok {
+		who = names.UserName(id)
+	}
+	mine := -1
+	for k := 0; k < int(s.NumPlayers); k++ {
+		if who != "" && s.Players[k].NetID == -1 && strings.EqualFold(n.resume.owner[k], who) {
+			mine = k
+		}
+	}
+	var hid []int
+	if mine >= 0 {
+		for k := 0; k < int(s.NumPlayers); k++ {
+			if pl := &s.Players[k]; k != mine && pl.NetID == -1 && pl.Objective == save.ObjectiveHuman {
+				pl.NetID = netResumeTaken
+				hid = append(hid, k)
+			}
+		}
+	}
+	g.sendPickYourPosition(int32(id))
+	for _, k := range hid {
+		s.Players[k].NetID = -1
+	}
+}
+
+// netResumeTaken is the net id msg 0x20 shows on an empire kept for
+// another lost player: no station has it.
+const netResumeTaken = 0x7ffd
 
 // netResumeGoOnBox asks before going on without the lost players.
 func (g *Game) netResumeGoOnBox() (bool, error) {

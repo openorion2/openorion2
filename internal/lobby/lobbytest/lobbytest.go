@@ -256,7 +256,10 @@ func (r *room) ids() []uint32 {
 }
 
 func (r *room) info() *lobbyv1.GameInfo {
-	g := &lobbyv1.GameInfo{Id: r.id, Description: r.description, State: lobbyv1.GameState_GAME_STATE_OPEN}
+	g := &lobbyv1.GameInfo{Id: r.id, Description: r.description, Public: r.public, State: lobbyv1.GameState_GAME_STATE_OPEN}
+	if r.started {
+		g.State = lobbyv1.GameState_GAME_STATE_STARTED
+	}
 	for _, id := range r.ids() {
 		g.Players = append(g.Players, &lobbyv1.Player{Name: r.members[id].user, NetId: id})
 	}
@@ -274,6 +277,13 @@ func (s *Server) add(r *room, l *link) *lobbyv1.Envelope {
 	r.players[l.user] = true
 	l.room, l.netID = r, id
 	s.members(r)
+	// The members hear who joined (the real server's roomChanged).
+	up := &lobbyv1.Envelope{Msg: &lobbyv1.Envelope_GameUpdate{GameUpdate: &lobbyv1.GameUpdate{Game: r.info()}}}
+	for mid, m := range r.members {
+		if mid != id {
+			m.send(up)
+		}
+	}
 	return &lobbyv1.Envelope{Msg: &lobbyv1.Envelope_GameJoined{GameJoined: &lobbyv1.GameJoined{
 		Game: r.info(), NetId: id, Generation: r.gen, Open: r.open, Members: r.ids()}}}
 }
