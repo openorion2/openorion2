@@ -1,6 +1,7 @@
-# What CI can check without the original game's files: the build on every
-# platform (the browser's too), vet, formatting, and the tests that do not
-# need them (those that do skip without game/).
+# What CI can check without the original game's files, on Linux alone: the
+# build for every release platform (cross-compiled) and the browser, vet,
+# formatting, and the tests that do not need them (those that do skip
+# without game/), under -race. Other systems are tested locally.
 # Not for changes of the docs alone (tags always run: GitHub does not apply
 # path filters to them); a newer push cancels the run of an older one.
 name: CI
@@ -18,24 +19,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-      - name: Build
-        run: go build ./...
-      - name: Vet
-        run: go vet ./...
-      - name: Test
-        run: go test ./...
-
   checks:
     runs-on: ubuntu-latest
     steps:
@@ -43,6 +26,8 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      - name: Vet
+        run: go vet ./...
       - name: Formatting
         run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
       - name: The browser build
@@ -54,5 +39,5 @@ jobs:
           done
       - name: The training simulator (tag aitrain)
         run: go vet -tags aitrain ./internal/game ./tools/aitrain
-      - name: Race
+      - name: Tests (race)
         run: go test -race ./...

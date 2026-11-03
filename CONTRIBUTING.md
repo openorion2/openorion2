@@ -61,8 +61,10 @@ gofmt -l .                                        # must print nothing
 
 ### Tests and the original's files
 
-CI (`.github/workflows/ci.yml`) has no `game/`. It builds every platform,
-runs `go vet`, `gofmt`, the tests that need no game files and `-race`. A
+CI (`.github/workflows/ci.yml`) has no `game/` and runs on Linux only. It
+builds every release platform (cross-compiled) and the browser version,
+runs `go vet`, `gofmt` and, under `-race`, the tests that need no game
+files. macOS and Windows are tested locally, with the game's files. A
 test that needs the game's files must skip without them, and skip in the
 test's own goroutine: a `t.Skip` inside `host.Run`'s callback leaves the
 host waiting forever.
