@@ -631,7 +631,7 @@ func (g *Game) archive(name string) (*lbx.Archive, error) {
 	if a, ok := g.lbx[name]; ok {
 		return a, nil
 	}
-	a, err := lbx.Open(filepath.Join(g.dir, name))
+	a, err := lbx.Open(g.findFile(name)) // the case of the name as on disk (Linux)
 	if err != nil {
 		return nil, err
 	}
