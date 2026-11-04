@@ -162,6 +162,15 @@ planet` = 1 and not super fast), screen or not:
   capture reports; scrolling at the edges (`Scroll_Combat_Screen_`).
   Checked against the original by tcb2 and tcb3 ("Oracle").
 
+## Scrolling (port-only pace)
+
+`Scroll_Combat_Screen_` (0x49a41) moves the view while the pointer is
+within 5 pixels of an edge: 1 square a frame, 2 from the third, 3 from the
+fifth, drawing and flipping each step with no wait, so its pace was the
+machine's drawing speed. The port draws a frame in a 60th of a second and
+waits after each step until a timer tick (55 ms, `combatScrollTicks`) has
+passed since it began: about the pace of the DOS machines.
+
 ## Ground battle
 
 `Colony_Combat_Screen_` (0xb7491, COLCBT.C; it first sets

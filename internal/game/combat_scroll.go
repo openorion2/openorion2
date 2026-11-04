@@ -1,8 +1,13 @@
 package game
 
+import "time"
+
 // Scrolling the battlefield at the screen edge (COMBINIT.C
 // Scroll_Combat_Screen_, CMBTDRW1.C Scroll_Draw_Combat_Screen_). Spec:
 // docs/screens/combat-screen.md.
+
+// combatScrollTicks is the port's least time of a scroll step, in ticks.
+const combatScrollTicks = 1
 
 // scrollCombatScreen is Scroll_Combat_Screen_ (0x49a41): while the pointer
 // is within 5 pixels of an edge the view moves, 1, then 2, then 3 squares a
@@ -13,6 +18,7 @@ func (g *Game) scrollCombatScreen() error {
 	sc := tc.scr
 	n := int16(0)
 	for {
+		start := e.Ticks()
 		px, py := e.Pointer()
 		if px >= 5 && px <= 0x27b && py >= 5 && py <= 0x1db {
 			break
@@ -77,6 +83,15 @@ func (g *Game) scrollCombatScreen() error {
 		}
 		if err := e.TogglePages(); err != nil {
 			return err
+		}
+		// port-only: a step a timer tick (55 ms) at most. The original
+		// moves a step a frame, as fast as the machine draws one: DOS
+		// machines took about that, today's draw at 60 frames a second and
+		// the battlefield flew by.
+		for e.Ticks()-start < combatScrollTicks {
+			if err := e.Sys.Sleep(5 * time.Millisecond); err != nil {
+				return err
+			}
 		}
 	}
 	g.assignCombatGrids(tc.cur)
