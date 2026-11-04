@@ -106,3 +106,17 @@ BC, the name and EDX, which `Do_Hire_Officer_` left holding the cost (the
 port had dropped the third value and printed Go's "%!d(MISSING)"). The hire popup's
 officer-screen variant (`Load_New_Officer_Popup_For_Officer_Screen_`) is
 not ported.
+
+## Port-only: the map's stars all take the pointer
+
+`Add_System_Display_Popup_Fields_` (0xa1c74) ends with a hidden field over
+the whole box, box 0's size (347 × 273). The leaders screen draws its
+system display at 0x132, 0x11 without the box and discards that field; a
+field of that size there lies over the map's top part, added before the
+map's stars, so those stars never take the pointer. The port adds no
+whole-box field on this screen (`sd.offscreen`). `TestLeadersMapStars`.
+
+The call reads (y, x)-(y + width, x + height) in the disassembly
+(0xa1fda..0xa1ffd); the port keeps the box's own rectangle, which the
+main screen needs (stars beside the open system box take clicks): the
+swapped one covered them. Not settled against the original.

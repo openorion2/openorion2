@@ -512,6 +512,17 @@ func (g *Game) addSystemDisplayPopupFields(star, x, y, dx, dy int, drag, closeF,
 			return err
 		}
 	}
+	if sd.offscreen {
+		// port-only: no whole-box field on the leaders screen, which drops
+		// it: box 0's size there reaches over the map below the system
+		// display, whose stars then never take the pointer
+		// (docs/screens/leaders-screen.md).
+		*whole = engine.NoField
+		return nil
+	}
+	// The original's call (0xa1fda..0xa1ffd) reads (y, x)-(y+width,
+	// x+height); kept as the port had it, over the box, as the main screen
+	// plays (clicks on other stars beside the box go through).
 	*whole, err = e.AddHiddenField(bx, by, bx+w, by+h, "", 0)
 	return err
 }
