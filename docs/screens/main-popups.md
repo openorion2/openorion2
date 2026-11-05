@@ -241,3 +241,16 @@ the end of the dump. So the bit is clear and the icon is hidden, as in the
 port; `TestTurnDrag2DragonAccepted` checks that no stack holds the Dragon
 and that the map between Meklon and Goi matches the original's capture.
 (Under real DOS with resident drivers above the game the byte could differ.)
+
+## Port-only: the officer popups' pace
+
+`Random_New_Officer_Popup_` (0xc7ada, the hire popup, also over the
+leaders screen) and `Officer_Gains_Level_Popup_` (0xc8209) loop on
+`Get_Input_` and `_TOGGLE_PAGES_` with no `Release_Time_`: a pass as fast
+as the machine drew one. Each pass draws the system display under the
+popup, whose planets turn a frame a draw; on a DOS machine that was about a
+timer tick, here a 60th of a second, and the planets spun three times as
+fast as on the leaders screen (`Officers_Screen_`: `Release_Time_(1)`). The
+port waits for a tick a pass (`paceTicks`), as the discovery, colony and
+defence popups do with their own `Release_Time_(2)`. `TestHirePopupPace`.
+

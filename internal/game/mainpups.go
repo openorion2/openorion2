@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/openorion2/openorion2/internal/engine"
 	"github.com/openorion2/openorion2/internal/font"
@@ -181,6 +182,18 @@ func (g *Game) setRefreshMode(n int) {
 
 // mainpupsTestedExecuteAutofunction is Mainpups_Tested_Execute_Autofunction_
 // (0xc7f84): redraw the screens behind the popup, without touching back.
+// paceTicks waits until n timer ticks (55 ms each) have passed since start
+// (e.Ticks()), without touching Mark_Time's mark (port-only: loops the
+// original ran as fast as a DOS machine drew them, at about that pace).
+func (g *Game) paceTicks(start, n int64) error {
+	for g.e.Ticks()-start < n {
+		if err := g.e.Sys.Sleep(5 * time.Millisecond); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (g *Game) mainpupsTestedExecuteAutofunction() error {
 	mp, m := &g.mp, &g.ms
 	run := func(a engine.AutoFunction) error {
@@ -245,6 +258,7 @@ func (g *Game) officerGainsLevelPopup(loc, l int) error {
 	mp.showing = "level"
 	defer func() { mp.showing = "" }()
 	for {
+		start := e.Ticks()
 		in, err := e.GetInput()
 		if err != nil {
 			return err
@@ -260,6 +274,11 @@ func (g *Game) officerGainsLevelPopup(loc, l int) error {
 		}
 		if in != 0 {
 			break
+		}
+		// port-only: a pass a tick, as the leaders screen under it: the
+		// system display's planets turn a frame a pass.
+		if err := g.paceTicks(start, 1); err != nil {
+			return err
 		}
 	}
 	g.doPopupCleanup()
@@ -646,6 +665,7 @@ func (g *Game) randomNewOfficerPopup(p, l int) (bool, error) {
 	mp.showing = "hire"
 	defer func() { mp.showing = "" }()
 	for {
+		start := e.Ticks()
 		in, err := e.GetInput()
 		if err != nil {
 			return false, err
@@ -708,6 +728,11 @@ func (g *Game) randomNewOfficerPopup(p, l int) (bool, error) {
 			mp.playerN = -1
 			g.doPopupCleanup()
 			return hired, nil
+		}
+		// port-only: a pass a tick, as the leaders screen under it: the
+		// system display's planets turn a frame a pass.
+		if err := g.paceTicks(start, 1); err != nil {
+			return false, err
 		}
 	}
 }

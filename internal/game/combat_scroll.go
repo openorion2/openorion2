@@ -1,7 +1,5 @@
 package game
 
-import "time"
-
 // Scrolling the battlefield at the screen edge (COMBINIT.C
 // Scroll_Combat_Screen_, CMBTDRW1.C Scroll_Draw_Combat_Screen_). Spec:
 // docs/screens/combat-screen.md.
@@ -88,10 +86,8 @@ func (g *Game) scrollCombatScreen() error {
 		// moves a step a frame, as fast as the machine draws one: DOS
 		// machines took about that, today's draw at 60 frames a second and
 		// the battlefield flew by.
-		for e.Ticks()-start < combatScrollTicks {
-			if err := e.Sys.Sleep(5 * time.Millisecond); err != nil {
-				return err
-			}
+		if err := g.paceTicks(start, combatScrollTicks); err != nil {
+			return err
 		}
 	}
 	g.assignCombatGrids(tc.cur)

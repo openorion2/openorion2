@@ -166,3 +166,78 @@ func TestSystemBoxOtherStars(t *testing.T) {
 		t.Fatalf("%d of %d clicks opened their star's box", switched, tried)
 	}
 }
+
+// TestHirePopupPace: the hire popup over the leaders screen draws the
+// system display, whose planets turn a frame a draw, at the leaders
+// screen's pace, a tick a pass (port-only: the original's popup loop has
+// no wait, and the planets spun three times as fast).
+func TestHirePopupPace(t *testing.T) {
+	t.Parallel()
+	dir := scratchGameDir(t, filepath.Join("..", "..", "game"))
+	putRecipeSave(t, "mid", dir, 1)
+	step := 0
+	var t0 int64
+	var f0 int16
+	var screen, popup int
+	err := host.Run(host.Options{Headless: true, Frames: 60 * 120}, func(sys *host.System) error {
+		opt := Options{Load: 1}
+		opt.testHook = func(g *Game) {
+			g.Log = func(string, ...any) {}
+			idle, hire, px, py := 0, -1, 0, 0
+			g.e.InputHook = func() {
+				s := &g.state
+				idle++
+				switch {
+				case step == 0 && !netMainScreenUp(g):
+					if idle%20 == 0 {
+						sys.PushKey(letterKey('\r')) // the turn's reports
+					}
+				case step == 0:
+					// A colony leader offered to the player, who can pay.
+					s.Players[s.PlayerNum].BC = 100000
+					for i := range s.Leaders {
+						if l := &s.Leaders[i]; l.Type == 1 && l.Owner != int8(s.PlayerNum) {
+							l.Owner, l.Status, hire = int8(s.PlayerNum), 4, i
+							break
+						}
+					}
+					step = 1
+				case step == 1 && g.currentScreen != ScreenLeaders:
+					if idle%30 == 0 {
+						sys.PushKey(letterKey('l'))
+					}
+				case step == 1:
+					step, t0, f0 = 2, g.e.Ticks(), g.sd.shipFrame
+				case step == 2 && g.e.Ticks()-t0 >= 18:
+					screen = int(g.sd.shipFrame - f0)
+					for row, id := range g.flt.officerIDs {
+						if int(id) == hire && row < len(g.off.fields.pics) {
+							x1, y1, x2, y2 := g.e.FieldRect(g.off.fields.pics[row])
+							px, py = (x1+x2)/2, (y1+y2)/2
+							sys.WarpMouse(px, py)
+						}
+					}
+					step, idle = 3, 0
+				case step == 3 && idle == 5:
+					sys.Press(px, py, 1) // the pointer is on the portrait
+
+				case step == 3 && g.mp.showing == "hire":
+					step, t0, f0 = 4, g.e.Ticks(), g.sd.shipFrame
+				case step == 4 && g.e.Ticks()-t0 >= 18:
+					popup = int(g.sd.shipFrame - f0)
+					sys.Quit()
+				}
+			}
+		}
+		return Run(sys, dir, opt)
+	})
+	if err != nil && !errors.Is(err, host.ErrQuit) {
+		t.Fatal(err)
+	}
+	if screen == 0 || popup == 0 {
+		t.Fatalf("not measured: leaders screen %d, popup %d draws (step %d)", screen, popup, step)
+	}
+	if popup > screen+2 {
+		t.Errorf("in 18 ticks the popup drew the system display %d times, the leaders screen %d", popup, screen)
+	}
+}
