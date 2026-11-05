@@ -663,7 +663,11 @@ func (g *Game) picture(file string, entry int) (*gfx.Picture, error) {
 	if err != nil {
 		return nil, err
 	}
-	p, err := gfx.Parse(e)
+	// A copy: the picture is the file's again, as Far_Reload reads it from
+	// disk. gfx.Parse keeps the bytes, and a recolouring of the picture (a
+	// battle's ships for the defender) would else change the archive for
+	// every later load of the session.
+	p, err := gfx.Parse(append([]byte(nil), e...))
 	if err != nil {
 		return nil, fmt.Errorf("%s entry %d: %w", file, entry, err)
 	}

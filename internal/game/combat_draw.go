@@ -147,7 +147,7 @@ func (g *Game) combatShipPicture(i int16) (*gfx.Picture, error) {
 			entry = 0x19
 		}
 	}
-	p, err := g.cached(file, entry)
+	p, err := g.picture(file, entry) // a fresh one: recoloured below for this side
 	if err != nil {
 		return nil, err
 	}

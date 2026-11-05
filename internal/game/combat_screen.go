@@ -20,7 +20,7 @@ const (
 	cmbtMislLBX     = 0x178e3f // "cmbtmisl.lbx"
 	cmbtSfxLBX      = 0x178e4c // "cmbtsfx.lbx"
 	cmbtSpherLBX    = 0x178e58 // "sphersfx.lbx"
-	cmbtShipsLBX    = 0x178e65 // "ships.lbx"
+	cmbtShipsLBX    = 0x178e65 // "cmbtshp.lbx": the battle's ship pictures
 	cmbtMonsterLBX  = 0x178e71 // "monster.lbx"
 	cmbtFgtrLBX     = 0x178e7d // "cmbtfgtr.lbx"
 	cmbtPlntLBX     = 0x178e92 // "cmbtplnt.lbx"
