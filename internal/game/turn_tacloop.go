@@ -612,8 +612,10 @@ func (g *Game) deployShips() {
 	P.set8(tsSize, 100)
 	P.set8(tsY, 0x22)
 	var baseSize uint8
+	// community patch 1.51 (0x490fa, 0x49153, 0x49184): bases are the
+	// satellites, not every record without drive.
 	for i := int16(1); i < tc.n; i++ {
-		if t := g.tsp(i); t.u8(tsDrive) == 0 {
+		if t := g.tsp(i); t.satellite() {
 			baseSize = t.u8(tsSize)
 			t.set8(tsSize, 99)
 		}
@@ -631,7 +633,7 @@ func (g *Game) deployShips() {
 	P = g.tsp(0)
 	P.set8(tsSize, 3)
 	for i := int16(1); i < tc.n; i++ {
-		if t := g.tsp(i); t.u8(tsDrive) == 0 {
+		if t := g.tsp(i); t.satellite() {
 			t.set8(tsSize, baseSize)
 		}
 	}
@@ -639,7 +641,7 @@ func (g *Game) deployShips() {
 	var nAtt, nDef uint8
 	for i := int16(1); i < tc.n; i++ {
 		t := g.tsp(i)
-		if t.u8(tsDrive) == 0 {
+		if t.satellite() {
 			if defX < 0x28 {
 				t.set8(tsX, P.u8(tsX)+0xb)
 			} else {
@@ -803,12 +805,16 @@ func (g *Game) calcCurrentSpeed(i int16) int16 {
 	tc := g.tc
 	t := g.tsp(i)
 	v := int32(0)
-	if t.u8(tsDrive) != 0 && !g.shipInBlackHole(i) {
+	if !t.satellite() && !g.shipInBlackHole(i) {
 		sp := int16(t.u8(tsCSpeed))
 		if testBit(t[tsSpecials:tsSpecials+5], 2) && !testBit(t[tsDamaged:tsDamaged+5], 2) {
 			sp = int16(t.u8(tsCSpeed)) + 5
 		}
-		if t.u8(tsOwner) < 10 {
+		if t.u8(tsOwner) < 10 && t.u8(tsDrive) == 0 {
+			// community patch 1.51 (0x45315 -> 0x40149d): a ship without
+			// drive has no drive hits; only trans-dimensional moves it.
+			v = 0
+		} else if t.u8(tsOwner) < 10 {
 			half := int32(t.i16(tsDriveMax)) / 2
 			v = (int32(t.i16(tsDriveCur)) - half) * int32(sp) / (int32(t.i16(tsDriveMax)) - half)
 		} else {
@@ -962,7 +968,7 @@ func (g *Game) repairCombatShip(i, pct int16) {
 		armor = int16(g.shipArmorHits(int(t.i16(tsID))))
 	} else {
 		pctA := int32(g.armorField(int(t.u8(tsArmor)), armorHitsPct))
-		if t.u8(tsDrive) != 0 {
+		if !t.satellite() { // community patch 1.51 (0x358e0): an Antaran ship
 			h := int32(g.hullI16(int(t.u8(tsSize)), hullHits))
 			armor = int16(pctA*h/100) + int16(h)
 		} else {
@@ -1422,7 +1428,8 @@ func (g *Game) doCombatTurn(p, phase int16) {
 		tc.skan, tc.board = 0, 0
 		for i := int16(1); i < tc.n; i++ {
 			t := g.tsp(i)
-			if t.u8(tsDrive) == 0 && t.u8(tsGone) == 0 && !g.shipInStasis(i) {
+			// community patch 1.51 (0x4320b): satellites turn, driveless ships not.
+			if t.satellite() && t.u8(tsGone) == 0 && !g.shipInStasis(i) {
 				g.rotateShip(i, int16((int32(t.u8(tsFacing))+2)%0x10))
 			}
 		}

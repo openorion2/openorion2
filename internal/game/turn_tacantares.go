@@ -88,7 +88,8 @@ func (g *Game) loadCombatAntaranShip(i int16, size int) {
 	copy(t[:a.nameLen], g.exe.bytes(a.name, a.nameLen))
 	t.set8(tsOwner, 8)
 	t.set8(tsBuilder, 8)
-	t.set16(tsID, -1)
+	// community patch 1.51: 0xfeff, no ship and no satellite (1.40: -1).
+	t.set16(tsID, -0x101)
 	t.set8(tsShield, 0)
 	t.set8(tsComputer, 5)
 	t.set8(tsDrive, 5)

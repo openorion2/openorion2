@@ -240,13 +240,19 @@ func (g *Game) loadDisplayCombatShip(v *viewShip, id int) error {
 	if testBit(d.Specials[:], 2) && !testBit(s.DamagedSpecials[:], 2) {
 		v.speed += 5
 	}
-	a := int(v.driveMax) * 2 / 3
-	if int(v.driveMax)-a == 0 {
-		return fmt.Errorf("Load_Display_Combat_Ship_: no drive hits (divide by zero)")
-	}
-	v.speed = int16(int(v.speed) * (int(v.driveCur) - a) / (int(v.driveMax) - a))
-	if v.speed < 0 {
+	// community patch 1.51 (0x4cf77 -> 0x400b79): no drive, no speed but
+	// trans-dimensional's; else half the drive hits as in combat (1.40: 2/3).
+	if v.drive == 0 {
 		v.speed = 0
+	} else {
+		a := int(v.driveMax) / 2
+		if int(v.driveMax)-a == 0 {
+			return fmt.Errorf("Load_Display_Combat_Ship_: no drive hits (divide by zero)")
+		}
+		v.speed = int16(int(v.speed) * (int(v.driveCur) - a) / (int(v.driveMax) - a))
+		if v.speed < 0 {
+			v.speed = 0
+		}
 	}
 	if v.owner < 8 && g.state.Players[v.owner].Picks[save.PickTransDimensional] != 0 {
 		v.speed += 4

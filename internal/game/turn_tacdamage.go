@@ -386,10 +386,15 @@ func (g *Game) unloadCombatShip(i int16) {
 	s := &g.state
 	T := g.tsp(i)
 	id := T.i16(tsID)
-	if id == -1 {
+	if id <= -1 { // community patch 1.51: Antaran ships are -0x101
 		return
 	}
-	for T.i16(tsSpeed) <= 0 {
+	if s.Ships[id].Design.CombatSpeed == 0 {
+		// community patch 1.51 (0x402b55): a ship that cannot move never
+		// gains speed by drive hits; 1.40 looped here for ever.
+		T.set16(tsDriveCur, T.i16(tsDriveMax))
+	}
+	for s.Ships[id].Design.CombatSpeed != 0 && T.i16(tsSpeed) <= 0 {
 		T.add16(tsDriveCur, 1)
 		T.set16(tsSpeed, g.calcCurrentSpeed(i))
 	}
@@ -430,7 +435,9 @@ func (g *Game) endOfCombat(star, popLost, result int16) {
 	for i := int16(1); i < tc.n; i++ {
 		g.initSpecialDevices(i)
 		T := g.tsp(i)
-		if T.u8(tsDrive) == 0 && (T.u8(tsGone) == 5 || int16(T.u8(tsOwner)) != tc.def) {
+		// community patch 1.51 (0x4b1eb): a satellite, not any record without
+		// drive (a driveless ship at a star without colony took Colonies[-1]).
+		if T.satellite() && (T.u8(tsGone) == 5 || int16(T.u8(tsOwner)) != tc.def) {
 			if star != s.NumStars {
 				b := &s.Colonies[tc.colony].Buildings
 				switch {
@@ -454,7 +461,8 @@ func (g *Game) endOfCombat(star, popLost, result int16) {
 				defLost += int32(T.u8(tsSize)) + 1
 				defLostMask += 1 << (uint(T.u8(tsSize)+1) & 0x1f)
 			}
-			if T.i16(tsID) != -1 {
+			// community patch 1.51: ids below -1 (Antaran ships) are no ships.
+			if T.i16(tsID) > -1 {
 				if o := T.i16(tsOfficer); o > -1 {
 					switch {
 					case s.Leaders[o].ETA >= 1:
@@ -483,7 +491,7 @@ func (g *Game) endOfCombat(star, popLost, result int16) {
 				T[tsDamaged+k] = 0
 			}
 			T.set16(tsStructDmg, 0)
-			if T.i16(tsID) != -1 {
+			if T.i16(tsID) > -1 {
 				T.set16(tsArmorHits, int16(g.shipArmorHits(int(T.i16(tsID)))))
 			}
 		}
@@ -533,7 +541,7 @@ func (g *Game) endOfCombat(star, popLost, result int16) {
 				continue
 			}
 			id := T.i16(tsID)
-			if id == -1 || int16(s.Leaders[o].Owner) != int16(T.u8(tsOwner)) {
+			if id <= -1 || int16(s.Leaders[o].Owner) != int16(T.u8(tsOwner)) {
 				continue
 			}
 			if s.Ships[id].Officer == -1 {
@@ -561,7 +569,7 @@ func (g *Game) endOfCombat(star, popLost, result int16) {
 		switch {
 		case star == s.NumStars && T.u8(tsOwner) == 8 && T.u8(tsGone) == 5 && T.u8(tsDrive) != 0:
 			s.killAntaranDefensiveShip(int(T.u8(tsSize)))
-		case T.u8(tsGone) == 5 && T.i16(tsID) != -1 && T.u8(0x4b) != 2:
+		case T.u8(tsGone) == 5 && T.i16(tsID) > -1 && T.u8(0x4b) != 2:
 			if T.u8(tsOwner) == 8 {
 				s.killAntaranOffensiveShip(int(T.u8(tsSize)))
 			}
@@ -569,7 +577,7 @@ func (g *Game) endOfCombat(star, popLost, result int16) {
 				g.moveOfficerToPool(int(s.Ships[T.i16(tsID)].Officer))
 			}
 			g.killShip(int(T.i16(tsID)))
-		case int16(T.u8(tsOwner)) == winner && T.i16(tsID) != -1:
+		case int16(T.u8(tsOwner)) == winner && T.i16(tsID) > -1:
 			s.Ships[T.i16(tsID)].Experience += xp()
 		}
 	}

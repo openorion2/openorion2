@@ -82,6 +82,10 @@ func (t *tship) set16(o int, v int16) { binary.LittleEndian.PutUint16(t[o:], uin
 func (t *tship) add16(o int, v int16) { t.set16(o, t.i16(o)+v) }
 func tw(k int, f int) int             { return tsWeapons + 0xb*k + f }
 
+// satellite: a star base, battle station, star fortress or the planet. community
+// patch 1.51 tells them by ship id -1 (high byte 0xff), not by drive 0 as 1.40 did.
+func (t *tship) satellite() bool { return t.u8(tsID+1) == 0xff }
+
 // tmissile is one 0x1a-byte missile record (0x192b14, 300 of them).
 type tmissile [0x1a]byte
 
@@ -672,7 +676,7 @@ func (g *Game) fleetOffensiveBonus(p int16) int16 {
 		if int16(t.u8(tsOwner)) != p || t.u8(tsBoarded) != 0 || t.u8(tsGone) != 0 {
 			continue
 		}
-		if t.u8(tsDrive) == 0 {
+		if t.satellite() { // community patch 1.51 (0x362de)
 			switch t.u8(tsSize) {
 			case 2:
 				cmd = 0
@@ -718,7 +722,7 @@ func (g *Game) defensiveCombatBonus(i, kind int16) int16 {
 	} else {
 		fleet -= fleetSp
 	}
-	if t.u8(tsDrive) > 0 && t.u8(tsOwner) < 8 {
+	if !t.satellite() && t.u8(tsOwner) < 8 { // community patch 1.51 (0x35dd2)
 		race = int16(g.state.Players[t.u8(tsOwner)].Picks[save.PickShipDefense])
 	}
 	return speed + crew + spec + fleet + race

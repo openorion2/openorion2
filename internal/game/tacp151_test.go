@@ -2,6 +2,9 @@ package game
 
 import (
 	"testing"
+
+	"github.com/openorion2/openorion2/internal/gfx"
+	"github.com/openorion2/openorion2/internal/save"
 )
 
 // tacGame is recipe "start" with an empty combat engine: record 1 is
@@ -18,6 +21,10 @@ func tacGame(t *testing.T) *Game {
 		T := g.tsp(i)
 		T.set8(tsOwner, uint8(i-1))
 		T.set16(tsID, i)
+		T.set16(tsOfficer, -1)
+		T.set8(0x42, 0xff) // no tractor
+		T.set8(tsStasis, 0xff)
+		T.set8(0x137, 0xff) // no black hole
 	}
 	return g
 }
@@ -95,5 +102,71 @@ func TestMissileTargetByMissileOwner(t *testing.T) {
 	g.tsp(2).set8(tsOwner, 0)
 	if m := g.getCurrentMissileTarget(1, &v); m != 0 {
 		t.Errorf("player 0 targets %d (value %d), want player 1's missile 0", m, v)
+	}
+}
+
+// driveless makes record 1 player 0's ship without drive.
+func driveless(g *Game, td bool) {
+	t := g.tsp(1)
+	t.set8(tsDrive, 0)
+	t.set8(tsCSpeed, 3)
+	g.state.Players[0].Picks[save.PickTransDimensional] = int8(b2i(td))
+}
+
+// TestDrivelessShipSpeed: a ship without drive is no satellite; only
+// trans-dimensional moves it (community patch 1.51).
+func TestDrivelessShipSpeed(t *testing.T) {
+	t.Parallel()
+	g := tacGame(t)
+	driveless(g, true)
+	if v := g.calcCurrentSpeed(1); v != 4 {
+		t.Errorf("trans-dimensional ship without drive: speed %d, want 4", v)
+	}
+	driveless(g, false)
+	if v := g.calcCurrentSpeed(1); v != 0 {
+		t.Errorf("ship without drive: speed %d, want 0", v)
+	}
+	// A satellite stays still, trans-dimensional or not.
+	g.tsp(1).set16(tsID, -1)
+	g.state.Players[0].Picks[save.PickTransDimensional] = 1
+	if v := g.calcCurrentSpeed(1); v != 0 {
+		t.Errorf("satellite: speed %d, want 0", v)
+	}
+}
+
+// TestDrivelessShipBattle: player 1's trans-dimensional frigates without
+// drive defend at a star without colony (1.40: Colonies[-1], or a hang).
+func TestDrivelessShipBattle(t *testing.T) {
+	t.Parallel()
+	g := techGame(t, "start")
+	g.cache = map[cacheKey]*gfx.Picture{}
+	s := &g.state
+	// Recipe "start": ships 0, 1 are player 0's frigates at star 1, 3, 4
+	// player 1's; turn 0 has not set their combat speed yet.
+	att, def := []int16{0, 1}, []int16{3, 4}
+	star := s.Ships[0].Location
+	for _, id := range att {
+		s.Ships[id].Design.CombatSpeed = 4
+	}
+	for _, id := range def {
+		h := &s.Ships[id]
+		h.Location = star
+		h.Design.Drive = 0
+		h.Design.CombatSpeed = 0
+	}
+	s.Players[1].Picks[save.PickTransDimensional] = 1
+	// The recipe's seed decides the battle: the defenders win.
+	if r := g.tacticalCombat(att, def, star, -1, false); r != -1 {
+		t.Errorf("result %d, want -1", r)
+	}
+	for i := int16(1); i < g.tc.n; i++ {
+		if T := g.tsp(i); T.u8(tsOwner) == 1 && (T.u8(tsGone) != 0 || T.i16(tsSpeed) != 4) {
+			t.Errorf("record %d (ship %d): gone %d, speed %d; want 0 and 4", i, T.i16(tsID), T.u8(tsGone), T.i16(tsSpeed))
+		}
+	}
+	// The ship view shows its trans-dimensional speed.
+	var v viewShip
+	if err := g.loadDisplayCombatShip(&v, 3); err != nil || v.speed != 4 {
+		t.Errorf("ship view: speed %d, %v; want 4", v.speed, err)
 	}
 }

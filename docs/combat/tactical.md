@@ -564,3 +564,26 @@ Fixes of 1.51 the port carries (addresses in the linked 1.51 image,
   `Missile_Owner_` (0x2b022 calls 0x4010fd), not by the owner of the ship
   that launched it (`getCurrentMissileTarget`): after a capture the AI
   aimed at its own missiles and left the enemy's alone.
+- Ships without drive. 1.40 took every record with drive 0 (+0x31) for a
+  satellite, and a trans-dimensional race may fly ships without drive
+  (`bestWarpDrive` 0): they were deployed by the planet, could not move,
+  and `End_Of_Combat_` read the colony -1 or `Unload_Combat_Ship_` looped
+  for ever. 1.51 tests the high byte of the ship id (+0x1f == 0xff, id -1)
+  in 11 of the 21 places (`tship.satellite`): `Calc_Current_Speed_`
+  0x452a8, `Defensive_Combat_Bonus_` 0x35dd2, `Deploy_Ships_` 0x490fa,
+  0x49153, 0x49184, `Do_Combat_Turn_` 0x4320b (satellites turn) and
+  0x4430e (flee refused), `Draw_Grey_Damage_Bars_` 0x2cdbf, `End_Of_Combat_`
+  0x4b1eb, `Fleet_Offensive_Bonus_` 0x362de, `Repair_Combat_Ship_` 0x358e0.
+  The others (`Fleet_Defensive_Bonus_`, the AI's retreat and self-destruct,
+  `Is_Combat_Ship_Dead_`, `Load_Combat_Ship_`, `Init_Internal_Space_`,
+  `Draw_Internals_Display_`, the second of `End_Of_Combat_`) keep drive 0.
+  With it: Antaran ships get id 0xfeff (-0x101) instead of -1 (the five
+  `Load_*_Antaran_Combat_Ship_`), and `End_Of_Combat_` (0x4b340, 0x4b488,
+  0x4b6c1, 0x4b872, 0x4b8f5) and `Unload_Combat_Ship_` (0x4ba02) skip ids
+  below 0, not -1 only. `Calc_Current_Speed_` gives a driveless ship of
+  owner 0..9 speed 0 before the trans-dimensional +4 (0x45315 -> 0x40149d);
+  `Unload_Combat_Ship_` restores the drive hits of a design with combat speed
+  0 instead of raising them until it moves (0x4ba0e -> 0x402b55); the ship
+  view (`Load_Display_Combat_Ship_`, 0x4cf77 -> 0x400b79) shows speed 0 (+4)
+  without drive, and otherwise reckons damage from half the drive hits as
+  combat does, not two thirds.
