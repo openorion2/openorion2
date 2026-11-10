@@ -141,7 +141,7 @@ func (g *Game) updateAutomaticDesignEquipment(p int) {
 		d := &pl.Designs[slot]
 		d.Armor = uint8(armor)
 		g.refitDrive(p, d, drive)
-		d.Cost = int16(g.costOfDesign(p, d))
+		d.Cost = int16(g.ownerCostOfDesign(p, d)) // community patch 1.51 (0x573a1)
 	}
 }
 
@@ -289,6 +289,16 @@ func (g *Game) weaponCost(w, count int16, arcs, ammo uint8, mods int16) int16 {
 	v := (arc + 100 + int32(reg)) * base / 100 * int32(count)
 	app := int(g.exeI16(rowAddr(weaponTable, weaponStride, int(w), weaponApp)))
 	return costGivenMLevel(int16(v), g.techLevel(int(g.state.PlayerNum), app))
+}
+
+// ownerCostOfDesign is the community patch 1.51 wrapper 0x4001b0: PLAYER_NUM
+// is p around Cost_Of_Design_ (1.40b23 costed the AI's designs as the human's).
+func (g *Game) ownerCostOfDesign(p int, d *save.Design) int32 {
+	s := &g.state
+	saved := s.PlayerNum
+	s.PlayerNum = int16(p)
+	defer func() { s.PlayerNum = saved }()
+	return g.costOfDesign(p, d)
 }
 
 // costOfDesign is Cost_Of_Design_ (0x6b577) with Design_Template_Costs_ and
