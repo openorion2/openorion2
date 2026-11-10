@@ -1,6 +1,8 @@
 package game
 
 import (
+	"fmt"
+
 	"github.com/openorion2/openorion2/internal/font"
 	"github.com/openorion2/openorion2/internal/gfx"
 	"github.com/openorion2/openorion2/internal/save"
@@ -592,12 +594,19 @@ func (g *Game) drawColonyPCBar(x, y int, cost, prod int16) error {
 	return nil
 }
 
-// drawTurnCount is Draw_Turn_Count_ (0xbdcd8).
+// drawTurnCount is Draw_Turn_Count_ (0xbdcd8). Community patch 1.51 (0x40e5de):
+// the turns go left at 531 and stored (with bought) / cost right at 625.
 func (g *Game) drawTurnCount() error {
 	n := g.calculateCurrentProductionTurnCount(g.colonyHandle)
 	t := g.e.Text()
 	t.SetStyleShadow(0, g.colors(colorsFont), font.ShadowDown)
-	return t.PrintRight(0x270, 0x67, cSprintf(g.eStr(0x20), int(n)))
+	if err := t.Print(0x213, 0x67, cSprintf(g.eStr(0x20), int(n))); err != nil {
+		return err
+	}
+	c := &g.state.Colonies[g.colonyHandle]
+	cost := uint16(g.colonyProductCost(c, c.Queue[0]))
+	stored := int(uint16(c.Production)) + int(uint16(c.Pending))
+	return t.PrintRight(0x271, 0x67, fmt.Sprintf("%d / %d", stored, cost))
 }
 
 // printScannedString is Print_Scanned_String_ (0xbd727): a dark strip and

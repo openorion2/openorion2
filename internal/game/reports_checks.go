@@ -18,7 +18,8 @@ const (
 	reportGNN        = 7
 )
 
-// reportCheck names the checks whose show side may be unported; see skipped.
+// reportCheck names the checks (those whose show side may be unported: see
+// skipped).
 type reportCheck int
 
 const (
@@ -33,6 +34,9 @@ const (
 	checkSummary
 	checkColonyQueue
 	checkOccupation
+	checkHire
+	checkOfficerLevel
+	checkDiplomacy
 	numReportChecks
 )
 
@@ -42,6 +46,8 @@ type reportState struct {
 	// over this stardate, so that their query does not loop forever.
 	skipped      [numReportChecks]bool
 	skippedStamp uint32
+	// last is the check that answered displayReportAux's last call.
+	last reportCheck
 }
 
 // skipUnported logs an unported show path and silences its check until the
@@ -83,13 +89,21 @@ func (g *Game) displayReportAux(p int, show bool) (int, error) {
 		}
 	}
 	if r == reportNone {
-		for _, check := range []func(int, bool) (int, error){
-			g.setInitialTech, g.hasResearchBreakthrough, g.hasEvolutionaryUpgrade,
-			g.hasOfficerForHire, g.colonization, g.exploredNewStar,
-			g.officerMadeLevelReport, g.hasReport, g.hasDiplomacyMessages,
-			g.hasMsg, g.emptyColonyQueue, g.needToSetOccupationPolicy,
+		// Community patch 1.51's order: reports (a stolen tech) before the tech
+		// pick, exploration before colonization, the hire offer after both.
+		for _, c := range []struct {
+			id reportCheck
+			f  func(int, bool) (int, error)
+		}{
+			{checkInitialTech, g.setInitialTech}, {checkStolenTech, g.hasReport},
+			{checkBreakthrough, g.hasResearchBreakthrough}, {checkEvolution, g.hasEvolutionaryUpgrade},
+			{checkExplored, g.exploredNewStar}, {checkColonization, g.colonization},
+			{checkHire, g.hasOfficerForHire}, {checkOfficerLevel, g.officerMadeLevelReport},
+			{checkDiplomacy, g.hasDiplomacyMessages}, {checkSummary, g.hasMsg},
+			{checkColonyQueue, g.emptyColonyQueue}, {checkOccupation, g.needToSetOccupationPolicy},
 		} {
-			if r, err = check(p, show); err != nil || r != reportNone {
+			if r, err = c.f(p, show); err != nil || r != reportNone {
+				g.rep.last = c.id
 				break
 			}
 		}

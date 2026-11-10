@@ -55,6 +55,16 @@ production bar, turns), troops (marines, armour), the governor, the system
 display (planets, summaries, the cycling marker at the colony's orbit) or
 planet text, satellites, buildings, the scanned item's name at the bottom.
 
+Community patch 1.51: `Draw_Turn_Count_` (0xbdcd8) calls the patch's
+0x40e5de after `Set_Font_Style_Shadow_Down_(0)`. Instead of E 0x20
+("%d turn(s)") right-aligned at (0x270, 0x67) it prints two templates in
+font style 0: the turns (format `prod`, "$TURNS$ turns") left at (531,
+103), and `prod2`, "$TOTAL_PROD$ / $PRODUCT_COST$", right at (625, 103):
+colony +0x125 (stored) plus +0x12c (bought this turn), each as u16, over
+`Colony_Product_Cost_` of queue[0] as u16. The port prints E 0x20 for the
+turns (the patch's "turns" is its own English word). Every product shows
+it, trade goods and housing too ("N / 0"). Test: `TestColonyStoredProd`.
+
 ## Input (Evaluate_Screen_Input_ 0xbfdee and the Check_* routines)
 
 - RETURN / Esc leave; L or the governor go to the leaders screen (0x1d);
