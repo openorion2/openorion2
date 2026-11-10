@@ -560,3 +560,7 @@ Fixes of 1.51 the port carries (addresses in the linked 1.51 image,
   (0x28cd9), `Target_Missile_Value_` (0x29fc7) and `Apply_Damage_To_Missile_`
   (0x3a0f4) pass the missile's owner (+2) instead of its ship's current one,
   which the crystal's `Crystal_Control_` may have changed since the launch.
+- Missile targets. `Get_Current_Missile_Target_` tells friend from foe by
+  `Missile_Owner_` (0x2b022 calls 0x4010fd), not by the owner of the ship
+  that launched it (`getCurrentMissileTarget`): after a capture the AI
+  aimed at its own missiles and left the enemy's alone.

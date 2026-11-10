@@ -53,3 +53,47 @@ func TestMissileOfCapturedShip(t *testing.T) {
 		t.Errorf("target missile value %d, want -10000", v)
 	}
 }
+
+// TestMissileTargetByMissileOwner: a ship's missiles count as its owner's
+// after the ship is captured (community patch 1.51).
+func TestMissileTargetByMissileOwner(t *testing.T) {
+	t.Parallel()
+	g := tacGame(t)
+	beam := int16(-1)
+	for w := int16(1); w < 0x40 && beam < 0; w++ {
+		if g.wpnU8(int(w), weaponType) == 0 && g.wpnI16(int(w), weaponMaxDmg) > 0 {
+			beam = w
+		}
+	}
+	A := g.tsp(1)
+	A.set8(tsX, 5)
+	A.set8(tsY, 5)
+	for k := 0; k < 8; k++ {
+		A.set16(tw(k, twWeapon), beam)
+		A.set8(tw(k, twCount), 200)
+		A.set8(tw(k, twLeft), 200)
+		A.set8(tw(k, twArc), 0xf)
+		A.set8(tw(k, twOn), 1)
+		A.set16(tw(k, twAmmo), -1)
+	}
+	// Record 2 launched the missile for player 0, then player 1 took it.
+	M := g.msl(0)
+	M.set16(tmWeapon, 0xe)
+	M.set16(tmOwner, 0)
+	M.set16(tmShip, 2)
+	M.set16(tmCount, 2)
+	M.set16(tmTarget, 1)
+	M.set16(tmX, 7*0x14)
+	M.set16(tmY, 5*0x14)
+	g.tsp(2).set8(tsOwner, 1)
+	var v int32
+	if m := g.getCurrentMissileTarget(1, &v); m != -1 {
+		t.Errorf("player 0 targets its own missile %d (value %d)", m, v)
+	}
+	// Player 1's ship launched it for player 1 and was taken by player 0.
+	M.set16(tmOwner, 1)
+	g.tsp(2).set8(tsOwner, 0)
+	if m := g.getCurrentMissileTarget(1, &v); m != 0 {
+		t.Errorf("player 0 targets %d (value %d), want player 1's missile 0", m, v)
+	}
+}

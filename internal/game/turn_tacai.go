@@ -659,7 +659,9 @@ func (g *Game) getCurrentMissileTarget(a int16, value *int32) int16 {
 	A.set8(0x3f, 0)
 	for m := int16(0); m < nMissiles; m++ {
 		M := g.msl(m)
-		if M.i16(tmWeapon) <= 0 || M.i16(tmCount) <= 0 || g.tsp(M.i16(tmShip)).u8(tsOwner) == A.u8(tsOwner) {
+		// community patch 1.51 (0x4010fd): friend or foe by Missile_Owner_,
+		// not by the launching ship's owner, which a capture may change.
+		if M.i16(tmWeapon) <= 0 || M.i16(tmCount) <= 0 || uint8(M.i16(tmOwner)) == A.u8(tsOwner) {
 			continue
 		}
 		if !g.willMissileDoDamage(a, m) {
