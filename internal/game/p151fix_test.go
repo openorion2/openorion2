@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/openorion2/openorion2/internal/host"
+	"github.com/openorion2/openorion2/internal/save"
 )
 
 // TestPopupFrameAfterShipViews: two ship views from the fleet screen leave
@@ -162,5 +163,43 @@ func TestBlockadedStaleFood(t *testing.T) {
 		if j := c.Colonists[i] & colJobMask; j == 0 {
 			t.Errorf("colonist %d farms", i)
 		}
+	}
+}
+
+// TestDesignCostOwnersGovernment: an AI's designs and refits cost by its
+// own government, not the human's ("feudal bug").
+func TestDesignCostOwnersGovernment(t *testing.T) {
+	t.Parallel()
+	g := techGame(t, "mid")
+	s := &g.state
+	me := int(s.PlayerNum)
+	ci := -1
+	for i := 0; i < int(s.NumColonies); i++ {
+		if c := &s.Colonies[i]; int(c.Owner) != me && c.Owner >= 0 && c.IsOutpost == 0 {
+			ci = i
+			break
+		}
+	}
+	if ci == -1 {
+		t.Fatal("no AI colony")
+	}
+	p := int(s.Colonies[ci].Owner)
+	s.Players[me].Picks[save.PickGovernment] = 2
+	cost := func(gov int8) (int16, int16) {
+		s.Players[p].Picks[save.PickGovernment] = gov
+		g.updateAutomaticDesignEquipment(p)
+		k := len(s.Ships) - 1
+		s.Ships[k] = save.Ship{Owner: int8(p), Status: 4, Design: s.Players[p].Designs[0]}
+		s.Colonies[ci].Queue[0] = int16(-(k + 100))
+		g.completeShip(ci)
+		return s.Players[p].Designs[0].Cost, s.Ships[k].Design.Cost
+	}
+	fd, fr := cost(0)
+	dd, dr := cost(2)
+	if int(s.PlayerNum) != me {
+		t.Fatalf("PLAYER_NUM is now %d", s.PlayerNum)
+	}
+	if want := int16((int32(dd)*2 + 2) / 3); fd != want || fr != want || dr != dd {
+		t.Errorf("feudal design %d refit %d, dictatorship %d refit %d; want feudal %d", fd, fr, dd, dr, want)
 	}
 }

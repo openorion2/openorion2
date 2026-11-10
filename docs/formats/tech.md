@@ -145,6 +145,16 @@ miniaturised. On the saves, 43 of 48 human designs match the saved cost;
 the five others are SAVE5's design made this turn on the design screen
 (which costs the shield) and SAVE7's four stale costs (above).
 
+Community patch 1.51 (the "feudal bug"): wrapper 0x4001b0 sets
+`_PLAYER_NUM` to the design's owner (EAX) around `Cost_Of_Design_` at
+three calls: `Update_Automatic_Design_Equipment_` (0x573a1),
+`Auto_Design_Ship_` (0x61b36) and `Apply_Production_`'s finished refit
+(0xe3aec). There an AI's design and refit cost come from its own
+government and miniaturisation, not the human's (1.40b23 made a feudal
+human's rivals' ships a third cheaper, and a feudal AI's no cheaper).
+`Add_Refited_Ship_To_Queue_` (0xb2290, 0xb22c5) still calls it directly:
+the build screen's refit belongs to the player viewing it.
+
 ## Colony calculations
 
 `Do_Player_Colony_Calculations_` (0xe2d72): `Pre_Import_Computing_` for the

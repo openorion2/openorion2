@@ -629,7 +629,7 @@ func (g *Game) completeShip(ci int) {
 	switch sh.Status {
 	case 4:
 		sh.Status = 0
-		sh.Design.Cost = int16(g.costOfDesign(int(c.Owner), &sh.Design))
+		sh.Design.Cost = int16(g.ownerCostOfDesign(int(c.Owner), &sh.Design)) // community patch 1.51 (0xe3aec)
 		c.Queue[0] = -1
 	case 6:
 		sh.Status = 0

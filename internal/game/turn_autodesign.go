@@ -481,7 +481,7 @@ func (g *Game) autoDesignShip(p int, d *save.Design, size int16, forced bool) {
 	}
 	d.CombatSpeed = g.exeU8(rowAddr(driveTable, driveStride, int(d.Drive), driveCombat) + uint32(d.Size))
 	d.Builder = uint8(p)
-	d.Cost = int16(g.costOfDesign(p, d))
+	d.Cost = int16(g.ownerCostOfDesign(p, d)) // community patch 1.51 (0x61b36)
 	d.BuildDate = uint16(s.Stardate)
 }
 
