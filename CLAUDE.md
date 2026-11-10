@@ -19,6 +19,9 @@ are not part of this repository.
   (`docs/p151/`: what it changes and each item's fate) and are marked
   `community patch 1.51` in comments. Where 1.51 changes a rule, its rule
   replaces 1.40's; the game is one game, not two rulesets.
+- Every change a player can notice gets its chapter in the player's
+  manual, `docs/manual/` (from 1.40b23, with examples, and how it differs
+  from 1.51), in the same change as the code.
 - The game reads the original's LBX archives at run time (`game/`); the
   constant tables and short strings the original keeps in `ORION2.EXE` are
   built in (`internal/game/exedata.bin`, `docs/formats/exedata.md`; a read

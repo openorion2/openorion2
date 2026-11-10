@@ -14,6 +14,8 @@ at moo2mod.com/manual/MANUAL_150.html), `PARAMETERS.CFG`, `config.json`
   or not at all.
 - Each item's fate (undecided, port, skip, ported) is tracked per
   changelog line in `items.md` and decided item by item.
+- What players see changed is written up for them in `docs/manual/`,
+  modelled on the 1.51 manual; each chapter says how we differ from 1.51.
 
 ## What "1.51" means here
 
