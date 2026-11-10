@@ -263,14 +263,10 @@ func (g *Game) doNextTurnAt(auto bool) error {
 	return nil
 }
 
-// doAutosave is Do_Autosave_ (0x13822): every 4th stardate (network: every
-// one) when the option is on.
+// doAutosave is Do_Autosave_ (0x13822): every stardate when the option is
+// on; community patch 1.51 (0x13826 mov al, 1): local games too, not every 4th.
 func (g *Game) doAutosave() error {
-	every := uint32(4)
-	if g.gameType == 2 || g.gameType == 3 {
-		every = 1
-	}
-	if g.settings[0xb] == 0 || g.state.Stardate%every != 0 {
+	if g.settings[0xb] == 0 {
 		return nil
 	}
 	copy(g.state.Descriptions[9][:12], g.exe.bytes(autosaveDescription, 12))

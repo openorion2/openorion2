@@ -2,6 +2,8 @@ package game
 
 import (
 	"bytes"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/openorion2/openorion2/internal/save"
@@ -126,5 +128,40 @@ func TestEnemyMovesLines(t *testing.T) {
 	}
 	if n == 0 {
 		t.Error("no line for the enemy fleet with Enemy Moves on")
+	}
+}
+
+// TestAutosaveEveryTurn: a local game with Auto Save on writes SAVE10.GAM on
+// every stardate, as network games do (community patch 1.51; 1.40b23: every 4th).
+func TestAutosaveEveryTurn(t *testing.T) {
+	t.Parallel()
+	g := techGame(t, "start")
+	g.dir = t.TempDir() // never game/
+	g.gameType = save.GameSingle
+	name := filepath.Join(g.dir, "SAVE10.GAM")
+	base := g.state.Stardate
+	for k := uint32(0); k < 4; k++ {
+		g.state.Stardate = base + k
+		for _, on := range []uint8{0, 1} {
+			os.Remove(name)
+			g.settings[0xb] = on
+			if err := g.doAutosave(); err != nil {
+				t.Fatal(err)
+			}
+			b, err := os.ReadFile(name)
+			if on == 0 {
+				if err == nil {
+					t.Fatalf("stardate %d: autosave with the option off", g.state.Stardate)
+				}
+				continue
+			}
+			if err != nil {
+				t.Fatalf("stardate %d: no autosave: %v", g.state.Stardate, err)
+			}
+			f, err := save.Parse(b)
+			if err != nil || f.U32(save.BStardate) != g.state.Stardate {
+				t.Fatalf("stardate %d: autosave %v", g.state.Stardate, err)
+			}
+		}
 	}
 }

@@ -51,7 +51,7 @@ Known blind spots of a symbol-based call graph, found while mapping:
 ```
 Main_Screen_  TURN → Assert_Settings_ (empty) → Do_Next_Turn_ → screen 0xc
 Screen_Control_ 0xc → Next_Turn_
-    Do_Autosave_ (stardate % 4 == 0 and autosave on)
+    Do_Autosave_ (autosave on; 1.40b23 only when stardate % 4 == 0)
     Confirm_Planet_And_Star_Index_Link_ (debug check)
     Next_Turn_Calc_                       ; 50 steps, phases B..F interleaved;
         an empty auto function (0xfe8d4) for game types 0/1 during the
@@ -111,7 +111,7 @@ player 2 → 1) is a surrender flagged on the previous turn
 | `Do_Next_Turn_(&leave, auto)` | 0x83411 | MAINSCR.C | clears `_at_least_one_report`, `_previous_report`, `_just_moved_stack`, `__animated_star = -1`; `_warn_about_cheaters = 1<<PLAYER_NUM`; picks the next screen; `_mainscr_palette = 0x65`, `_ship_icon_player_id = -1`; `Clear_System_Display_Loaded_Flag_`; manual press: `_in_auto_next_turn_mode = 0`, `Clear_Fields`, `Clear_Main_Screen_Fields_`, and when settings+1 (end-of-turn wait) is 0 a full-screen hidden exit field (`__global_exit_field`); auto press (from `Do_Begin_Of_Turn_`): `_in_auto_next_turn_mode = 1`, `Increment_Mouse_Clock_Image_`, `Get_Input` → `_auto_turn_exit`, a click aborts (screen 0, fields cleared); `*leave = 1` | hotseat: player+0x2d (turn done) of `PLAYER_NUM` = 1 | - | no | 68 |
 | └ next screen | | | game_type 1 (hotseat): `Save_Hotseat_Map_Info_`, screen 0x11 (picker; it sends screen 0xc once every human is done); 2/3 (network): screen 0x25 `Net_Next_Turn_`; 0 (single): screen 0xc `Next_Turn_`; `_return_screen = 0x27` for 0/2/3 | | | | |
 | `Next_Turn_` (screen 0xc) | 0x13870 | NEXTTURN.C | the turn proper, then end of game checks | player+0x2d = 0 for every player; `__old_system_index = -1` | R (via Next_Turn_Calc_; End_Of_Game_Hi_Score_) | no | 88 |
-| ├ `Do_Autosave_` | 0x13822 | NEXTTURN.C | game_type 0/1 only: if settings+0xb (autosave) and `stardate % 4 == 0` (network: `% 1`) → description "(Auto Save)", `Save_Game_(9)` (SAVE10.GAM) | file only | - (Save_Game_ only reads the seed) | yes (`Save_Game_`) | 30 |
+| ├ `Do_Autosave_` | 0x13822 | NEXTTURN.C | game_type 0/1 only: if settings+0xb (autosave) and `stardate % 4 == 0` (network: `% 1`) → description "(Auto Save)", `Save_Game_(9)` (SAVE10.GAM). Community patch 1.51: the modulus is 1 for every game type (0x13826 `mov al, 1`), so a local game autosaves each turn before its battles; ported so | file only | - (Save_Game_ only reads the seed) | yes (`Save_Game_`) | 30 |
 | ├ `Confirm_Planet_And_Star_Index_Link_("in next turn")` | 0x78e67 | HAROLD.C | debug check: `Planet_Number_` for every planet; duplicate orbit per star → PFMT + `hgetch` (debug prints, never fires on a sane save) | read only | - | referenced | 76 |
 | ├ `Next_Turn_Calc_` | 0x136b3 | NEXTTURN.C | the whole simulation, phases 1..9 below | everything | R | no | 82 (all reachable: ~2280 routines) |
 | ├ `_current_screen = _return_screen` (0x27) | | | | | | | |
