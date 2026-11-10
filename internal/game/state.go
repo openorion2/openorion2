@@ -173,7 +173,11 @@ func (g *Game) loadGame(slot int) (bool, error) {
 		g.e.V.Fill(0, 0, 0x27f, 0x1df, 0)
 		return false, nil
 	}
-	return true, g.loadSaveFile(f, slot)
+	if err := g.loadSaveFile(f, slot); err != nil {
+		return true, err
+	}
+	g.fixSpareDesigns()
+	return true, nil
 }
 
 // loadSaveFile is Load_Game_ from the file read on: the state and the

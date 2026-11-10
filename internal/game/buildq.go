@@ -350,6 +350,9 @@ func (g *Game) bqEvaluateInput(r *int, scan int) error {
 			}
 			bq.refitAdd = false
 		}
+		// Community patch 1.51: back from the design screen without a
+		// refit, the sixth design returns.
+		g.restoreSpare(int(c.Owner))
 	}
 	switch r0 := *r; {
 	case r0 == bq.fOK:
@@ -674,6 +677,7 @@ func (g *Game) bqRefit() error {
 		case -2:
 			bq.refitShip = k
 			bq.refitAdd = true
+			g.keepSpare(&pl.Designs[bqRefitSlot]) // community patch 1.51
 			pl.Designs[bqRefitSlot] = s.Ships[k].Design
 			bq.fromDesign = true
 			g.screenData[4] = bqRefitSlot

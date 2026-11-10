@@ -229,10 +229,13 @@ func (g *Game) detectedShips(p int) []bool {
 	return out
 }
 
+// queueSupportSlot is queueCodeSlot's answer for a support ship.
+const queueSupportSlot = 6
+
 // queueCodeSlot reports whether colony ci can put code at the head of its
 // queue: -1 if not, else 0, or for a ship the design slot it is built from
-// (bqRefitSlot for colony ships, outposts and transports). It changes
-// nothing.
+// (queueSupportSlot: colony ships, outposts and transports, built through
+// slot 5). It changes nothing.
 func (g *Game) queueCodeSlot(ci, code int) int {
 	s := &g.state
 	c := &s.Colonies[ci]
@@ -264,10 +267,10 @@ func (g *Game) queueCodeSlot(ci, code int) int {
 			ok = ok && pl.AppStatus[appTransport] == 3 && c.Buildings[0x16] != 0
 		}
 		if ok {
-			return bqRefitSlot
+			return queueSupportSlot
 		}
 	case 0:
-		for k := 4; k >= 0; k-- {
+		for k := 5; k >= 0; k-- { // community patch 1.51: six designs
 			if d := &pl.Designs[k]; d.Type == 0 && int(d.Size) == size && g.colonyCanBuildProduct(ci, int16(-(k+50))) != 0 {
 				return k
 			}
@@ -291,7 +294,8 @@ func (g *Game) queueEntry(ci, code int) int16 {
 	}
 	owner := int(c.Owner)
 	pl := &s.Players[owner]
-	if slot == bqRefitSlot {
+	if slot == queueSupportSlot {
+		slot = bqRefitSlot
 		d := &pl.Designs[bqRefitSlot]
 		switch (-1000 - code) / 8 {
 		case 1:

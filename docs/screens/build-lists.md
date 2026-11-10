@@ -39,8 +39,7 @@ applied.
 - `colony_ship`, `outpost_ship`, `transport`, `design1`..`design6`,
   `android_farmer`, `android_worker`, `android_scientist`, `spy`,
   `freighter_fleet`, `trade_goods`, `housing`; `repeat` marks the product
-  before it. `design6` is read and never queued until the game has a
-  sixth design slot.
+  before it. `design6` is the sixth design (`docs/turn/design6.md`).
 - Modes: `append` (the default), `prepend`, `merge`.
 - Commands: `buy`, `buy10%`, `buy50%`, `buy75%`, `unbuy`, `clear`,
   `clear_refits`.

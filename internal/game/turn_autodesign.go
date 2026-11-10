@@ -1061,9 +1061,9 @@ func (g *Game) pointDefenseDamagePerSpace(w, p int) int32 {
 	return str*100/g.weaponSpace(p, w, 1, 1, 1, 4) + str
 }
 
-// initShipDesigns is Init_Ship_Designs_ (0x54fbf): an AI player's five
-// designs (the first forced to class 7) and transport, or the strategic
-// designs; humans get the transport slot cleared.
+// initShipDesigns is Init_Ship_Designs_ (0x54fbf): six designs (the first
+// forced to class 7), an AI's last redone as the doom star; or strategic ones.
+// Community patch 1.51: humans keep the sixth (1.40b23: five, slot 5 cleared).
 func (g *Game) initShipDesigns(p int) {
 	s := &g.state
 	pl := &s.Players[p]
@@ -1080,12 +1080,11 @@ func (g *Game) initShipDesigns(p int) {
 		size = 0
 	}
 	g.autoDesignShip(p, &pl.Designs[0], 0, true)
-	for slot := 1; slot < 5; slot++ {
+	for slot := 1; slot < 6; slot++ {
 		size++
 		g.autoDesignShip(p, &pl.Designs[slot], size-1, false)
 	}
 	if pl.Objective == 100 {
-		pl.Designs[5] = save.Design{}
 		return
 	}
 	g.autoDesignShip(p, &pl.Designs[5], 5, false)

@@ -250,7 +250,12 @@ func (g *Game) keepShipDesignsUpToDate(ca *colonyAI) {
 
 // loadDoomStarShipDesign is Load_Doom_Star_Ship_Design_ (0x56460).
 func (g *Game) loadDoomStarShipDesign(p int, d *save.Design) {
-	g.autoDesignShip(p, d, 5, false)
+	// Community patch 1.51: a strategic doom star is designed as strategic.
+	if g.settings[0xd8] != 0 {
+		g.autoStrategicDesignShip(p, 5, d)
+	} else {
+		g.autoDesignShip(p, d, 5, false)
+	}
 	g.copyDoomStarName(d)
 }
 

@@ -56,12 +56,14 @@ func (g *Game) shipTypeCostForPlayer(typ int, p int) int32 {
 
 // loadColonyShipDesign is Load_Colony_Ship_Design_ (0x564cd).
 func (g *Game) loadColonyShipDesign(p int, d *save.Design) {
+	g.keepSpare(d)
 	g.loadSupportShipDesign(p, d, colonyShipNames, 1, 0x2d)
 	setBit(d.Specials[:], 0xb)
 }
 
 // loadTransportShipDesign is Load_Transport_Ship_Design_ (0x5663e).
 func (g *Game) loadTransportShipDesign(p int, d *save.Design) {
+	g.keepSpare(d)
 	g.loadSupportShipDesign(p, d, transportShipNames, 2, 0x2f)
 }
 

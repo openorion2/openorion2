@@ -64,7 +64,7 @@ type Player struct {
 	Unknown323        uint8
 	FuelRange         int16
 
-	Designs      [6]Design // slot 5 is the AI transport, cleared for humans
+	Designs      [6]Design // slot 5: 1.40b23's scratch, 1.51's sixth design
 	HullCounters [6]int16
 
 	Contact          [8]uint8

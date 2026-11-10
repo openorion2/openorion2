@@ -773,6 +773,7 @@ func (g *Game) createShip(p, slot, ci int) int16 {
 		}
 	}
 	if i >= maxShips {
+		g.restoreSpare(p) // community patch 1.51
 		return -1
 	}
 	if s.NumShips <= i {
@@ -781,6 +782,7 @@ func (g *Game) createShip(p, slot, ci int) int16 {
 	pl := &s.Players[p]
 	sh := &s.Ships[i]
 	*sh = save.Ship{Design: pl.Designs[slot]}
+	g.restoreSpare(p) // community patch 1.51
 	sh.Owner = int8(p)
 	sh.Design.Builder = uint8(p)
 	sh.Location = star

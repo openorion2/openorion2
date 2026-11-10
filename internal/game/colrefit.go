@@ -35,7 +35,7 @@ type refitState struct {
 	inited   bool // the three scan globals hold their image values (-1, -1, -1000)
 
 	fWhole, fDown, fUp, fCancel, fScroll, fNew int // _fields
-	designF                                    [5]int
+	designF                                    [6]int
 }
 
 // refitInit gives the scan globals their values in the image; the popups
@@ -413,7 +413,7 @@ func (g *Game) refitAdd2Fields() error {
 	row := func(i int) (int, error) {
 		return e.AddHiddenField(0xa1, (i+1)*0xb3/8+0x31, 0x1de, (i+2)*0xb3/8+0x30, none, 0x29)
 	}
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 6; i++ { // community patch 1.51: six designs
 		if g.selectionName(int16(-50-i)) == none {
 			r.designF[i] = -1000
 			continue
@@ -422,7 +422,8 @@ func (g *Game) refitAdd2Fields() error {
 			return err
 		}
 	}
-	if r.fNew, err = row(6); err != nil {
+	// Community patch 1.51: the design screen row follows the sixth design.
+	if r.fNew, err = e.AddHiddenField(0xa1, 8*0xb3/8+0x18, 0x1de, 9*0xb3/8+0x17, none, 0x29); err != nil {
 		return err
 	}
 	r.fWhole, err = e.AddHiddenField(0, 0, 0x27f, 0x1df, none, 0)
@@ -437,7 +438,7 @@ func (g *Game) drawShipDList() error {
 	t := g.e.Text()
 	pl := &s.Players[s.PlayerNum]
 	size := s.Ships[r.ship].Design.Size
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 6; i++ { // community patch 1.51: six designs
 		var c int
 		if r.designF[i] == r.lscanned && size == pl.Designs[i].Size {
 			c = 1
@@ -470,7 +471,7 @@ func (g *Game) drawShipDList() error {
 		c = 2
 	}
 	g.setColonyFontToRegBlue(4, c)
-	if err := t.PrintCentered(0x140, 7*0xb3/8+0x31, g.eStr(0x320)); err != nil {
+	if err := t.PrintCentered(0x140, 8*0xb3/8+0x18, g.eStr(0x320)); err != nil {
 		return err
 	}
 	title := cSprintf(g.eStr(0x321), save.CString(s.Ships[r.ship].Design.Name[:]))
@@ -526,13 +527,14 @@ func (g *Game) refitEvaluate2Input(in, scan int) (int16, error) {
 	pl := &s.Players[s.PlayerNum]
 	sh := &s.Ships[r.ship]
 	r.scannedD, r.lscanned = -1, -1000
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 6; i++ { // community patch 1.51: six designs
 		f := r.designF[i]
 		if f == scan {
 			r.lscanned, r.scannedD = f, int16(i)
 		}
 		if f == in {
 			if sh.Design.Size == pl.Designs[i].Size {
+				g.keepSpare(&pl.Designs[bqRefitSlot]) // community patch 1.51
 				pl.Designs[bqRefitSlot] = pl.Designs[i]
 				g.screenData[4] = bqRefitSlot
 				r.esc = true
@@ -592,7 +594,7 @@ func (g *Game) colonyRefit2Popup(ship int16) (int16, error) {
 	r.ship = ship
 	pl := &s.Players[s.PlayerNum]
 	n := 0
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 6; i++ { // community patch 1.51: six designs
 		if s.Ships[ship].Design.Size == pl.Designs[i].Size {
 			n++
 		}

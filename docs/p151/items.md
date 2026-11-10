@@ -768,7 +768,7 @@ A note after the text goes after ` -- `.
 
 - `[?]` Antaran ship costs and limits now persist after reloading the game.
 - `[?]` Fixed AI ships sometimes getting double Augmented Engines +5 speed bonus.
-- `[?]` Fixed another case of ship design slot corruption when a ship couldn't be built due to the 500 ships limit (in addition to 1.50.7 fix).
+- `[done]` Fixed another case of ship design slot corruption when a ship couldn't be built due to the 500 ships limit (in addition to 1.50.7 fix). -- docs/turn/design6.md
 - `[?]` Combat AI is now aware that Ion Cannon has no effect against planets.
 - `[?]` Undocumented +1 hit bonus for civilian buildings during bombardment removed.
 - `[?]` Unstable wormhole event is now also allowed for a fleet with eta=2 turns.
@@ -985,7 +985,7 @@ A note after the text goes after ` -- `.
 - `[?]` Strategic damage values column updated with tactical values to preserve classic behavior, except for special weapons that were bugged or incorrect and received new values.
 - `[?]` GNN news corrected for monster events, colony names and (English) textual errors.
 - `[?]` Monsters now consider systems in +10pc wider range for finding new target colony.
-- `[?]` Fixed 6th slot corruption when a ship couldn't be built due to the 500 ships limit.
+- `[done]` Fixed 6th slot corruption when a ship couldn't be built due to the 500 ships limit. -- docs/turn/design6.md
 - `[?]` Fixed auto-scrap scrapping more ships than needed to pay upkeep.
 - `[?]` Fixed a crash in fleet leaders screen when scrolling fleet pane.
 - `[?]` Fixed a crash when message box has too much text.
@@ -1345,7 +1345,7 @@ A note after the text goes after ` -- `.
 
 ### Interface changes
 
-- `[?]` Corrupt 6th design slot (when loading pre 1.50.1 saves) is automatically fixed.
+- `[done]` Corrupt 6th design slot (when loading pre 1.50.1 saves) is automatically fixed. -- docs/turn/design6.md
 - `[?]` Autosave in local games works like in network games, saves every turn before battles.
 - `[?]` Option to play against a random number of AIs.
 - `[?]` Added pictures for cluster, random and post warp in newgame.lbx.
@@ -1393,7 +1393,7 @@ A note after the text goes after ` -- `.
 - `[?]` Bombardment can destroy capitol.
 - `[?]` Auto-designed ships are equivalent to manually designed.
 - `[?]` Satellite generation and repair uses systems size from correct hull table entries 6-8.
-- `[?]` Fixed strategic Doom Star having cost and displayed info of tactical one.
+- `[done]` Fixed strategic Doom Star having cost and displayed info of tactical one. -- docs/turn/design6.md
 - `[?]` Hard Shields now increase blocked damage in strategic combat.
 - `[?]` Fixed Sub-Space Teleporter getting increased range for faster ships.
 - `[?]` Fixed Sub-Space Teleporter not breaking tractor beam out of range.
@@ -1414,7 +1414,7 @@ A note after the text goes after ` -- `.
 
 ### Interface changes
 
-- `[?]` A sixth ship design slot is now available.
+- `[done]` A sixth ship design slot is now available. -- docs/manual/ships.md
 - `[?]` Corrected display of colony ship count for 2 or more ships in Star System popup.
 - `[?]` Visual fixes for ship, satellite and planet scan both for tactical and strategic modes. Strategic mode is now far less confusing.
 - `[?]` Proper display of non-integer racial food bonus.

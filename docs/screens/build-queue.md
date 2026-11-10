@@ -167,3 +167,6 @@ never in the military list.
 
 The keys Q and 0-9 (build lists) and BUY taking a purchase back come
 from the community patch 1.51: `build-lists.md`.
+
+Design slot 5 is a sixth design since the community patch 1.51; its
+scratch uses keep it aside: `docs/turn/design6.md`.

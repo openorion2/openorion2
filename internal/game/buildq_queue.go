@@ -84,18 +84,17 @@ func (g *Game) calculateMilitaryArray() {
 		if len(bq.mil) != 0 {
 			add(bqSeparator)
 		}
-		for k := 0; k < 5; k++ {
+		// Community patch 1.51: six designs; under strategic combat titans
+		// and doom stars need either hull, and the doom star row is slot 5.
+		for k := 0; k < 6; k++ {
 			item := int16(-50 - k)
 			if g.selectionName(item) == g.eStr(0xc) {
 				continue
 			}
-			if g.settings[0xd8] != 0 && me.Designs[k].Size == 4 && pl.AppStatus[appTitan] != 3 {
+			if g.settings[0xd8] != 0 && me.Designs[k].Size >= 4 && pl.AppStatus[appTitan] != 3 && pl.AppStatus[appDoomStar] != 3 {
 				continue
 			}
 			add(item)
-		}
-		if pl.AppStatus[appDoomStar] == 3 && g.settings[0xd8] != 0 {
-			add(bqDoomStar)
 		}
 	}
 	if len(bq.mil) != 0 {
@@ -212,6 +211,7 @@ func autoDesignType(item int16) int16 {
 
 // loadOutpostShipDesign is Load_Outpost_Ship_Design_ (0x56586).
 func (g *Game) loadOutpostShipDesign(p int, d *save.Design) {
+	g.keepSpare(d)
 	g.loadSupportShipDesign(p, d, outpostNames, 4, 0x2e)
 	setBit(d.Specials[:], 0xb)
 }
@@ -554,6 +554,9 @@ func (g *Game) addRefitedShipToQueue() error {
 		diff := (int32(int16(g.costOfDesign(owner, d))) - int32(old)) * 2
 		sh.Design.Cost = int16(max(floor, diff))
 	}
+	// Community patch 1.51: the sixth design comes back (1.51 does it only
+	// when the ship was added; the port also when the queue was full).
+	g.restoreSpare(int(s.Colonies[g.colonyHandle].Owner))
 	g.updateShipIconsInBetweenTurns()
 	return nil
 }

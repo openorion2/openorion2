@@ -134,6 +134,7 @@ type Game struct {
 	col                colonyGlobals        // COLONY.C globals
 	cscr               colonyScreenState    // COLONY.C, the colony screen
 	bq                 buildQueueState      // COLBLDG.C, the build queue popup
+	spare              spareDesign          // community patch 1.51: design slot 5 kept aside
 	des                designState          // DESIGN.C, DESBOX.C, the design screen
 	rf                 refitState           // COLREFIT.C, the refit popups
 	cs                 colonySummaryState

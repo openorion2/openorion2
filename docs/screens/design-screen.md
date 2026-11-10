@@ -214,3 +214,6 @@ Right clicks inside the boxes and the refit popups' text boxes, the hovered refi
 never rests on a cell), Loknar's ship, refit mode's dark size buttons
 beyond des4's one BUILD, the debug field. The custom ship (−13) is
 unreachable.
+
+Design slot 5 is a sixth design since the community patch 1.51; its
+scratch uses keep it aside: `docs/turn/design6.md`.

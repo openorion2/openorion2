@@ -46,14 +46,10 @@ var buildListBuildings = [0x31]string{
 	"warp_interdictor", "weather_controller", "fighter_garrison", "artificial_planet",
 }
 
-// blDesign6 stands for design6 until the sixth design slot exists: read,
-// never queued.
-const blDesign6 = -1006
-
 // Other products in lists, by name.
 var buildListProducts = map[string]int16{
 	"colony_ship": bqColonyShip, "outpost_ship": bqOutpost, "transport": bqTransport,
-	"design1": -50, "design2": -51, "design3": -52, "design4": -53, "design5": -54, "design6": blDesign6,
+	"design1": -50, "design2": -51, "design3": -52, "design4": -53, "design5": -54, "design6": -55,
 	"android_farmer": -4, "android_worker": -5, "android_scientist": -6,
 	"spy": -7, "freighter_fleet": -0xf, "trade_goods": -2, "housing": -3, "repeat": -10,
 }
@@ -221,7 +217,7 @@ func (r *blRun) canAdd(p int16) bool {
 	g.calculateBuildingArray()
 	g.calculateMilitaryArray()
 	switch {
-	case p == blDesign6 || p == -10:
+	case p == -10:
 		return false
 	case slices.Contains(g.bq.bldg, p):
 		return !g.isInQueue(p)

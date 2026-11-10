@@ -96,7 +96,8 @@ player number `j` (the entry `[i]` of record `i` is "self").
 ## 0x326 ship designs
 
 6 records of 99 bytes (`Init_Ship_Designs_`: `0x326 + k*99`; slot 5 at 0x515
-is the AI transport, cleared for humans). Written by `Update_Player_Design_`
+is the AI transport, cleared for humans; since the community patch 1.51 a
+sixth design, `docs/turn/design6.md`). Written by `Update_Player_Design_`
 from the design screen buffer `_design`.
 
 | Rel | Type | Field | Source in `_design` |

@@ -185,8 +185,6 @@ buy50%
 
 - The lists are in `buildlists` in the game's folder (1.51: `150\build`),
   and the game writes the default ones there itself.
-- Design 6: OpenOrion2 does not have a sixth design slot yet, so
-  `design6` and the key 6 do nothing for now.
 - Androids that would not fit on the planet are skipped without a
   question.
 - In merge mode, ships in the queue never count as the ones the list

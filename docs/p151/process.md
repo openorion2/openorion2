@@ -11,12 +11,12 @@ time, straight into master.
   default), `patch/150/mods/150i/150.CFG` (the "1.50 standard" settings).
 - The manual, the best description: moo2mod.com/manual/MANUAL_150.html
   (the same text as `MANUAL_150.PDF` in the zip).
-- `ORION150.EXE`: a Watcom LE like the original, but with no debug
-  symbols; the patch's own code is a blob appended after the LE image
-  (file offset 0x1e30b1 on), without names. Reading it is slow: behaviour
-  comes from the manual, and where the manual is silent and it matters, a
-  run of the real 1.51 in DOSBox (dosbox-x) on a scratch copy of the game
-  files settles it.
+- `ORION150.EXE`: its LE image is 1.40b23's own build (same addresses,
+  Watcom debug names inside); the patch's code is an appended "binary
+  extension" with link records, hooked into the game's code. Linked and
+  disassembled, both read like the original: how, and the tools, in
+  `build/p151/README.txt` (local, not in git). Read the code before
+  writing; a run of the real 1.51 in DOSBox (dosbox-x) settles the rest.
 - `inventory.md`: the patch by subsystem; `items.md`: every changelog line
   with its fate.
 
@@ -54,3 +54,4 @@ time, straight into master.
 
 - Build lists and taking a purchase back: `docs/screens/build-lists.md`,
   `docs/manual/build-queue.md`.
+- The sixth ship design: `docs/turn/design6.md`, `docs/manual/ships.md`.

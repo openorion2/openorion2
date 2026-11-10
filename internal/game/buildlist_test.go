@@ -26,7 +26,7 @@ func TestParseBuildList(t *testing.T) {
 		t.Errorf("unknown word: %v", err)
 	}
 	ops, _ = parseBuildList("artificial_planet design6 colony_base")
-	if !slices.Equal(ops, []blOp{{product: 48}, {product: blDesign6}, {product: 0xb}}) {
+	if !slices.Equal(ops, []blOp{{product: 48}, {product: -55}, {product: 0xb}}) {
 		t.Errorf("ops %v", ops)
 	}
 }
@@ -229,7 +229,7 @@ func TestBuildListShips(t *testing.T) {
 	g, ci := blGame(t)
 	s := &g.state
 	n := s.NumShips
-	q := blApply(t, g, "design1 colony_ship design6")
+	q := blApply(t, g, "design1 colony_ship")
 	if q[0] > -100 || q[1] > -100 || q[2] != -1 {
 		t.Fatalf("ships: %v", q)
 	}
