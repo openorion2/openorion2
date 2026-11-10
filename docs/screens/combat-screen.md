@@ -160,6 +160,8 @@ planet` = 1 and not super fast), screen or not:
   `Vanish_Bitmap_` fade, the retreat's jump flash, `Draw_Missile_Status_`.
 - Boarding: `Initiate_Boarding_Action_`, `Board_Popup_`, the raid and
   capture reports; scrolling at the edges (`Scroll_Combat_Screen_`).
+  Community patch 1.51: marines a Damper Field cuts to 0 still board
+  (0x45c68, `docs/net/combat.md`, "The lockstep").
   Checked against the original by tcb2 and tcb3 ("Oracle").
 
 ## Scrolling (port-only pace)

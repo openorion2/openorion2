@@ -485,7 +485,8 @@ func (g *Game) moxNetUpdate() {
 		g.moxSendMessage(netID(p), 4, buf)
 	}
 	if !sent && n.i16(netHostID) == n.i16(netOwnID) {
-		if st := n.u8(netState); st >= 0xe && st < 0x23 {
+		// community patch 1.51 (0x404b0e): not while a battle runs here
+		if st := n.u8(netState); st >= 0xe && st < 0x23 && !n.inBattle {
 			g.doNetCombatUpdate()
 		}
 	}

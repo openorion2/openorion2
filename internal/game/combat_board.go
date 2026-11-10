@@ -80,13 +80,10 @@ func (g *Game) initiateBoardingAction(a, t int16) {
 	}
 	C := g.tsp(tc.cur)
 	C.set8(tsMarines, C.u8(tsMarines)-uint8(n))
-	if reach == 4 && (rng != 1 || g.tsp(t).i16(tsSpeed) > 0) {
-		if g.combatShipHasSpecial(t, 7) {
-			n /= 3
-		}
-		if n <= 0 {
-			kind = 0
-		}
+	// community patch 1.51 (0x45c68 NOPed): marines the Damper Field cuts to 0
+	// still board, so a network battle's other machine gets the action too.
+	if reach == 4 && (rng != 1 || g.tsp(t).i16(tsSpeed) > 0) && g.combatShipHasSpecial(t, 7) {
+		n /= 3
 	}
 	if tc.netFlag != 0 && (kind == 1 || kind == 2) {
 		if to := g.opponentOf(int16(A.u8(tsOwner))); to != g.state.PlayerNum {
@@ -120,8 +117,6 @@ func (g *Game) initiateBoardingAction(a, t int16) {
 		g.resolveCapture(tc.cur, t, n, int16(T.u8(tsX))*0x14, int16(T.u8(tsY))*0x14)
 	}
 	tc.board = 0
-	// Also after kind became 0 above, with nothing sent: the other machine
-	// never meets this barrier (a deadlock of the original).
 	g.tacWaitIf()
 }
 

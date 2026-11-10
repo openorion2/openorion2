@@ -181,6 +181,7 @@ func (g *Game) netElectAndPlay() (again bool, err error) {
 func (g *Game) hostNextTurn() error {
 	s, n := &g.state, &g.net
 	me := int(s.PlayerNum)
+	n.dismissed = [maxLeaders]bool{} // community patch 1.51 (0x403226)
 	n.set8(netUploaded, 0)
 	for k := int(s.NumPlayers) - 1; k >= 0; k-- {
 		pl := &s.Players[k]
@@ -420,12 +421,15 @@ func (g *Game) sendGameOrders() error {
 	}
 	b = binary.LittleEndian.AppendUint16(b, 0xffff)
 	g.e.MoxUpdate()
+	// community patch 1.51 (0x4031e7, 0x40320d): a leader dismissed since the
+	// last upload goes too, so the host takes his level up and his leaving
 	for i := 0; i < maxLeaders; i++ {
-		if int(s.Leaders[i].Owner) == me {
+		if int(s.Leaders[i].Owner) == me || n.dismissed[i] {
 			b = binary.LittleEndian.AppendUint16(b, uint16(i))
 			b = append(b, recBytes(&s.Leaders[i])...)
 		}
 	}
+	n.dismissed = [maxLeaders]bool{}
 	b = binary.LittleEndian.AppendUint16(b, 0xffff)
 	g.e.MoxUpdate()
 	chunks := (len(b) + netChunk - 1) / netChunk

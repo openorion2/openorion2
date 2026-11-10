@@ -59,7 +59,23 @@ reset.
 ## Do_Net_Combat_Update_ (0xeaaa1)
 
 Reentry-guarded (0x183579); a `Mox_Update_` first and at the end (the
-shared tail at 0xea8be). Over the players from the last, a `Mox_Update_`
+shared tail at 0xea8be).
+
+**Community patch 1.51: no battle inside a battle.** The guard stops only
+a call inside itself. The host's own battle (`Client_Combat_Loop_` states
+0x14..0x18) runs `Mox_Update_` all along, so its `Mox_Net_Update_` went on
+picking battles and fought an AI's (`Do_1_Combat_` below) inside it, which
+moved the current star (0x1aa3e0/0x1aa3e4) and the combat globals from
+under the host's battle. In 1.51 every `Do_1_Combat_` of
+`Client_Combat_Loop_` (0xea50d, 0xea5a6, 0xea63f, 0xea69b, 0xea72a) and of
+`Do_Net_Combat_Update_` (0xeb121) goes through 0x404acf, which sets an
+in-battle flag (0x404ace) around it and, entered with it set, exits with
+"nested combat detected"; `Mox_Net_Update_` calls `Do_Net_Combat_Update_`
+through 0x404b0e (0xf6e05), which skips it while the flag is set. The
+other battles wait until the host's ends; the clients' messages queue.
+`Do_Nonhuman_Attack_Against_Human_`'s strategic `Do_1_Combat_` is not
+wrapped (it runs inside `Do_Net_Combat_Update_`). The port: `netDo1Combat`
+(the exit is a panic: the skip makes it unreachable), `netGame.inBattle`. Over the players from the last, a `Mox_Update_`
 each, the slot cases (jump table 0xeaa55, states 0xe..0x20):
 
 - **0x11** (msg 0x11 came): defender −1: the slot 0xe, every slot busy
@@ -96,7 +112,12 @@ A pick (0xeae5e):
 - the attacker's slot +2/+4/+6 = ship target, planet, defender;
 - no defender: 0x1ab04b 0, every slot busy with the attacker −1;
 - else `IgnoreCombat` 0, the 6 bytes to the defender's slot, the others
-  busy with the attacker −1; then an AI or monster defender:
+  busy with the attacker −1 (**community patch 1.51**, both loops: only
+  the slots whose star, +1, is this battle's; hooks 0x402415 at 0xeb04c
+  and 0x4023f5 at 0xeb0b8. In 1.40b23 an attacker in two battles at once,
+  an AI or a monster with fleets at several stars, freed the human of his
+  other battle, who could then be picked again while that battle ran: the
+  battle rolled back); then an AI or monster defender:
   `Do_1_Combat_` on the host, `Update_Player_Needs_To_Attack_`, 0x1ab04b
   0, both busy −1; the Dragon (12) against a colony: defender slot 0x1c,
   `Send_Dragon_Info_`; else `Do_Nonhuman_Attack_Against_Human_`.
@@ -174,14 +195,19 @@ planet, result).
 
 The info messages, built in a `Push_Block_` and sent whole up to 0x8000
 bytes, else as a u16 chunk count and chunks of 0x7800 with chat loops
-while sending:
+while sending (**community patch 1.51**, msgs 0x10 and 0x12 only: a
+0xff00-byte block, whole up to 0x7800 bytes, one chat loop per chunk
+without `Net_Is_Sending_`; 0xf890d, 0xf8bbf, 0xf8c48 and the same in
+`Send_You_Are_Target_Info_`):
 
 **Pick target** (`Send_Pick_Target_Info_` 0xf88d8, msg 0x10 / 0x2e, 0x2f):
 s16 star, the 0x2c bytes of the targets (0x1aa380: colony targets[5],
 count, ship owner targets[15], count). Unless the attacker's machine is the
 host: the star's presence (`Send_Star_Player_Presence_` 0xe691a: the 0x58
 bytes of `_star_has_player`[star] and the monster byte), each player's
-0xd4 bytes from +0x117 (from the last player), every leader (u16 index,
+0xd4 bytes from +0x117 (**community patch 1.51**: the 0x127 bytes from
++0xc4, the tech fields' status first; 0xf8991, and 0xf8c8e's decode)
+(from the last player), every leader (u16 index,
 0x3b bytes, from 0x42 down; then −1), the star's `Officer` bytes (+0x42,
 from the last player), u16 `NUM_COLONIES`, per planet of the star from the
 last orbit {planet +0 (colony), +4, +8, +0 again, the colony record if
@@ -197,7 +223,7 @@ Turns_`, own slot and state 0x10.
 0x34, 0x35; arguments defender, attacker, ship target, colony, star):
 s16 star, attacker, ship target, colony. Unless the defender's machine is
 the host: the presence, the attacker's and the defender's 0xd4 bytes (each
-if < 8), the leaders of either (from 0x42, then −1), their `Officer`
+if < 8; **community patch 1.51**: 0x127 from +0xc4, in both routines), the leaders of either (from 0x42, then −1), their `Officer`
 bytes, with a colony {u16 `NUM_COLONIES`, u16 planet, planet +0, +4, +8,
 the colony record}, u16 `NUM_SHIPS` and their ships there; −1.
 `Decode_You_Are_Target_Info_` (0xf93e3): the block's star, attacker, ship
@@ -358,12 +384,31 @@ Both machines run `Tactical_Combat_` (0x47939) with `_net_flag`
   fired first and the port moved first) was the port's 12-pixel step, one
   defensive fire roll short. `Do_Spherical_SFX_`'s shaking (two
   `Random_(5)` per ship and frame) depends on the frame step as well.
-- Quirks: a boarding whose marines drop to 0 (special 7) sends nothing but
-  still waits at the barrier, so the other machine never meets it (a
-  deadlock); `Resolve_Ai_Boarding_`'s msg 0x3e8 during a replayed
+- **Community patch 1.51**: in 1.40b23 a human's boarding whose marines
+  the target's Damper Field (special 7: a third, for a transporter
+  boarding, special 0x23, from afar or onto a moving target) cuts to 0 became kind 0 (`xor edi, edi` at 0x45c68): it
+  sent nothing but still waited at the barrier, and the other machine never
+  met it (a deadlock). 1.51 NOPs that instruction: the boarding goes on with
+  0 marines, msg 0x3e8 code 0x271f {target, 0, kind} is sent and both
+  machines resolve it. A raid of 0 rolls nothing; a capture of 0 fails
+  (`Resolve_Capture_` captures only with marines left), whatever the crew.
+  It holds in every game type: the ship is marked as having boarded, a
+  cloak drops and the report shows. `Resolve_Ai_Boarding_` keeps its kind
+  0 (both machines replay it alike).
+- Quirk: `Resolve_Ai_Boarding_`'s msg 0x3e8 during a replayed
   `Do_Auto_Ship_Turn_` is overwritten when the replay ends.
 
 ## Tests
+
+- Community patch 1.51 (`netp151_test.go`): `TestNetTargetInfoFields`,
+  `TestNetTargetInfoChunks` (msgs 0x10/0x12), `TestNetBattleBusySlots`
+  (the host starts a battle of an AI that another battle elsewhere holds:
+  without and with a defender; the other battle's slot stays busy).
+  `TestNetSoak` `2+6ai-nested` (`netSoakNested`): the host's player
+  attacks the AIs' last colony star on the combat screen, the other human
+  and the AIs another AI's star; the AIs' battles there wait for the
+  other human's, whose result comes while the host still fights. Without
+  the skip the host starts one inside its own and `netDo1Combat` stops.
 
 - `TestNetSoak` `2+2ai-battles`, `3+1ai-battles` (strategic) and
   `2+2ai-tactical` (tactical, humans against AIs only): every other turn
@@ -416,6 +461,20 @@ Both machines run `Tactical_Combat_` (0x47939) with `_net_flag`
   draws, the beam effects' included) equals the oracle's RNG.LOG
   (`netRNGAlign`, always on for netbattle4).
 
+## Community patch 1.51: the tech fields in a battle
+
+1.40b23's msgs 0x10 and 0x12 carry each player's record from +0x117 (the
+applications on); the tech fields' status (+0xc4, 0x53 bytes) stays as the
+fighting machine had it since the broadcast. A battle the host fought
+earlier in the same combat phase (a capture or an invasion that gives a
+tech, `Player_Gets_Tech_App_` advancing the field) leaves the fighting
+machine with the new applications but the old fields. 1.51 sends from
++0xc4 for 0x127 bytes; the port does the same (`netTargetRec`). The
+results (msg 0x15) keep 0xd4 bytes from +0x117 in 1.51 too: the next
+broadcast carries the host's fields. The messages grow by 0x53 bytes a
+player, hence 1.51's larger block and its chunking from 0x7800 bytes.
+Test: `TestNetTargetInfoFields`, `TestNetTargetInfoChunks`.
+
 ## Long messages
 
 An info message longer than 0x8000 bytes (pick target 0x2e/0x2f, you
@@ -434,6 +493,9 @@ in the original over IPX. The port sends synchronously over TCP and
 completes them; `TestNetLoadOracle/netlong1` compares the sends up to the
 original's stall (the first chunk byte for byte) and checks that the
 port's machines go on through 0x30..0x33.
+**Community patch 1.51** takes `Net_Is_Sending_` out of the chunk loops of
+msgs 0x2e/0x2f and 0x34/0x35 (one chat loop per chunk), which ends that
+stall for them; the results' loop (0x30..0x33) keeps it.
 
 ## Open
 
