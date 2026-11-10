@@ -68,6 +68,7 @@ type netGame struct {
 	tac        netTac     // the tactical lockstep's receive side
 	// community patch 1.51 (0x460095): leaders dismissed since the last upload
 	dismissed [maxLeaders]bool
+	inBattle  bool // community patch 1.51 (0x404ace): netDo1Combat runs
 
 	tempString    string         // _temp_string of the net screens (Draw_SendGet_Net_Info_Screen_)
 	name          [10]byte       // 0x1ab082: the game's name

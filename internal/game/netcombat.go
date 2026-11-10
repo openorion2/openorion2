@@ -169,7 +169,7 @@ func (g *Game) clientCombatLoop() error {
 			g.moxPlaySound(0x33)
 		case 0x14: // the attacker against a human: the result to the defender (msg 0x18)
 			res := g.netNewResult()
-			r := g.do1Combat(star, me, n.i16(netCShipT), res.planet, res, false)
+			r := g.netDo1Combat(star, me, n.i16(netCShipT), res.planet, res, false)
 			def := int(n.i16(netCDef))
 			b, stale := g.resultBytes(res)
 			g.moxSendMessageStale(g.netIDOf(def), 0x18, b, stale)
@@ -182,7 +182,7 @@ func (g *Game) clientCombatLoop() error {
 			g.sendBattleResults(star, me, int16(def), n.i16(netCShipT), n.i16(netCPlanet), r)
 		case 0x15: // the human defender: wait for the attacker's result (msg 0x18)
 			att := int16(n.i8(netCAtt))
-			r := g.do1Combat(star, att, n.i16(netCShipT), n.i16(netCPlanet), nil, false)
+			r := g.netDo1Combat(star, att, n.i16(netCShipT), n.i16(netCPlanet), nil, false)
 			if n.u8(netState) != 0x1a {
 				n.set8(netState, 0xe)
 			}
@@ -195,12 +195,12 @@ func (g *Game) clientCombatLoop() error {
 			n.set8(netState, 0xe)
 			g.sendBattleResults(star, att, me, n.i16(netCShipT), n.i16(netCPlanet), r)
 		case 0x16: // the attacker against an AI or a monster
-			r := g.do1Combat(star, me, n.i16(netCShipT), n.i16(netCPlanet), nil, false)
+			r := g.netDo1Combat(star, me, n.i16(netCShipT), n.i16(netCPlanet), nil, false)
 			n.set8(netState, 0xe)
 			g.sendBattleResults(star, me, n.i16(netCDef), n.i16(netCShipT), n.i16(netCPlanet), r)
 		case 0x17: // the defender against an AI or a monster
 			att := int16(n.i8(netCAtt))
-			r := g.do1Combat(star, att, n.i16(netCShipT), n.i16(netCPlanet), nil, false)
+			r := g.netDo1Combat(star, att, n.i16(netCShipT), n.i16(netCPlanet), nil, false)
 			n.set8(netState, 0xe)
 			if g.e != nil {
 				if err := g.loadNetNextTurnScreen(true); err != nil {
@@ -210,7 +210,7 @@ func (g *Game) clientCombatLoop() error {
 			g.sendBattleResults(star, att, me, n.i16(netCShipT), n.i16(netCPlanet), r)
 		case 0x18: // strategic: the attacker resolves, the human defender gets msg 0x16
 			res := g.netNewResult()
-			r := g.do1Combat(star, me, n.i16(netCShipT), res.planet, res, false)
+			r := g.netDo1Combat(star, me, n.i16(netCShipT), res.planet, res, false)
 			if err := g.loadNetNextTurnScreen(true); err != nil {
 				return err
 			}
@@ -469,7 +469,7 @@ func (g *Game) netStartBattle(star, att int16) {
 			planet = s.Colonies[colT].Planet
 		}
 		// The sneak flag is not passed here (push 0): a quirk of the original.
-		g.do1Combat(star, att, shipT, planet, nil, false)
+		g.netDo1Combat(star, att, shipT, planet, nil, false)
 		g.updatePlayerNeedsToAttack(star, att, def)
 		n.set8(netPickDone, 0)
 		n.set8(sa+slBusy, 0xff)
@@ -482,6 +482,20 @@ func (g *Game) netStartBattle(star, att int16) {
 		return
 	}
 	g.doNonhumanAttackAgainstHuman(int(def))
+}
+
+// netDo1Combat is Do_1_Combat_ as Client_Combat_Loop_ and
+// Do_Net_Combat_Update_ call it in community patch 1.51 (0x404acf): the
+// in-battle flag keeps the host's Mox_Net_Update_ from starting another
+// battle inside this one (which moved the current star under it).
+func (g *Game) netDo1Combat(star, att, def, planet int16, res *combatResult, sneak bool) int8 {
+	n := &g.net
+	if n.inBattle {
+		panic("nested combat detected") // 1.51 exits with this message; unreachable
+	}
+	n.inBattle = true
+	defer func() { n.inBattle = false }()
+	return g.do1Combat(star, att, def, planet, res, sneak)
 }
 
 // targetColonyToPlanet is Target_Colony_To_Planet_ (0xe69de).

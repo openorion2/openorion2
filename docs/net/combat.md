@@ -59,7 +59,23 @@ reset.
 ## Do_Net_Combat_Update_ (0xeaaa1)
 
 Reentry-guarded (0x183579); a `Mox_Update_` first and at the end (the
-shared tail at 0xea8be). Over the players from the last, a `Mox_Update_`
+shared tail at 0xea8be).
+
+**Community patch 1.51: no battle inside a battle.** The guard stops only
+a call inside itself. The host's own battle (`Client_Combat_Loop_` states
+0x14..0x18) runs `Mox_Update_` all along, so its `Mox_Net_Update_` went on
+picking battles and fought an AI's (`Do_1_Combat_` below) inside it, which
+moved the current star (0x1aa3e0/0x1aa3e4) and the combat globals from
+under the host's battle. In 1.51 every `Do_1_Combat_` of
+`Client_Combat_Loop_` (0xea50d, 0xea5a6, 0xea63f, 0xea69b, 0xea72a) and of
+`Do_Net_Combat_Update_` (0xeb121) goes through 0x404acf, which sets an
+in-battle flag (0x404ace) around it and, entered with it set, exits with
+"nested combat detected"; `Mox_Net_Update_` calls `Do_Net_Combat_Update_`
+through 0x404b0e (0xf6e05), which skips it while the flag is set. The
+other battles wait until the host's ends; the clients' messages queue.
+`Do_Nonhuman_Attack_Against_Human_`'s strategic `Do_1_Combat_` is not
+wrapped (it runs inside `Do_Net_Combat_Update_`). The port: `netDo1Combat`
+(the exit is a panic: the skip makes it unreachable), `netGame.inBattle`. Over the players from the last, a `Mox_Update_`
 each, the slot cases (jump table 0xeaa55, states 0xe..0x20):
 
 - **0x11** (msg 0x11 came): defender −1: the slot 0xe, every slot busy
@@ -388,6 +404,11 @@ Both machines run `Tactical_Combat_` (0x47939) with `_net_flag`
   `TestNetTargetInfoChunks` (msgs 0x10/0x12), `TestNetBattleBusySlots`
   (the host starts a battle of an AI that another battle elsewhere holds:
   without and with a defender; the other battle's slot stays busy).
+  `TestNetSoak` `2+6ai-nested` (`netSoakNested`): the host's player
+  attacks the AIs' last colony star on the combat screen, the other human
+  and the AIs another AI's star; the AIs' battles there wait for the
+  other human's, whose result comes while the host still fights. Without
+  the skip the host starts one inside its own and `netDo1Combat` stops.
 
 - `TestNetSoak` `2+2ai-battles`, `3+1ai-battles` (strategic) and
   `2+2ai-tactical` (tactical, humans against AIs only): every other turn
