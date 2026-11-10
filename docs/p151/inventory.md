@@ -6,6 +6,16 @@ Sources: `CHANGELOG_150.TXT`, the patch manual (`MANUAL_150.PDF`, same text
 at moo2mod.com/manual/MANUAL_150.html), `PARAMETERS.CFG`, `config.json`
 (426 parameters with defaults), `150/mods/150i/150.CFG`.
 
+## Decisions
+
+- 1.51 rules replace 1.40's; the port keeps one game, not two rulesets
+  (2026-11-10).
+- No strings built into the game: new texts come from our own LBX files
+  or not at all.
+- Each item's fate (undecided, port, skip, ported) is tracked per
+  changelog line in `items.json` (generated from `CHANGELOG_150.TXT`;
+  ids are a hash of version and text) and decided item by item.
+
 ## What "1.51" means here
 
 The patch is three things in one exe:
@@ -36,8 +46,8 @@ can be diffed by name against 1.40b23; new code has to be read raw.
 
 ## Legend
 
-- **R**: rule change or rule fix, on by default in 1.51. Port behind the
-  1.51 ruleset (classic 1.40 stays bit-exact).
+- **R**: rule change or rule fix, on by default in 1.51. Replaces the
+  1.40 behavior.
 - **U**: interface only, no effect on game state. Port, always on or
   as a setting.
 - **C**: config parameter, default classic. Skip for now.
