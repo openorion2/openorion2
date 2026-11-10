@@ -183,8 +183,6 @@ buy50%
 
 ## Compared with 1.51
 
-- The default lists are our own, not 1.51's; they do the same jobs on the
-  same keys, but BUILD.CFG orders the buildings differently.
 - The lists are in `buildlists` in the game's folder (1.51: `150\build`),
   and the game writes the default ones there itself.
 - Design 6: OpenOrion2 does not have a sixth design slot yet, so

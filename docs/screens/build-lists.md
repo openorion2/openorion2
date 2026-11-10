@@ -21,7 +21,7 @@ Management"), written from its description, not from its code. Code:
 
 They live in `buildlists/` in the game's directory, file names in any
 case. A missing one is written there from the defaults
-(`internal/game/buildlists/`, the port's own) before it is read, so the
+(`internal/game/buildlists/`) before it is read, so the
 player finds them to edit. Shift on a US keyboard gives `Q ) ! @ # $ % ^ &
 * (`; those are the shifted keys (Q and q are one hot key: the engine's
 `LastKey`, port-only, tells them apart).
