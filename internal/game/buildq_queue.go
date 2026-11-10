@@ -278,6 +278,11 @@ func (g *Game) addToQueue(item int16) (bool, error) {
 			}
 			if ok {
 				bq.cur[slot] = item
+			} else {
+				// community patch 1.51 (hook 0x402587): "No" drops the repeat mark
+				// too; 1.40b23 then queued a bare repeat.
+				bq.mode = 0
+				g.resetMousePicture()
 			}
 		}
 	case item == bqTransport || item == bqColonyShip || item == bqCustomShip || item == bqOutpost || item == bqDoomStar:
