@@ -96,7 +96,12 @@ A pick (0xeae5e):
 - the attacker's slot +2/+4/+6 = ship target, planet, defender;
 - no defender: 0x1ab04b 0, every slot busy with the attacker −1;
 - else `IgnoreCombat` 0, the 6 bytes to the defender's slot, the others
-  busy with the attacker −1; then an AI or monster defender:
+  busy with the attacker −1 (**community patch 1.51**, both loops: only
+  the slots whose star, +1, is this battle's; hooks 0x402415 at 0xeb04c
+  and 0x4023f5 at 0xeb0b8. In 1.40b23 an attacker in two battles at once,
+  an AI or a monster with fleets at several stars, freed the human of his
+  other battle, who could then be picked again while that battle ran: the
+  battle rolled back); then an AI or monster defender:
   `Do_1_Combat_` on the host, `Update_Player_Needs_To_Attack_`, 0x1ab04b
   0, both busy −1; the Dragon (12) against a colony: defender slot 0x1c,
   `Send_Dragon_Info_`; else `Do_Nonhuman_Attack_Against_Human_`.
@@ -378,6 +383,11 @@ Both machines run `Tactical_Combat_` (0x47939) with `_net_flag`
   `Do_Auto_Ship_Turn_` is overwritten when the replay ends.
 
 ## Tests
+
+- Community patch 1.51 (`netp151_test.go`): `TestNetTargetInfoFields`,
+  `TestNetTargetInfoChunks` (msgs 0x10/0x12), `TestNetBattleBusySlots`
+  (the host starts a battle of an AI that another battle elsewhere holds:
+  without and with a defender; the other battle's slot stays busy).
 
 - `TestNetSoak` `2+2ai-battles`, `3+1ai-battles` (strategic) and
   `2+2ai-tactical` (tactical, humans against AIs only): every other turn

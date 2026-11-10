@@ -441,10 +441,13 @@ func (g *Game) netStartBattle(star, att int16) {
 	n.set16(sa+slShipT, shipT)
 	n.set16(sa+slPlanet, g.targetColonyToPlanet(colT))
 	n.set16(sa+slDef, def)
+	// community patch 1.51 (0x402415, 0x4023f5): a slot busy with the attacker
+	// is released only at this star; one in his battle elsewhere stays busy.
+	here := func(j int) bool { return int16(n.i8(slot(j)+slStar)) == star }
 	if def == -1 {
 		n.set8(netPickDone, 0)
 		for j := int(s.NumPlayers) - 1; j >= 0; j-- {
-			if n.i8(slot(j)+slBusy) == int8(att) {
+			if n.i8(slot(j)+slBusy) == int8(att) && here(j) {
 				g.e.MoxUpdate()
 				n.set8(slot(j)+slBusy, 0xff)
 			}
@@ -455,7 +458,7 @@ func (g *Game) netStartBattle(star, att int16) {
 	sd := slot(int(def))
 	copy(n.mem[sd+slShipT-netBase:sd+slShipT-netBase+6], n.mem[sa+slShipT-netBase:sa+slShipT-netBase+6])
 	for j := int(s.NumPlayers) - 1; j >= 0; j-- {
-		if int16(j) != att && int16(j) != def && n.i8(slot(j)+slBusy) == int8(att) {
+		if int16(j) != att && int16(j) != def && n.i8(slot(j)+slBusy) == int8(att) && here(j) {
 			g.e.MoxUpdate()
 			n.set8(slot(j)+slBusy, 0xff)
 		}
