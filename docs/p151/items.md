@@ -164,7 +164,7 @@ A note after the text goes after ` -- `.
 ### Game changes
 
 - `[n/a]` Fixed large fleet (>99 ships) tactical combat network freeze. -- long messages go over TCP whole (docs/net/combat.md)
-- `[?]` Fixed an overflow crash in large (>127 ships) tactical combat.
+- `[port]` Fixed an overflow crash in large (>127 ships) tactical combat.
 - `[?]` Fixed occasional boarding of illegal targets by AI and AUTO combat.
 - `[?]` Combat is stopped if the remaining side is on AUTO combat, even if it can still bomb planets or shoot missiles, so ships won't move aimlessly.
 - `[?]` Excluded the Orion system from trim_planets (which is used when mapgen generates more than 250 satellites in a galaxy).
@@ -210,7 +210,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Fixed a crash involving the Crystal capturing a ship while missiles or fighters are present.
+- `[port]` Fixed a crash involving the Crystal capturing a ship while missiles or fighters are present.
 - `[?]` AI ships with a leader onboard no longer retreat when out of ammo.
 
 ### Interface changes
@@ -374,7 +374,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Fixed combat crash in network multiplayer game with AI. Occured when AI versus AI combat had been processed in the middle of human combat.
+- `[port]` Fixed combat crash in network multiplayer game with AI. Occured when AI versus AI combat had been processed in the middle of human combat.
 - `[?]` Fixed buggy capitol check when homeworld has been bombed or destroyed. Now capitol can be rebuilt immediately.
 - `[?]` Fixed bug in nebula check.
 - `[?]` Strategic combat no longer honors crew level bonus for BA/BD/MD (reverted 1.50.9 patch back to classic and created parameter).
@@ -772,12 +772,12 @@ A note after the text goes after ` -- `.
 - `[?]` Combat AI is now aware that Ion Cannon has no effect against planets.
 - `[?]` Undocumented +1 hit bonus for civilian buildings during bombardment removed.
 - `[?]` Unstable wormhole event is now also allowed for a fleet with eta=2 turns.
-- `[?]` Fixed the game freezing when an AI without Fungi tech gets stuck optimizing pop for food on a liberated and blockaded non-food planet in case previous owner has Fungi.
+- `[port]` Fixed the game freezing when an AI without Fungi tech gets stuck optimizing pop for food on a liberated and blockaded non-food planet in case previous owner has Fungi.
 - `[?]` Reduced satellite space compensation for beam arc and missile mods from +40% to +33.3%.
 - `[?]` Stealth Field is now mutually exclusive with Cloaking Device and Phasing Cloak.
 - `[?]` Scout Lab & Galactic Lore no longer provide bonus against Antarans (reverted back to classic).
 - `[?]` Warp Interdictor range reverted back to classic 3 parsecs.
-- `[?]` Fixed canceling warning for repeat+android resulting in a bare repeat (adding a new product to it caused the game to freeze).
+- `[port]` Fixed canceling warning for repeat+android resulting in a bare repeat (adding a new product to it caused the game to freeze).
 
 ### Interface changes
 
@@ -1079,7 +1079,7 @@ A note after the text goes after ` -- `.
 - `[?]` Behold the arti fixed for single and multi player; renamed parameter to finds_presented_by_scientist.
 - `[?]` Strength of a modded missile base or ground batteries is now properly assessed by AI.
 - `[?]` Added support for ESD custom ratio in determine_beam_weapon_modifications.
-- `[?]` Dismissed leaders desync fixed, they will now always acquire +1 level in a network game.
+- `[port]` Dismissed leaders desync fixed, they will now always acquire +1 level in a network game.
 - `[?]` Disabled (reddened) point defense weapon does not automatically fire at incoming missiles anymore.
 - `[?]` Modded leader XP levels no longer cause fired leader to get wrong XP.
 - `[?]` Terraforming now works correctly with arrivals, arriving colonists come on a terraformed planet instead of dying (1.50.1 bug).
@@ -1133,7 +1133,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` System popup freeze fixed.
+- `[port]` System popup freeze fixed.
 - `[?]` Pirates will no longer seize negative amount of money from richer empires.
 - `[?]` Fixed "leader capture" bug, a leader en route to a captured ship is put to officers pool.
 - `[?]` Breakthrough & serendipity in one turn won't cause blank box in tech choice.
@@ -1190,7 +1190,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Previously overlooked case of feudal bug fixed.
+- `[port]` Previously overlooked case of feudal bug fixed.
 
 ### Interface changes
 
@@ -1224,7 +1224,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Monster bug fixed, no combat rollbacks when fighting identical monsters.
+- `[port]` Monster bug fixed, no combat rollbacks when fighting identical monsters.
 - `[?]` Removed Advanced damage control from tree for cybernetic races.
 - `[?]` Ship initiative rule now takes BA differences below +10 into account.
 - `[?]` Ships tied by initiative are now sorted by crew experience.
@@ -1319,7 +1319,7 @@ A note after the text goes after ` -- `.
 ### Game changes
 
 - `[?]` Fixed incompatibility with classic's save game format for ships with Augmented Engines.
-- `[?]` Fixed ship retreat disappearances bug, immobilized ship now halts retreat.
+- `[port]` Fixed ship retreat disappearances bug, immobilized ship now halts retreat.
 - `[?]` Fixed Antaran star fortress repair issues.
 - `[?]` Fixed spy threshold below 60 not working. Negative thresholds are forbidden.
 - `[?]` Two ships now can destroy each other with BHG simultaneously.
@@ -1405,10 +1405,10 @@ A note after the text goes after ` -- `.
 - `[?]` Ship cloaked by Phasing Cloak can't be boarded.
 - `[?]` Lightning field buggy roll fixed, now kills 1/2 missiles instead of 1/3.
 - `[?]` Fixed Antaran fighters not working on defensive Cruiser and Titan.
-- `[?]` Fixed AI stall when targeting missile from captured ship.
+- `[port]` Fixed AI stall when targeting missile from captured ship.
 - `[?]` Scout lab and Galactic Lore now give bonus against antarans.
 - `[?]` Telepaths can capture ships multiple times without losing control.
-- `[?]` Crashes and quirks related to driveless trans dimensional ships fixed.
+- `[port]` Crashes and quirks related to driveless trans dimensional ships fixed.
 - `[?]` Zeroth weapon flag usable.
 - `[?]` No place for a new spy exploit fixed.
 
@@ -1562,10 +1562,10 @@ A note after the text goes after ` -- `.
 - `[?]` Combat repair fixes weapons now.
 - `[?]` Repaired shield generator charges shield.
 - `[?]` Undocumented +1 hits bonus for buildings during bombardment removed.*
-- `[?]` Tech field combat desync fixed.
+- `[port]` Tech field combat desync fixed.
 - `[?]` Evolutionary Mutation desync in combat fixed.
-- `[?]` Network hang for zero marines board fixed.*
-- `[?]` Ship cost exchange bug aka feudal bug fixed.
+- `[port]` Network hang for zero marines board fixed.*
+- `[port]` Ship cost exchange bug aka feudal bug fixed.
 - `[?]` Strategic tech tree corrections.
 - `[?]` Artemis strategic one kill to win bug fixed.
 - `[?]` Artifacts on-click research bonus bug fixed.
