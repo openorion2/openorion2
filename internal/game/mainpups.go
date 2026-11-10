@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/openorion2/openorion2/internal/engine"
@@ -435,6 +436,26 @@ func (g *Game) colonyOfficerPopupData(x, y, l int) error {
 	return g.printOfficerData(-1, l, x+0x5f, y+5, x+0xa, y+2, 0x50, 0x5a, 0xc3)
 }
 
+// officerExperience is community patch 1.51's leader experience (0x40e6a6):
+// "XP/next level's XP" in the crew experience text of KENTEXT 0x1f.
+func (g *Game) officerExperience(l int) string {
+	ld := &g.state.Leaders[l]
+	next := 1000
+	if lv := g.state.ownedOfficerLevel(l); lv < 4 {
+		next = [4]int{60, 150, 300, 500}[lv]
+	}
+	f := "%d"
+	if s, err := g.kenText(0x1f); err == nil {
+		// "Green Crew (%d EP)": the part in brackets, as "%d EP" or "Esp. %d".
+		i, j := strings.LastIndexByte(s, '('), strings.LastIndexByte(s, ')')
+		if i >= 0 && j > i && strings.Count(s[i+1:j], "%d") == 1 {
+			f = s[i+1 : j]
+		}
+	}
+	f = strings.Replace(f, "%d", "%d/%d", 1)
+	return cSprintf(f, int(uint16(ld.Experience)), next)
+}
+
 // printOfficerData is Print_Officer_Data_ (0x95baa). On the leaders screen
 // (not in its hire popup) it adds the name, the cost or upkeep and the
 // status line under the portrait. Then the ETA over the portrait (p5..p7
@@ -486,6 +507,9 @@ func (g *Game) printOfficerData(row, l, x, y, px, py, pw, ph, w int) error {
 			}
 		}
 		if err := t.Print(lx, t.Height()+y, label); err != nil {
+			return err
+		}
+		if err := t.PrintRight(293, 91+t.Height()+y, g.officerExperience(l)); err != nil {
 			return err
 		}
 		colors[0] = 0x3d

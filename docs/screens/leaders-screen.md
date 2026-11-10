@@ -86,6 +86,18 @@ row bright), the mode buttons, the hire cost in hire mode, the shown star
 with its governor, the page buttons (with `_global_var` 'c' a quirk draws
 one pressed), the flash counters.
 
+Community patch 1.51: `Print_Officer_Data_`'s Print_ of the cost or
+upkeep label (0x95e3e) goes through the patch (0x404b22: the label's y
+and the leader, then 0x40e6a6), which prints the leader's experience
+(+0x24, u16) over the next level's threshold right-aligned at (293, 91 +
+the label's y) in the label's font: 60, 150, 300, 500 for
+`Owned_Officer_Level_` 0..3, 1000 above (the patch's table at 0x45cd0f).
+Its template is "$XP$/$NEXTLVL$ EP"; the port takes the bracketed part of
+KENTEXT 0x1f (the crew experience, "Green Crew (%d EP)", per language: "%d
+EP", "%d PE", "Esp. %d") with "%d/%d" for its "%d", so no new text. Only
+the full leaders screen shows it (not the hire popup). Tests:
+`TestOfficerExperience`, `TestLeadersScreenExperience`.
+
 ## Check
 
 `TestLeadersScreen` (SAVE1 as SAVE10 in `build/oracle/fleets`): the colony
