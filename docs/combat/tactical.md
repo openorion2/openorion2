@@ -547,3 +547,16 @@ titan) match.
   worktree); keys must stay under DOSBox-X's autotype limit; keys typed
   during animations are eaten by their Get_Input calls, so pad with lshift
   or use -combatkeys.
+
+## Community patch 1.51
+
+Fixes of 1.51 the port carries (addresses in the linked 1.51 image,
+`build/p151/README.txt`):
+
+- Missile and fighter hits. Every call of `Get_Missile_Hits_` goes through
+  0x404eea, which turns 0 into 1 (`missileHits`): a monster's fighters (its
+  armour class 0) took 0 hits, a division by zero in `Target_Missile_Value_`
+  and an endless loop in `Apply_Damage_To_Missile_`. `Expected_Weapon_Damage_`
+  (0x28cd9), `Target_Missile_Value_` (0x29fc7) and `Apply_Damage_To_Missile_`
+  (0x3a0f4) pass the missile's owner (+2) instead of its ship's current one,
+  which the crystal's `Crystal_Control_` may have changed since the launch.
