@@ -26,10 +26,14 @@ const (
 	netLeaders   = 0x43     // leaders in the tables Send_*_Info_ walk
 	netOfficers  = 0x117    // player+0x117: the 0xd4 bytes a battle may change
 	netOfficerSz = 0xd4
-	combfindGNN  = 0x1aa3dc // Load_Combfind_Strings_' GNN combat line
-	combfindAtt  = 0x1aa3bc // "%s is attacking %s"
-	combfindOut  = 0x1aa3d8 // outpost destroyed
-	combfindMind = 0x1aa3b8 // mind control
+	// community patch 1.51: msgs 0x10/0x12 carry the records from +0xc4
+	// (FieldStatus on), so the battle's machines agree on the tech fields
+	netTargetRec   = 0xc4
+	netTargetRecSz = 0x127
+	combfindGNN    = 0x1aa3dc // Load_Combfind_Strings_' GNN combat line
+	combfindAtt    = 0x1aa3bc // "%s is attacking %s"
+	combfindOut    = 0x1aa3d8 // outpost destroyed
+	combfindMind   = 0x1aa3b8 // mind control
 )
 
 // Slot fields, offsets from netCombat + 12·player.
@@ -165,7 +169,7 @@ func (g *Game) clientCombatLoop() error {
 			g.moxPlaySound(0x33)
 		case 0x14: // the attacker against a human: the result to the defender (msg 0x18)
 			res := g.netNewResult()
-			r := g.do1Combat(star, me, n.i16(netCShipT), res.planet, res, false)
+			r := g.netDo1Combat(star, me, n.i16(netCShipT), res.planet, res, false)
 			def := int(n.i16(netCDef))
 			b, stale := g.resultBytes(res)
 			g.moxSendMessageStale(g.netIDOf(def), 0x18, b, stale)
@@ -178,7 +182,7 @@ func (g *Game) clientCombatLoop() error {
 			g.sendBattleResults(star, me, int16(def), n.i16(netCShipT), n.i16(netCPlanet), r)
 		case 0x15: // the human defender: wait for the attacker's result (msg 0x18)
 			att := int16(n.i8(netCAtt))
-			r := g.do1Combat(star, att, n.i16(netCShipT), n.i16(netCPlanet), nil, false)
+			r := g.netDo1Combat(star, att, n.i16(netCShipT), n.i16(netCPlanet), nil, false)
 			if n.u8(netState) != 0x1a {
 				n.set8(netState, 0xe)
 			}
@@ -191,12 +195,12 @@ func (g *Game) clientCombatLoop() error {
 			n.set8(netState, 0xe)
 			g.sendBattleResults(star, att, me, n.i16(netCShipT), n.i16(netCPlanet), r)
 		case 0x16: // the attacker against an AI or a monster
-			r := g.do1Combat(star, me, n.i16(netCShipT), n.i16(netCPlanet), nil, false)
+			r := g.netDo1Combat(star, me, n.i16(netCShipT), n.i16(netCPlanet), nil, false)
 			n.set8(netState, 0xe)
 			g.sendBattleResults(star, me, n.i16(netCDef), n.i16(netCShipT), n.i16(netCPlanet), r)
 		case 0x17: // the defender against an AI or a monster
 			att := int16(n.i8(netCAtt))
-			r := g.do1Combat(star, att, n.i16(netCShipT), n.i16(netCPlanet), nil, false)
+			r := g.netDo1Combat(star, att, n.i16(netCShipT), n.i16(netCPlanet), nil, false)
 			n.set8(netState, 0xe)
 			if g.e != nil {
 				if err := g.loadNetNextTurnScreen(true); err != nil {
@@ -206,7 +210,7 @@ func (g *Game) clientCombatLoop() error {
 			g.sendBattleResults(star, att, me, n.i16(netCShipT), n.i16(netCPlanet), r)
 		case 0x18: // strategic: the attacker resolves, the human defender gets msg 0x16
 			res := g.netNewResult()
-			r := g.do1Combat(star, me, n.i16(netCShipT), res.planet, res, false)
+			r := g.netDo1Combat(star, me, n.i16(netCShipT), res.planet, res, false)
 			if err := g.loadNetNextTurnScreen(true); err != nil {
 				return err
 			}
@@ -437,10 +441,13 @@ func (g *Game) netStartBattle(star, att int16) {
 	n.set16(sa+slShipT, shipT)
 	n.set16(sa+slPlanet, g.targetColonyToPlanet(colT))
 	n.set16(sa+slDef, def)
+	// community patch 1.51 (0x402415, 0x4023f5): a slot busy with the attacker
+	// is released only at this star; one in his battle elsewhere stays busy.
+	here := func(j int) bool { return int16(n.i8(slot(j)+slStar)) == star }
 	if def == -1 {
 		n.set8(netPickDone, 0)
 		for j := int(s.NumPlayers) - 1; j >= 0; j-- {
-			if n.i8(slot(j)+slBusy) == int8(att) {
+			if n.i8(slot(j)+slBusy) == int8(att) && here(j) {
 				g.e.MoxUpdate()
 				n.set8(slot(j)+slBusy, 0xff)
 			}
@@ -451,7 +458,7 @@ func (g *Game) netStartBattle(star, att int16) {
 	sd := slot(int(def))
 	copy(n.mem[sd+slShipT-netBase:sd+slShipT-netBase+6], n.mem[sa+slShipT-netBase:sa+slShipT-netBase+6])
 	for j := int(s.NumPlayers) - 1; j >= 0; j-- {
-		if int16(j) != att && int16(j) != def && n.i8(slot(j)+slBusy) == int8(att) {
+		if int16(j) != att && int16(j) != def && n.i8(slot(j)+slBusy) == int8(att) && here(j) {
 			g.e.MoxUpdate()
 			n.set8(slot(j)+slBusy, 0xff)
 		}
@@ -462,7 +469,7 @@ func (g *Game) netStartBattle(star, att int16) {
 			planet = s.Colonies[colT].Planet
 		}
 		// The sneak flag is not passed here (push 0): a quirk of the original.
-		g.do1Combat(star, att, shipT, planet, nil, false)
+		g.netDo1Combat(star, att, shipT, planet, nil, false)
 		g.updatePlayerNeedsToAttack(star, att, def)
 		n.set8(netPickDone, 0)
 		n.set8(sa+slBusy, 0xff)
@@ -475,6 +482,20 @@ func (g *Game) netStartBattle(star, att int16) {
 		return
 	}
 	g.doNonhumanAttackAgainstHuman(int(def))
+}
+
+// netDo1Combat is Do_1_Combat_ as Client_Combat_Loop_ and
+// Do_Net_Combat_Update_ call it in community patch 1.51 (0x404acf): the
+// in-battle flag keeps the host's Mox_Net_Update_ from starting another
+// battle inside this one (which moved the current star under it).
+func (g *Game) netDo1Combat(star, att, def, planet int16, res *combatResult, sneak bool) int8 {
+	n := &g.net
+	if n.inBattle {
+		panic("nested combat detected") // 1.51 exits with this message; unreachable
+	}
+	n.inBattle = true
+	defer func() { n.inBattle = false }()
+	return g.do1Combat(star, att, def, planet, res, sneak)
 }
 
 // targetColonyToPlanet is Target_Colony_To_Planet_ (0xe69de).
@@ -639,6 +660,18 @@ func (g *Game) setOfficerBytes(p int, b []byte) {
 	setRec(&g.state.Players[p], rec)
 }
 
+// targetRecBytes are the record bytes msgs 0x10 and 0x12 carry (community
+// patch 1.51: tech field status, applications and the rest up to +0x1eb).
+func (g *Game) targetRecBytes(p int) []byte {
+	return g.playerRecord(p)[netTargetRec : netTargetRec+netTargetRecSz]
+}
+
+func (g *Game) setTargetRecBytes(p int, b []byte) {
+	rec := g.playerRecord(p)
+	copy(rec[netTargetRec:], b[:netTargetRecSz])
+	setRec(&g.state.Players[p], rec)
+}
+
 func (g *Game) starByte(star, off int) byte { return recBytes(&g.state.Stars[star])[off] }
 
 func (g *Game) setStarByte(star, off int, v byte) {
@@ -649,10 +682,12 @@ func (g *Game) setStarByte(star, off int, v byte) {
 
 func (g *Game) planetBytes(pl int) []byte { return recBytes(&g.state.Planets[pl]) }
 
-// sendNetMsg sends a Send_*_Info_ buffer to net id to: up to 0x8000 bytes as
-// one message, else a chunk count and chunks of 0x7800 with chat loops.
+// sendNetMsg sends a Send_*_Info_ buffer to net id to: up to 0x7800 bytes as
+// one message, else a chunk count and chunks of 0x7800, a chat loop each.
+// community patch 1.51: was 0x8000 in a 0x7800 buffer, a chat loop per
+// Net_Is_Sending_; the longer records need the 0xff00 buffer and chunks.
 func (g *Game) sendNetMsg(to int32, one, count, chunk uint16, b []byte) {
-	if len(b) <= 0x8000 {
+	if len(b) <= netChunk {
 		g.moxSendMessage(to, one, b)
 		return
 	}
@@ -661,12 +696,7 @@ func (g *Game) sendNetMsg(to int32, one, count, chunk uint16, b []byte) {
 	for p := 0; p < len(b); p += netChunk {
 		k := min(len(b)-p, netChunk)
 		g.e.MoxUpdate()
-		for {
-			g.must2(g.chatBoxInputLoop())
-			if !g.netIsSending() {
-				break
-			}
-		}
+		g.must2(g.chatBoxInputLoop())
 		g.moxSendMessage(to, chunk, b[p:p+k])
 	}
 }
@@ -683,7 +713,7 @@ func (g *Game) sendPickTargetInfo(p int, star int16) {
 	if g.net.i16(netHostID) != int16(g.netIDOf(p)) {
 		g.sendStarPlayerPresence(&w, int(star))
 		for k := int(s.NumPlayers) - 1; k >= 0; k-- {
-			w.bytes(g.officerBytes(k))
+			w.bytes(g.targetRecBytes(k)) // community patch 1.51: from +0xc4
 		}
 		g.e.MoxUpdate()
 		for l := netLeaders - 1; l >= 0; l-- {
@@ -746,7 +776,7 @@ func (g *Game) decodePickTargetInfo(buf []byte) int {
 	if !g.netIsHost() {
 		g.decodeStarPlayerPresence(r, -1)
 		for k := int(s.NumPlayers) - 1; k >= 0; k-- {
-			g.setOfficerBytes(k, r.next(netOfficerSz))
+			g.setTargetRecBytes(k, r.next(netTargetRecSz)) // community patch 1.51
 		}
 		for l := netLeaders - 1; l >= 0; l-- {
 			s.Leaders[l].Owner = -1
@@ -825,11 +855,12 @@ func (g *Game) sendYouAreTargetInfo(def, att int, shipT, colony, star int16) {
 	if g.net.i16(netHostID) != int16(g.netIDOf(def)) {
 		g.sendStarPlayerPresence(&w, int(star))
 		g.e.MoxUpdate()
+		// community patch 1.51: the records from +0xc4
 		if att < 8 {
-			w.bytes(g.officerBytes(att))
+			w.bytes(g.targetRecBytes(att))
 		}
 		if def < 8 {
-			w.bytes(g.officerBytes(def))
+			w.bytes(g.targetRecBytes(def))
 		}
 		g.e.MoxUpdate()
 		g.writeLeadersOf(&w, att, def)
@@ -902,11 +933,12 @@ func (g *Game) decodeYouAreTargetInfo(buf []byte) int {
 	n.set16(netCDef, int16(me))
 	if !g.netIsHost() {
 		g.decodeStarPlayerPresence(r, -1)
+		// community patch 1.51: the records from +0xc4
 		if att < 8 {
-			g.setOfficerBytes(att, r.next(netOfficerSz))
+			g.setTargetRecBytes(att, r.next(netTargetRecSz))
 		}
 		if me < 8 {
-			g.setOfficerBytes(me, r.next(netOfficerSz))
+			g.setTargetRecBytes(me, r.next(netTargetRecSz))
 		}
 		for l := netLeaders - 1; l >= 0; l-- {
 			if o := int(s.Leaders[l].Owner); o == att || o == me {

@@ -190,7 +190,7 @@ func (g *Game) combatHumanPass(p int16) int16 {
 			switch {
 			case g.enemyDissipatorExists(int16(C.u8(tsOwner))):
 				msg = 0x3a
-			case C.u8(tsDrive) == 0:
+			case C.satellite(): // community patch 1.51 (0x4430e); 1.40: drive 0
 				msg = 0x3b
 			case C.i16(tsSpeed) < 1:
 				msg = 0x4f

@@ -274,7 +274,7 @@ func (g *Game) drawGreyDamageBars(x, y int, i int16) error {
 		return halves(d, y+0x4f)
 	}
 	size := int(t.u8(tsSize))
-	if t.u8(tsDrive) == 0 {
+	if t.satellite() { // community patch 1.51 (0x2cdbf); 1.40: drive 0
 		if tc.def == 8 {
 			size = 8
 		} else {

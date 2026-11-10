@@ -183,13 +183,16 @@ func TestNetSoak(t *testing.T) {
 	for _, c := range []struct{ n, ais, battles int }{{2, 0, 0}, {3, 0, 0}, {2, 2, 0}, {2, 2, netBattlesStrategic}, {3, 1, netBattlesStrategic}, {2, 2, netBattlesTactical}, {2, 0, netBattlesHumans}, {2, 0, netBattlesHumansScreen}, {2, 3, netSoakDiplo}, {3, 2, netSoakDiplo},
 		{3, 1, netSoakQuit}, {2, 1, netSoakQuit}, {3, 0, netSoakSurrender}, {3, 1, netSoakEliminate}, {2, 1, netSoakEliminate},
 		{3, 1, netSoakDropMain}, {2, 1, netSoakDropMain}, {3, 0, netSoakDropVote}, {2, 1, netSoakDropVote}, {3, 0, netSoakDropUpload}, {2, 1, netSoakDropUpload},
-		{3, 1, netSoakDropHost}, {2, 1, netSoakDropHost}, {3, 1, netSoakCreatorQuit}, {2, 1, netSoakCreatorQuit}, {3, 1, netSoakEliminateCreator}, {2, 1, netSoakEliminateCreator}} {
+		{3, 1, netSoakDropHost}, {2, 1, netSoakDropHost}, {3, 1, netSoakCreatorQuit}, {2, 1, netSoakCreatorQuit}, {3, 1, netSoakEliminateCreator}, {2, 1, netSoakEliminateCreator},
+		{2, 6, netBattlesNested}} {
 		name := fmt.Sprintf("%d+%dai", c.n, c.ais)
 		switch c.battles {
 		case netBattlesStrategic:
 			name += "-battles"
 		case netBattlesTactical:
 			name += "-tactical"
+		case netBattlesNested:
+			name += "-nested"
 		case netBattlesHumans:
 			name += "-lockstep"
 		case netBattlesHumansScreen:
@@ -253,6 +256,9 @@ const (
 	// the creator hosts turn 3 and it eliminates him (his own msg 0x3b is
 	// not sent: he leaves on the broadcast); the others play on
 	netSoakEliminateCreator = 14
+	// tactical: the humans attack an AI's last star, the AIs each other's
+	// first: AI battles come up while the host fights (netSoakNested)
+	netBattlesNested = 15
 )
 
 // netSoakDrop is netSoakLeave for the drop modes, on machine m: true once
@@ -418,6 +424,70 @@ func netSoakBattles(g *Game, battles int) {
 	}
 }
 
+// netSoakNested moves, every other turn on the host before Next_Turn_, a
+// warship of the host's player to the AIs' last colony star, and one of the
+// other human and of each other AI (at war) to the first AI's first. Stars
+// are taken from the last: the host fights first; the AIs' battles at the
+// other star wait for the human's there, which ends while the host still
+// fights (community patch 1.51: they wait for the host's too).
+func netSoakNested(g *Game) {
+	s := &g.state
+	if s.Stardate%2 != 0 {
+		return
+	}
+	np := int(s.NumPlayers)
+	ai := func(p int) bool { return s.Players[p].Objective != save.ObjectiveHuman }
+	colonyStar := func(q int, last bool) (star, planet int16) {
+		star = -1
+		for i := 0; i < int(s.NumColonies); i++ {
+			if c := &s.Colonies[i]; int(c.Owner) == q && c.Planet != -1 {
+				if st := int16(s.Planets[c.Planet].Star); star == -1 || last == (st > star) {
+					star, planet = st, c.Planet
+				}
+			}
+		}
+		return
+	}
+	move := func(p int, star int16) {
+		for i := 0; i < int(s.NumShips); i++ {
+			sh := &s.Ships[i]
+			if int(sh.Owner) == p && sh.Design.Type == 0 && sh.Status == save.ShipAtStar && sh.Location != star {
+				sh.Location, sh.X, sh.Y = star, s.Stars[star].X, s.Stars[star].Y
+				return
+			}
+		}
+	}
+	// x: the AIs' last colony star; y: another AI's (owner's) first below it.
+	x, xo, y, owner, planet := int16(-1), -1, int16(-1), -1, int16(-1)
+	for q := 0; q < np; q++ {
+		if st, _ := colonyStar(q, true); ai(q) && st > x {
+			x, xo = st, q
+		}
+	}
+	for q := 0; q < np; q++ {
+		if st, pl := colonyStar(q, false); ai(q) && q != xo && st != -1 && st < x && st > y {
+			y, owner, planet = st, q, pl
+		}
+	}
+	if y == -1 {
+		return
+	}
+	for p := 0; p < np; p++ {
+		switch {
+		case p == int(s.PlayerNum):
+			move(p, x)
+		case p != owner:
+			if ai(p) {
+				// At war, and the colony there is p's war target (Get_AI_Target_).
+				P := &s.Players[p]
+				P.TreatyStatus[owner], s.Players[owner].TreatyStatus[p] = 5, 5
+				P.AIWarTarget, P.Diplo7C9[1] = planet, uint8(owner)
+			}
+			move(p, y)
+		}
+	}
+}
+
 // netSoakContacts makes, on the host before Next_Turn_, every player know
 // every other at good relations: the AIs propose treaties to the humans.
 func netSoakContacts(g *Game) {
@@ -455,7 +525,7 @@ func netSoak(t *testing.T, n, ais, turns, battles int) {
 	}
 	var games []*Game
 	elim := battles == netSoakEliminate || battles == netSoakEliminateCreator
-	leave := battles == netSoakQuit || battles == netSoakSurrender || elim || battles >= netSoakDropMain
+	leave := battles == netSoakQuit || battles == netSoakSurrender || elim || battles >= netSoakDropMain && battles <= netSoakEliminateCreator
 	drop := battles >= netSoakDropMain && battles <= netSoakDropHost
 	leaver := netSoakLeaver(n, battles)
 	leaveStep, leaveIdle := 0, 0
@@ -541,7 +611,10 @@ func netSoak(t *testing.T, n, ais, turns, battles int) {
 				mu.Unlock()
 			}
 			g.net.preTurnHook = func() { netSoakBattles(g, battles) }
-			g.combatUI = netSoakUI{g, battles == netBattlesHumansScreen}
+			if battles == netBattlesNested {
+				g.net.preTurnHook = func() { netSoakNested(g) }
+			}
+			g.combatUI = netSoakUI{g, battles == netBattlesHumansScreen || battles == netBattlesNested && m == 0}
 			g.net.battleHook = func(sender, att, def, star, planet int) {
 				// The host's ships and colony there now equal the fighting machine's.
 				var f *Game

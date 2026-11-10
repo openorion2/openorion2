@@ -22,7 +22,9 @@ has something in it.
 1. [Build Queue Management](build-queue.md): build lists on the keys Q
    and 0-9, taking a purchase back.
 2. [Ships and Fleets](ships.md): the sixth ship design.
-3. [Keyboard Shortcuts](keyboard.md): the keys that differ from
+3. [Critical Bug Fixes](bug-fixes.md): crashes, freezes and network
+   desyncs.
+4. [Keyboard Shortcuts](keyboard.md): the keys that differ from
    1.40b23.
 
 Still to come, as features land: Compatibility (saves, network play),

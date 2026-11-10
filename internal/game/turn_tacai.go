@@ -104,7 +104,8 @@ func (g *Game) expectedDamageByType(a int16, k int, t, mode, rng, w, mods, n int
 			return 0
 		}
 		M := g.msl(t)
-		h := int32(g.missileHits(M.i16(tmWeapon), int16(g.tsp(M.i16(tmShip)).u8(tsOwner)), M.i16(tmMods)))
+		// community patch 1.51: the missile's owner, not its ship's.
+		h := int32(g.missileHits(M.i16(tmWeapon), M.i16(tmOwner), M.i16(tmMods)))
 		return uint32(h * int32(int16(((int32(rng)-1)*-10+0x46)*int32(n)+0x32)/100))
 	case w == 0x22:
 		return uint32(avg * (int32(T.u8(tsSize)) + 1) * int32(n))
@@ -549,7 +550,8 @@ func (g *Game) targetMissileValue(a, m, inRange int16) int32 {
 	for k := 0; k < 8; k++ {
 		kills += g.expectedWeaponDamage(a, k, m, 1, rng)
 	}
-	kills /= g.missileHits(M.i16(tmWeapon), int16(g.tsp(M.i16(tmShip)).u8(tsOwner)), M.i16(tmMods))
+	// community patch 1.51: the missile's owner, not its ship's.
+	kills /= g.missileHits(M.i16(tmWeapon), M.i16(tmOwner), M.i16(tmMods))
 	if M.i16(tmCount) < kills {
 		kills = M.i16(tmCount)
 	}
@@ -657,7 +659,9 @@ func (g *Game) getCurrentMissileTarget(a int16, value *int32) int16 {
 	A.set8(0x3f, 0)
 	for m := int16(0); m < nMissiles; m++ {
 		M := g.msl(m)
-		if M.i16(tmWeapon) <= 0 || M.i16(tmCount) <= 0 || g.tsp(M.i16(tmShip)).u8(tsOwner) == A.u8(tsOwner) {
+		// community patch 1.51 (0x4010fd): friend or foe by Missile_Owner_,
+		// not by the launching ship's owner, which a capture may change.
+		if M.i16(tmWeapon) <= 0 || M.i16(tmCount) <= 0 || uint8(M.i16(tmOwner)) == A.u8(tsOwner) {
 			continue
 		}
 		if !g.willMissileDoDamage(a, m) {

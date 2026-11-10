@@ -116,7 +116,7 @@ Pseudocode read from REA (Ghidra) and the assembly; call order:
    `_combat_init`), restricted to special 0x22 in the special phase:
    `Init_Ship_For_Start_Of_Turn_` (retreat completion via `Retreat_Ship_`,
    capture flags, speed).
-3. Turn order `_ship_turn_order` (0x1d2 entries): the eligible records in
+3. Turn order `_ship_turn_order` (0x19296c, 0xd2 entries): the eligible records in
    record order (boarded ones as −1), sorted by initiative with
    `_combat_init`, terminated by −10.
 4. `Next_Ship_` picks the next record (`_cur_ship`, `_cur_ptr`), checks the
@@ -179,6 +179,13 @@ before porting: the port has to replay them without drawing.
   in the loop besides those: +0x3d i16 movement points left, +0x41 cloak
   countdown, +0x42 tractor/0xff, +0x4b retreating, +0x5a/+0x5c weapon mount
   on/state (= `tw(k, twOn)` and `twFired`), +0xb1 defensive fire range.
+- Record limits: `Tactical_Combat_` loads at most 99 ships a side (its
+  counters stop at 0x64), so a battle has at most the planet, 99 + 99 ships
+  and one satellite (200), or at Antares the planet, 99 attackers, the
+  defence fleet (at most 0+0+3+2+7 by the caps at 0x181746) and the
+  fortress; `_ship_turn_order` and `Retreat_Check_`'s hits (0xd2 each) hold
+  them all. Only `Tactical_Bombardment_` loads every ship, and it uses
+  neither (`TestCombatRecordLimit`).
 - Missile record 0x1a × 300 (`_missile`), `tm*` constants.
 - `_combat_grid` (word per square, 0x44 per column): 2000 = legal move,
   else record index; `_combat_mouse_grid` 0x2928 bytes (UI).
@@ -547,3 +554,52 @@ titan) match.
   worktree); keys must stay under DOSBox-X's autotype limit; keys typed
   during animations are eaten by their Get_Input calls, so pad with lshift
   or use -combatkeys.
+
+## Community patch 1.51
+
+Fixes of 1.51 the port carries (addresses in the linked 1.51 image,
+`build/p151/README.txt`):
+
+- Missile and fighter hits. Every call of `Get_Missile_Hits_` goes through
+  0x404eea, which turns 0 into 1 (`missileHits`): a monster's fighters (its
+  armour class 0) took 0 hits, a division by zero in `Target_Missile_Value_`
+  and an endless loop in `Apply_Damage_To_Missile_`. `Expected_Weapon_Damage_`
+  (0x28cd9), `Target_Missile_Value_` (0x29fc7) and `Apply_Damage_To_Missile_`
+  (0x3a0f4) pass the missile's owner (+2) instead of its ship's current one,
+  which the crystal's `Crystal_Control_` may have changed since the launch.
+- Missile targets. `Get_Current_Missile_Target_` tells friend from foe by
+  `Missile_Owner_` (0x2b022 calls 0x4010fd), not by the owner of the ship
+  that launched it (`getCurrentMissileTarget`): after a capture the AI
+  aimed at its own missiles and left the enemy's alone.
+- Ships without drive. 1.40 took every record with drive 0 (+0x31) for a
+  satellite, and a trans-dimensional race may fly ships without drive
+  (`bestWarpDrive` 0): they were deployed by the planet, could not move,
+  and `End_Of_Combat_` read the colony -1 or `Unload_Combat_Ship_` looped
+  for ever. 1.51 tests the high byte of the ship id (+0x1f == 0xff, id -1)
+  in 11 of the 21 places (`tship.satellite`): `Calc_Current_Speed_`
+  0x452a8, `Defensive_Combat_Bonus_` 0x35dd2, `Deploy_Ships_` 0x490fa,
+  0x49153, 0x49184, `Do_Combat_Turn_` 0x4320b (satellites turn) and
+  0x4430e (flee refused), `Draw_Grey_Damage_Bars_` 0x2cdbf, `End_Of_Combat_`
+  0x4b1eb, `Fleet_Offensive_Bonus_` 0x362de, `Repair_Combat_Ship_` 0x358e0.
+  The others (`Fleet_Defensive_Bonus_`, the AI's retreat and self-destruct,
+  `Is_Combat_Ship_Dead_`, `Load_Combat_Ship_`, `Init_Internal_Space_`,
+  `Draw_Internals_Display_`, the second of `End_Of_Combat_`) keep drive 0.
+  With it: Antaran ships get id 0xfeff (-0x101) instead of -1 (the five
+  `Load_*_Antaran_Combat_Ship_`), and `End_Of_Combat_` (0x4b340, 0x4b488,
+  0x4b6c1, 0x4b872, 0x4b8f5) and `Unload_Combat_Ship_` (0x4ba02) skip ids
+  below 0, not -1 only. `Calc_Current_Speed_` gives a driveless ship of
+  owner 0..9 speed 0 before the trans-dimensional +4 (0x45315 -> 0x40149d);
+  `Unload_Combat_Ship_` restores the drive hits of a design with combat speed
+  0 instead of raising them until it moves (0x4ba0e -> 0x402b55); the ship
+  view (`Load_Display_Combat_Ship_`, 0x4cf77 -> 0x400b79) shows speed 0 (+4)
+  without drive, and otherwise reckons damage from half the drive hits as
+  combat does, not two thirds.
+- Retreat. `Retreat_Ship_` (0x459b6) and `Draw_Retreating_Ship_` (0x32ea1)
+  call 0x4019c9 instead of `Is_Combat_Ship_Dead_` (`retreatBlocked`): a
+  dead ship or one `Calc_Current_Speed_` leaves at 0 or less (a black hole,
+  tractors) stays, its moves left (low byte of +0x3d) and retreat order
+  (+0x4b) cleared; so does one whose order is no longer 1 (assault shuttles
+  took it meanwhile). 1.40 let an immobilised ship jump out and lose it.
+  1.51 clears +0x4b as a word, specials 0..7 (+0x4c) with it; the port
+  clears the order byte only. The test runs in `Draw_Retreating_Ship_` off
+  screen too, since it changes the record.

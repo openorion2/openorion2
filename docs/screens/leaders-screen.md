@@ -61,7 +61,8 @@ with the name, `Get_Officer_Costs_`' cost and maintenance, and
 `Hire_Officer_Popup_` (0xc7ab8) runs `Random_New_Officer_Popup_` with
 `_on_officer_screen_flag`: MAINPUPS 0x39..0x3b, no skill icon reload, that
 text in `Print_Paragraph_Centered_` (x+0xe, y+0x95, 0x119×0x3e); oracle
-hire2, `TestOfficerScreenHire`), dismiss (confirmation H 0x126, `Dismiss_Officer_`), pool
+hire2, `TestOfficerScreenHire`), dismiss (confirmation H 0x126, `Dismiss_Officer_`; community patch 1.51:
+it marks the leader for the next network upload, `docs/net/turn.md`), pool
 (`Move_Officer_To_Limbo_`: status 2, H 299 for offered leaders), or assign
 to the chosen ship or star (`Assign_Captain_`: confirmation H 0x119 / 0x118
 with the ETA from `Get_Ship_Leader_ETA_` / `Get_Star_Leader_ETA_`, which

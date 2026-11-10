@@ -643,7 +643,13 @@ func (g *Game) doBlockadedColony(ca *colonyAI, r *aiColonyRec) {
 				continue
 			}
 			if r.farmers >= c.CanFarm {
-				// The original spins here forever: nothing changes.
+				// community patch 1.51 (0xd6285 to 0xd622d): food per farmer, now the
+				// owner's, is tested again; 1.40b23 spun on a stale one forever.
+				if c.FoodPerFarmer == 0 {
+					g.blockadedRestWork(r)
+					break
+				}
+				// 1.51 too spins here forever: nothing changes.
 				if spins++; spins > 1000 {
 					panic("Do_Blockaded_Colony_: the original loops forever")
 				}
@@ -654,15 +660,23 @@ func (g *Game) doBlockadedColony(ca *colonyAI, r *aiColonyRec) {
 			r.first++
 		}
 	} else {
-		job := uint32(colWorker)
-		if s.eventCheckColonyResearching(ci) {
-			job = colScientist
-		}
-		for ; r.first < r.end; r.first++ {
-			setJob(&c.Colonists[r.first], job)
-		}
+		g.blockadedRestWork(r)
 	}
 	g.preImportComputing(ci)
+}
+
+// blockadedRestWork is Do_Blockaded_Colony_'s branch at 0xd62c4: the free
+// colonists work, or research while the colony researches an event.
+func (g *Game) blockadedRestWork(r *aiColonyRec) {
+	s := &g.state
+	c := &s.Colonies[r.colony]
+	job := uint32(colWorker)
+	if s.eventCheckColonyResearching(int(r.colony)) {
+		job = colScientist
+	}
+	for ; r.first < r.end; r.first++ {
+		setJob(&c.Colonists[r.first], job)
+	}
 }
 
 // doUnblockadedColony is Do_Unblockaded_Colony_ (0xd652c): workers from the

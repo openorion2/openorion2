@@ -163,8 +163,8 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Fixed large fleet (>99 ships) tactical combat network freeze.
-- `[?]` Fixed an overflow crash in large (>127 ships) tactical combat.
+- `[n/a]` Fixed large fleet (>99 ships) tactical combat network freeze. -- long messages go over TCP whole (docs/net/combat.md)
+- `[n/a]` Fixed an overflow crash in large (>127 ships) tactical combat. -- a battle has at most 200 records and our arrays hold 210 (TestCombatRecordLimit)
 - `[?]` Fixed occasional boarding of illegal targets by AI and AUTO combat.
 - `[?]` Combat is stopped if the remaining side is on AUTO combat, even if it can still bomb planets or shoot missiles, so ships won't move aimlessly.
 - `[?]` Excluded the Orion system from trim_planets (which is used when mapgen generates more than 250 satellites in a galaxy).
@@ -210,7 +210,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Fixed a crash involving the Crystal capturing a ship while missiles or fighters are present.
+- `[done]` Fixed a crash involving the Crystal capturing a ship while missiles or fighters are present. -- docs/combat/tactical.md
 - `[?]` AI ships with a leader onboard no longer retreat when out of ammo.
 
 ### Interface changes
@@ -260,7 +260,7 @@ A note after the text goes after ` -- `.
 ### Game changes
 
 - `[?]` Fixed artemis system net causing desync in networked tactical combat.
-- `[?]` Fixed tractor crash in big battles (1.50.2 bug).
+- `[n/a]` Fixed tractor crash in big battles (1.50.2 bug). -- a 1.50.2 bug, fixed later
 - `[?]` Removed bugged hard shields patch for strategic combat (1.50.2 issue).
 - `[?]` Fixed warlord ship get +1 level in combat after refit (1.50.6 bug).
 - `[?]` Fixed PD weapons not firing automatically in some cases (1.50.8 bug).
@@ -374,7 +374,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Fixed combat crash in network multiplayer game with AI. Occured when AI versus AI combat had been processed in the middle of human combat.
+- `[done]` Fixed combat crash in network multiplayer game with AI. Occured when AI versus AI combat had been processed in the middle of human combat. -- docs/net/combat.md
 - `[?]` Fixed buggy capitol check when homeworld has been bombed or destroyed. Now capitol can be rebuilt immediately.
 - `[?]` Fixed bug in nebula check.
 - `[?]` Strategic combat no longer honors crew level bonus for BA/BD/MD (reverted 1.50.9 patch back to classic and created parameter).
@@ -521,8 +521,8 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Fixed freeze when no tech field is selected and serendipity event occurs.
-- `[?]` Fixed crash on WinXP related to proc_check_for_winner and proc_next_ship, which happened when retreating from combat involving monsters or Antarans (1.50.12 bug).
+- `[n/a]` Fixed freeze when no tech field is selected and serendipity event occurs. -- advancePlayerField already returns on field 0 (tech.go)
+- `[n/a]` Fixed crash on WinXP related to proc_check_for_winner and proc_next_ship, which happened when retreating from combat involving monsters or Antarans (1.50.12 bug). -- a 1.50.12 bug, fixed later
 - `[?]` A zero colony is no longer lost when colonists are inbound (reverted back to classic).
 - `[?]` Fixed score calculation in games with modded picks (1.50.2 bug).
 - `[?]` Fixed cluster not getting 71 but 54 stars (1.50.10 bug).
@@ -611,7 +611,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Fixed crash in German language version when requesting opponent to break treaties with another player.
+- `[n/a]` Fixed crash in German language version when requesting opponent to break treaties with another player. -- the port runs English only
 
 ### Interface changes
 
@@ -638,12 +638,12 @@ A note after the text goes after ` -- `.
 
 - `[?]` Map knowledge is now transferred on surrender.
 - `[?]` Randomized order in which players roll for leaders.
-- `[?]` Fixed possible crash when clicking a for hire leader who brings a technology in the Leaders screen (1.50.10 bug).
-- `[?]` In the Fleets screen, clicking the right-arrow below the galaxy map no longer freezes the game when there are no fleets to show. (1.50.7 bug).
-- `[?]` Fixed crystal-captured ships sometimes crashing on combat load (1.50.6 bug).
-- `[?]` Fixed non-initiative tactical combat freezing when the combat round has ended if all remaining opponents ships are in stasis (1.50.3 bug).
+- `[n/a]` Fixed possible crash when clicking a for hire leader who brings a technology in the Leaders screen (1.50.10 bug). -- a 1.50.10 bug, fixed later
+- `[n/a]` In the Fleets screen, clicking the right-arrow below the galaxy map no longer freezes the game when there are no fleets to show. (1.50.7 bug). -- a 1.50.7 bug, fixed later
+- `[n/a]` Fixed crystal-captured ships sometimes crashing on combat load (1.50.6 bug). -- a 1.50.6 bug, fixed later
+- `[n/a]` Fixed non-initiative tactical combat freezing when the combat round has ended if all remaining opponents ships are in stasis (1.50.3 bug). -- a 1.50.3 bug, fixed later
 - `[?]` Combat is stopped if the remaining side is an AI, even if it can still bomb planets or shoot missiles, preventing AI ships from moving aimlessly (1.50.1 issue).
-- `[?]` Improved bomb hits calculation to reduce slow down when flyers involved, preventing possible crash when bombing (1.50.9 bug).
+- `[n/a]` Improved bomb hits calculation to reduce slow down when flyers involved, preventing possible crash when bombing (1.50.9 bug). -- a 1.50.9 bug, fixed later
 
 ### Interface changes
 
@@ -772,12 +772,12 @@ A note after the text goes after ` -- `.
 - `[?]` Combat AI is now aware that Ion Cannon has no effect against planets.
 - `[?]` Undocumented +1 hit bonus for civilian buildings during bombardment removed.
 - `[?]` Unstable wormhole event is now also allowed for a fleet with eta=2 turns.
-- `[?]` Fixed the game freezing when an AI without Fungi tech gets stuck optimizing pop for food on a liberated and blockaded non-food planet in case previous owner has Fungi.
+- `[done]` Fixed the game freezing when an AI without Fungi tech gets stuck optimizing pop for food on a liberated and blockaded non-food planet in case previous owner has Fungi. -- docs/turn/overview.md
 - `[?]` Reduced satellite space compensation for beam arc and missile mods from +40% to +33.3%.
 - `[?]` Stealth Field is now mutually exclusive with Cloaking Device and Phasing Cloak.
 - `[?]` Scout Lab & Galactic Lore no longer provide bonus against Antarans (reverted back to classic).
 - `[?]` Warp Interdictor range reverted back to classic 3 parsecs.
-- `[?]` Fixed canceling warning for repeat+android resulting in a bare repeat (adding a new product to it caused the game to freeze).
+- `[done]` Fixed canceling warning for repeat+android resulting in a bare repeat (adding a new product to it caused the game to freeze). -- docs/screens/build-queue.md
 
 ### Interface changes
 
@@ -830,7 +830,7 @@ A note after the text goes after ` -- `.
 - `[?]` Tractor beam drawing is now always removed immediately after the target is destroyed.
 - `[?]` Restored galaxy size 1 label to 'Medium' (was 'Average' since 1.50.5).
 - `[?]` Alt+x now updates ship routes and colonies.
-- `[?]` Alt+x no longer switches to defeated empires, which could crash the game.
+- `[n/a]` Alt+x no longer switches to defeated empires, which could crash the game. -- the port has no Alt+X cheat
 
 ### Config changes
 
@@ -882,7 +882,7 @@ A note after the text goes after ` -- `.
 - `[?]` Changed freighters_cash_bonus default from 5 to 0 BC so building a freighter fleet no longer generates free cash.
 - `[?]` Human-to-human tech trade ignores AI's trade decisions, all tech can now be traded.
 - `[?]` Static cheats will no longer persist when starting or loading a game.
-- `[?]` Fixed crash when loading jimtext.lbx and current language is Italian.
+- `[n/a]` Fixed crash when loading jimtext.lbx and current language is Italian. -- the port runs English only
 
 ### Interface changes
 
@@ -950,8 +950,8 @@ A note after the text goes after ` -- `.
 
 - `[?]` Autodesign won't install heavy mod on beams without heavy mod.
 - `[?]` Fixed long messages after raiding in super-fast combat mode (1.50.7 bug)
-- `[?]` Fixed fleets using Jump Gate being lost in black hole (1.50.7 bug)
-- `[?]` Antaran defensive Raider's weapon_2_amount now won't cause first letter of a ship name to change or other irregularities (1.50.6 bug)
+- `[n/a]` Fixed fleets using Jump Gate being lost in black hole (1.50.7 bug) -- a 1.50.7 bug, fixed later
+- `[n/a]` Antaran defensive Raider's weapon_2_amount now won't cause first letter of a ship name to change or other irregularities (1.50.6 bug) -- a 1.50.6 bug, fixed later
 
 ### Interface changes
 
@@ -969,7 +969,7 @@ A note after the text goes after ` -- `.
 - `[?]` Assassin leader no longer protects colonies from Mind Control.
 - `[?]` Artemis system net built/removed wakes up orbiting fleets now.
 - `[?]` Fixed irregularities in ship placement in case of large fleets.
-- `[?]` Fixed a crash when ICS is on and ship loses speed while moving making its move points negative.
+- `[n/a]` Fixed a crash when ICS is on and ship loses speed while moving making its move points negative. -- ICS is a 1.50 feature
 - `[?]` Fixed division by zero crash when damaging internals of a ship with no systems left but drive with 1 hp.
 - `[?]` Ship captured on retreat by Assault Shuttles now stays in battle.
 - `[?]` AI won't self-destruct ship immobilized by BHG to avoid capture if boarding in black hole is disabled.
@@ -977,7 +977,7 @@ A note after the text goes after ` -- `.
 - `[?]` Enabling strict_combat_sequencing now forces ship initiative.
 - `[?]` Comet now counts as destroyed as soon as 100% of it is destroyed, not the turn after as in classic.
 - `[?]` Ship scrap total won't overflow. Scrapping ships for total sum of more than ~32k BC overflows in classic.
-- `[?]` Fixed game crashing on random sounds, for example in system window or colony view.
+- `[n/a]` Fixed game crashing on random sounds, for example in system window or colony view. -- a bad sound index plays nothing (lbx.Archive.Entry checks it)
 - `[?]` Fixed no sound crash if player has no rifle upon ground invasion (only in modded games).
 - `[?]` AI now better assesses strength of ships with BHGs.
 - `[?]` Nulled interceptors tactical damage value (6-15) as AI use separate calculation function for them.
@@ -988,15 +988,15 @@ A note after the text goes after ` -- `.
 - `[done]` Fixed 6th slot corruption when a ship couldn't be built due to the 500 ships limit. -- docs/turn/design6.md
 - `[?]` Fixed auto-scrap scrapping more ships than needed to pay upkeep.
 - `[?]` Fixed a crash in fleet leaders screen when scrolling fleet pane.
-- `[?]` Fixed a crash when message box has too much text.
-- `[?]` Fixed a crash when raid message is too long.
+- `[n/a]` Fixed a crash when message box has too much text. -- text boxes draw bounds-checked; cosmetic at most
+- `[n/a]` Fixed a crash when raid message is too long. -- the raid report is a Go string
 
 ### Interface changes
 
 - `[?]` 150.SET is used instead of MOX.SET to avoid version conflicts.
 - `[?]` LASTR150.RAC is used instead of LASTRACE.RAC to avoid version conflicts.
 - `[?]` Updated non-English New Game screen labels.
-- `[?]` Race selection screen won't crash on races with too many traits.
+- `[n/a]` Race selection screen won't crash on races with too many traits. -- the trait list is a Go string, no 300-byte buffer
 - `[?]` Warning will now appear upon redirecting fleet out of Jump Gate.
 - `[?]` List of techs received on Orion now includes techs provided by Loknar.
 - `[?]` Colony leader commando skill is now listed in Colony View and in Ground Combat screen.
@@ -1041,7 +1041,7 @@ A note after the text goes after ` -- `.
 - `[?]` Building of an artificial planet causing damage of the planetary array.
 - `[?]` Planet Info displaying wrong food value for Aquatic races.
 - `[?]` Incorrect food output on mapgen generated planets.
-- `[?]` Possible crash at new game.
+- `[n/a]` Possible crash at new game. -- a 1.50.6 bug, fixed in 1.50.6.1
 
 ### Mods
 
@@ -1062,7 +1062,7 @@ A note after the text goes after ` -- `.
 - `[?]` Building a planetary shield won't wake up orbiting fleet now.
 - `[?]` Destroying or selling a satellite or ground defense building will now wake orbiting fleets.
 - `[?]` Fixed right mouse button stuck when loading pre-battle autosave in hotseat.
-- `[?]` Fixed Beam_SFX crash on fighters resolve on top-left corner.
+- `[n/a]` Fixed Beam_SFX crash on fighters resolve on top-left corner. -- our Random(0) returns 1 without dividing
 - `[?]` Fighters now benefit from helmsman.
 - `[?]` Fixed buggy fighter counts after returning to the launching ship.
 - `[?]` Partial fighter squadrons that return to ship do not cause the loss of weapon bays after the battle.
@@ -1079,7 +1079,7 @@ A note after the text goes after ` -- `.
 - `[?]` Behold the arti fixed for single and multi player; renamed parameter to finds_presented_by_scientist.
 - `[?]` Strength of a modded missile base or ground batteries is now properly assessed by AI.
 - `[?]` Added support for ESD custom ratio in determine_beam_weapon_modifications.
-- `[?]` Dismissed leaders desync fixed, they will now always acquire +1 level in a network game.
+- `[done]` Dismissed leaders desync fixed, they will now always acquire +1 level in a network game. -- docs/net/turn.md
 - `[?]` Disabled (reddened) point defense weapon does not automatically fire at incoming missiles anymore.
 - `[?]` Modded leader XP levels no longer cause fired leader to get wrong XP.
 - `[?]` Terraforming now works correctly with arrivals, arriving colonists come on a terraformed planet instead of dying (1.50.1 bug).
@@ -1133,7 +1133,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` System popup freeze fixed.
+- `[done]` System popup freeze fixed. -- docs/screens/system-display.md
 - `[?]` Pirates will no longer seize negative amount of money from richer empires.
 - `[?]` Fixed "leader capture" bug, a leader en route to a captured ship is put to officers pool.
 - `[?]` Breakthrough & serendipity in one turn won't cause blank box in tech choice.
@@ -1146,12 +1146,12 @@ A note after the text goes after ` -- `.
 - `[?]` Enabling strict_combat_sequencing now forces ship initiative in combat.
 - `[?]` Fixed heavy fighters not spending ammo when attacking missiles (1.50.1 bug).
 - `[?]` Fixed garbage appearing in retreating ship's weapon list (1.50.3.1 bug).
-- `[?]` Fixed a crash with ship captures during battle at Antares (1.50.2 bug).
+- `[n/a]` Fixed a crash with ship captures during battle at Antares (1.50.2 bug). -- a 1.50.2 bug, fixed later
 - `[n/a]` Build list no longer allows buying on blockaded colonies (1.50.4 bug). -- a 1.50.4 bug, fixed in 1.50.5
 - `[n/a]` Prepend will no longer push down a bought item (1.50.4 bug). -- a 1.50.4 bug, fixed in 1.50.5
-- `[?]` Fixed fighters disappearances during missile seeking phase (1.50.4 bug).
+- `[n/a]` Fixed fighters disappearances during missile seeking phase (1.50.4 bug). -- a 1.50.4 bug, fixed later
 - `[?]` Fixed instant refit when the queue is full (1.50.4 bug).
-- `[?]` Fixed possible stall on engine explosions in Super-fast combat mode (1.50.4 bug).
+- `[n/a]` Fixed possible stall on engine explosions in Super-fast combat mode (1.50.4 bug). -- a 1.50.4 bug, fixed later
 
 ### Interface changes
 
@@ -1190,7 +1190,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Previously overlooked case of feudal bug fixed.
+- `[done]` Previously overlooked case of feudal bug fixed. -- docs/formats/tech.md
 
 ### Interface changes
 
@@ -1224,11 +1224,11 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Monster bug fixed, no combat rollbacks when fighting identical monsters.
+- `[done]` Monster bug fixed, no combat rollbacks when fighting identical monsters. -- docs/net/combat.md
 - `[?]` Removed Advanced damage control from tree for cybernetic races.
 - `[?]` Ship initiative rule now takes BA differences below +10 into account.
 - `[?]` Ships tied by initiative are now sorted by crew experience.
-- `[?]` "Mark Block Stack Size Exceeded" crash in races screen fixed.
+- `[n/a]` "Mark Block Stack Size Exceeded" crash in races screen fixed. -- no block allocator in the port
 - `[?]` Ship captured by shuttles when rotating will not cause desync in network games.
 - `[?]` Super-fast combat mode (Z) now takes ship explosions into account.
 - `[?]` PD and Spatial Compressor range is now calculated correctly mid flight.
@@ -1253,7 +1253,7 @@ A note after the text goes after ` -- `.
 - `[?]` Marines above ship capacity will now die after ship capture.
 - `[?]` Equal marines and armor limits now apply to colonies with and without Barracks.
 - `[?]` The last marine and armor units of a Subterranean colony no longer die at end of turn when the maximum has been reached.
-- `[?]` Corrected race pick costs sync when loading net game (1.50.2 bug).
+- `[n/a]` Corrected race pick costs sync when loading net game (1.50.2 bug). -- a 1.50.2 bug, fixed later
 - `[?]` Fixed broken cloaking device still being able to cloak (1.50.3 bug).
 - `[?]` Fixed phasing cloak recloaking even with zero counter (1.50.3 bug).
 
@@ -1271,7 +1271,7 @@ A note after the text goes after ` -- `.
 - `[?]` Fixes and improvements in New Game screen help.
 - `[?]` Fixed broken command summary display in main screen (1.50.3 bug).
 - `[?]` Fixed excessive orbital bombardment death tolls (1.50.3 bug).
-- `[?]` Fixed stall when refitting a ship with queue full (1.50.2 bug).
+- `[n/a]` Fixed stall when refitting a ship with queue full (1.50.2 bug). -- a 1.50.2 bug, fixed later
 
 ### New Config parameters
 
@@ -1301,13 +1301,13 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Fixed freeze when ship remains tractored at the end of the combat (1.50.3.1 bug).
+- `[n/a]` Fixed freeze when ship remains tractored at the end of the combat (1.50.3.1 bug). -- a 1.50.3.1 bug, fixed later
 
 ## 1.50.3.1
 
 ### Game changes
 
-- `[?]` Fixed cur_ptr crash related to strict_combat_sequencing (1.50.3 bug).
+- `[n/a]` Fixed cur_ptr crash related to strict_combat_sequencing (1.50.3 bug). -- strict combat sequencing is a 1.50 feature
 - `[?]` Fixed rare ship array overflow related to capture.
 
 ### Changed config parameters
@@ -1319,7 +1319,7 @@ A note after the text goes after ` -- `.
 ### Game changes
 
 - `[?]` Fixed incompatibility with classic's save game format for ships with Augmented Engines.
-- `[?]` Fixed ship retreat disappearances bug, immobilized ship now halts retreat.
+- `[done]` Fixed ship retreat disappearances bug, immobilized ship now halts retreat. -- docs/combat/tactical.md
 - `[?]` Fixed Antaran star fortress repair issues.
 - `[?]` Fixed spy threshold below 60 not working. Negative thresholds are forbidden.
 - `[?]` Two ships now can destroy each other with BHG simultaneously.
@@ -1405,10 +1405,10 @@ A note after the text goes after ` -- `.
 - `[?]` Ship cloaked by Phasing Cloak can't be boarded.
 - `[?]` Lightning field buggy roll fixed, now kills 1/2 missiles instead of 1/3.
 - `[?]` Fixed Antaran fighters not working on defensive Cruiser and Titan.
-- `[?]` Fixed AI stall when targeting missile from captured ship.
+- `[done]` Fixed AI stall when targeting missile from captured ship. -- docs/combat/tactical.md
 - `[?]` Scout lab and Galactic Lore now give bonus against antarans.
 - `[?]` Telepaths can capture ships multiple times without losing control.
-- `[?]` Crashes and quirks related to driveless trans dimensional ships fixed.
+- `[done]` Crashes and quirks related to driveless trans dimensional ships fixed. -- docs/combat/tactical.md
 - `[?]` Zeroth weapon flag usable.
 - `[?]` No place for a new spy exploit fixed.
 
@@ -1533,7 +1533,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Plasma Torpedo crash on impact fixed.
+- `[n/a]` Plasma Torpedo crash on impact fixed. -- a hotfix of 1.50.0's own torpedo code
 - `[n/a]` Crash on malformed build list fixed. -- a bug of 1.50.0 build lists; our parser rejects bad input
 
 ### Interface changes
@@ -1544,7 +1544,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Post-combat repair crash fixed.
+- `[n/a]` Post-combat repair crash fixed. -- a hotfix of 1.50.0's own repair code
 
 ## 1.50.0
 
@@ -1562,10 +1562,10 @@ A note after the text goes after ` -- `.
 - `[?]` Combat repair fixes weapons now.
 - `[?]` Repaired shield generator charges shield.
 - `[?]` Undocumented +1 hits bonus for buildings during bombardment removed.*
-- `[?]` Tech field combat desync fixed.
+- `[done]` Tech field combat desync fixed. -- docs/net/combat.md
 - `[?]` Evolutionary Mutation desync in combat fixed.
-- `[?]` Network hang for zero marines board fixed.*
-- `[?]` Ship cost exchange bug aka feudal bug fixed.
+- `[done]` Network hang for zero marines board fixed.* -- docs/net/combat.md
+- `[done]` Ship cost exchange bug aka feudal bug fixed. -- docs/formats/tech.md
 - `[?]` Strategic tech tree corrections.
 - `[?]` Artemis strategic one kill to win bug fixed.
 - `[?]` Artifacts on-click research bonus bug fixed.

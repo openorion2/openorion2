@@ -1332,6 +1332,7 @@ func (g *Game) dismissOfficer(l int) {
 	} else if loc > -1 && loc < s.NumStars {
 		s.Stars[loc].Officer[ld.Owner] = -1
 	}
+	g.net.dismissed[l] = true // community patch 1.51 (0x4031da): uploaded with its new level
 	g.deassignOfficer(l)
 	g.buildCaptainIDList()
 	if err := g.getOfficerPictures(); err != nil {

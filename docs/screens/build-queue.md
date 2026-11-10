@@ -142,6 +142,12 @@ doom star needs `Colony_Can_Build_Product_(−55)` (E 0x245). Designs the
 colony cannot build say E 0x246 (titan), E 0x245 (doom star) or E 0x237.
 While an entry is held the new one goes before it.
 
+Community patch 1.51: E 0x208's `Do_Confirmation_Box_` call (0xb183e)
+goes through hook 0x402587, which on "No" sets the queue mode (0x1827bf)
+to 0 and calls `Reset_Mouse_Picture_`. In 1.40b23 a "No" while placing a
+repeat mark left mode 2, so the androids were not queued but a bare
+repeat (−10) was, and adding to the queue after it hung.
+
 `Delete_From_Queue_`: a refitting ship asks E 0x213; ships not in the
 colony's queue are freed; a repeat mark goes with its entry.
 `Squish_Out_Queue_Slot_` also removes repeat marks moving into the slot.

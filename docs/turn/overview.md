@@ -376,6 +376,13 @@ Corrections and details found while porting:
 - `Do_Blockaded_Colony_` loops forever when food is short and no colonist may
   farm; the port panics there. `Industry_Sanity_Check_` makes trailing
   workers scientists (not farmers).
+  Community patch 1.51: there (0xd6285) it jumps to 0xd622d, not 0xd623a,
+  testing food per farmer (colony +0xdd) again. The first test reads the
+  value the previous owner left (a liberated colony whose old owner had
+  Biomorphic Fungi on a planet without food); `Pre_Import_Computing_` has
+  since made it the new owner's, 0, so the free colonists become workers
+  (scientists while an event is researched) instead of the loop spinning.
+  With food per farmer still above 0 it loops as before (the port panics).
 - `Assign_Empire_Building_` marks idle colonies -38 and works on that list:
   conquered (or human-threatened in wartime) colonies take the first buildable
   of 0x1a, 0x1b, 0x28, 8, 0x29, 0x1c, 0x18, 0x17; a colony base or colony ship
