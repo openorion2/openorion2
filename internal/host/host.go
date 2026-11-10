@@ -107,7 +107,8 @@ type System struct {
 
 	// animSpeed is community patch 1.51's animation speed, -3..3, which
 	// PageUp and PageDown step as the keys arrive (AnimSpeed).
-	animSpeed int
+	animSpeed   int
+	animKeysOff bool // port-only: true while PageUp/PageDown scroll (the lobby)
 
 	// The buffered press and its two flags (mouse_buffer_flag/flag2).
 	press          Press
@@ -578,12 +579,23 @@ func (s *System) addKey(k Key) {
 	}
 	// community patch 1.51 steps the speed in New09_Handler_ (0x40a34e) on
 	// PageUp and PageDown (0x49E0, 0x51E0), on any screen; the key stays queued.
+	if s.animKeysOff {
+		return
+	}
 	switch k.Scancode {
 	case 75: // PageUp
 		s.animSpeed = min(s.animSpeed+1, 3)
 	case 78: // PageDown
 		s.animSpeed = max(s.animSpeed-1, -3)
 	}
+}
+
+// SetAnimSpeedKeys turns the PageUp/PageDown animation speed keys off
+// (port-only: the lobby scrolls with them) or on again.
+func (s *System) SetAnimSpeedKeys(on bool) {
+	s.mu.Lock()
+	s.animKeysOff = !on
+	s.mu.Unlock()
 }
 
 // AnimSpeed is community patch 1.51's animation speed, -3..3: the number of

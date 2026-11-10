@@ -46,6 +46,13 @@ func TestAnimSpeedReleaseTime(t *testing.T) {
 				return fmt.Errorf("step %d: Release_Time_(%d) waited %d ticks, want %d", i, s.n, got, s.ticks)
 			}
 		}
+		// Off (the lobby scrolls with them), the keys leave the speed alone.
+		sys.SetAnimSpeedKeys(false)
+		sys.PushKey(pgUp)
+		if got := sys.AnimSpeed(); got != 0 {
+			return fmt.Errorf("keys off: speed %d, want 0", got)
+		}
+		sys.SetAnimSpeedKeys(true)
 		// The keys stay queued for the game, as the interrupt leaves them.
 		n := 0
 		for {
@@ -54,8 +61,8 @@ func TestAnimSpeedReleaseTime(t *testing.T) {
 			}
 			n++
 		}
-		if n != 17 {
-			return fmt.Errorf("%d keys queued, want 17", n)
+		if n != 18 {
+			return fmt.Errorf("%d keys queued, want 18", n)
 		}
 		return nil
 	})

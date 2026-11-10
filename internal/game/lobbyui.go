@@ -70,6 +70,9 @@ func lobbyErrorText(server string, err error) string {
 // saved game into it) or joined there, nil when he left the lobby; with a
 // game the connection stays open in g.lobbyConn to play it.
 func (g *Game) lobbyScreen() (j *lobbyv1.GameJoined, load bool, err error) {
+	// PageUp and PageDown scroll here, not the animation speed.
+	g.e.Sys.SetAnimSpeedKeys(false)
+	defer g.e.Sys.SetAnimSpeedKeys(true)
 	conn := g.lobbyConn
 	g.lobbyConn = nil
 	var rem *lobby.Remembered
