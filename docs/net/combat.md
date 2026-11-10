@@ -363,9 +363,18 @@ Both machines run `Tactical_Combat_` (0x47939) with `_net_flag`
   fired first and the port moved first) was the port's 12-pixel step, one
   defensive fire roll short. `Do_Spherical_SFX_`'s shaking (two
   `Random_(5)` per ship and frame) depends on the frame step as well.
-- Quirks: a boarding whose marines drop to 0 (special 7) sends nothing but
-  still waits at the barrier, so the other machine never meets it (a
-  deadlock); `Resolve_Ai_Boarding_`'s msg 0x3e8 during a replayed
+- **Community patch 1.51**: in 1.40b23 a human's boarding whose marines
+  the target's Damper Field (special 7: a third, for a transporter
+  boarding, special 0x23, from afar or onto a moving target) cuts to 0 became kind 0 (`xor edi, edi` at 0x45c68): it
+  sent nothing but still waited at the barrier, and the other machine never
+  met it (a deadlock). 1.51 NOPs that instruction: the boarding goes on with
+  0 marines, msg 0x3e8 code 0x271f {target, 0, kind} is sent and both
+  machines resolve it. A raid of 0 rolls nothing; a capture of 0 fails
+  (`Resolve_Capture_` captures only with marines left), whatever the crew.
+  It holds in every game type: the ship is marked as having boarded, a
+  cloak drops and the report shows. `Resolve_Ai_Boarding_` keeps its kind
+  0 (both machines replay it alike).
+- Quirk: `Resolve_Ai_Boarding_`'s msg 0x3e8 during a replayed
   `Do_Auto_Ship_Turn_` is overwritten when the replay ends.
 
 ## Tests
