@@ -216,7 +216,8 @@ slides it), scan, flee (refusals E text 0x3a/0x3b/0x4f), board (0x3c),
 the radar (centre there), centre, a right click on a square (turn to
 face), end of turn, self destruct (planet: K text 0x38; else the
 confirmation K 0x39, then `Destroy_Ship_` with the drive class set to 1
-for the call and the ship's turn over), then a click on a square (`combatGridClick`: the
+for the call and the ship's turn over), community patch 1.51's all-wait
+(H, checked first; `docs/combat/tactical.md`), then a click on a square (`combatGridClick`: the
 square from the grid field's half squares, shifted by one for big ships
 when the cursor is a move arrow; a legal square moves (`Move_Ship_`), an
 own ship becomes current, an enemy is fired at, a cloaked one says 0x50,

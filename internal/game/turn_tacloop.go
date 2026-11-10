@@ -1332,11 +1332,19 @@ func (g *Game) initShipForStartOfTurn(i int16) {
 
 // nextShip is Next_Ship_ (0x455a4): the next ship in the turn order; 1 when
 // there is none (or the battle is over).
-func (g *Game) nextShip() int16 {
+func (g *Game) nextShip() int16 { return g.nextShipFrom(false) }
+
+// nextShipFrom is Next_Ship_, from the current ship itself when stay is set
+// (community patch 1.51's all-wait, 0x41abca mode 3) and it may move.
+func (g *Game) nextShipFrom(stay bool) int16 {
 	tc := g.tc
 	cur, ptr := tc.cur, tc.curPtr
 	if g.checkForWinner() != 0 {
 		return 1
+	}
+	waits := g.allWaitSides()
+	if stay && ptr >= 0 && g.allWaitMayMove(tc.order[ptr], waits) {
+		return g.nextShipTail(ptr, cur)
 	}
 	planet := false
 	for {
@@ -1357,10 +1365,18 @@ func (g *Game) nextShip() int16 {
 		if ptr == tc.curPtr {
 			break
 		}
-		if !(o == 0 && !planet) && o != -1 && tc.sideEnd[g.tsp(o).u8(tsOwner)] == 0 && g.combatShipIsFunctional(o) {
+		if !(o == 0 && !planet) && o != -1 && tc.sideEnd[g.tsp(o).u8(tsOwner)] == 0 && g.combatShipIsFunctional(o) &&
+			!g.allWaitSkips(o, waits) {
 			break
 		}
 	}
+	return g.nextShipTail(ptr, cur)
+}
+
+// nextShipTail is Next_Ship_ from 0x456cc on, the ship at _cur_ptr found:
+// the view, the fields and the lockstep; cur and ptr are the ship before.
+func (g *Game) nextShipTail(ptr, cur int16) int16 {
+	tc := g.tc
 	if tc.curPtr < 0 {
 		tc.cur = -1
 	} else {
@@ -1405,6 +1421,7 @@ func (g *Game) doCombatTurn(p, phase int16) {
 	for k := range tc.sideEnd {
 		tc.sideEnd[k] = 0
 	}
+	tc.allWait = [15]uint8{} // community patch 1.51 (0x4319c, 0x408746)
 	eligible := func(i int16) bool {
 		return (phase == 0 || g.combatShipHasSpecial(i, 0x22)) && (tc.initOrder != 0 || int16(g.tsp(i).u8(tsOwner)) == p)
 	}

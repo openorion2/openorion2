@@ -29,6 +29,16 @@ func (g *Game) combatHumanPass(p int16) int16 {
 			panic(err)
 		}
 	}
+	if in == sc.allWaitKey {
+		// community patch 1.51 (0x449e56, 0x41b156): H under ship initiative,
+		// sent as msg 0x3e8 code 0x2721 like WAIT's 0x2719.
+		if tc.initOrder != 0 {
+			g.tacSend(tacAllWait, 0, 0, 0)
+			done = g.allWait()
+			g.tacWaitIf()
+		}
+		return done
+	}
 	mountsOn := func() {
 		C := g.tsp(tc.cur)
 		for k := 0; k < 8; k++ {

@@ -35,6 +35,10 @@ type netTurner struct {
 	eager    bool // the others press Turn as soon as the host's vote came
 	log      func(m int, f string, a ...any)
 	hostFor  func(sd uint32) int // the machine that presses Turn first (0 if nil)
+	// allWait: a ship's order under ship initiative is H (community patch
+	// 1.51's all-wait) while its side has not waited yet, then AUTO.
+	allWait  bool
+	hPressed [8]int
 }
 
 // netMainScreenUp reports whether the main screen's own input loop runs:
@@ -75,6 +79,14 @@ func (nt *netTurner) after(m int, g *Game, sys *host.System, games []*Game) bool
 	// The combat screen asks for our ship's order: AUTO, at once (a press read
 	// after the ship changed would cancel the other side's AUTO).
 	if tc := g.tc; tc != nil && tc.scr != nil && tc.scr.humanInput && tc.autoCombat == 0 && g.e.FieldsCount() > tc.scr.autoField {
+		if nt.allWait && tc.initOrder != 0 && tc.allWait[g.tsp(tc.cur).u8(tsOwner)] == 0 && tc.scr.allWaitKey > 0 {
+			if !sys.KeyWaiting() {
+				sys.PushKey(letterKey('h'))
+				nt.hPressed[m]++
+			}
+			nt.idle[m] = 0
+			return false
+		}
 		x1, y1, x2, y2 := g.e.FieldRect(tc.scr.autoField)
 		sys.Press((x1+x2)/2, (y1+y2)/2, 1)
 		nt.idle[m] = 0
@@ -180,7 +192,7 @@ func TestNetSoak(t *testing.T) {
 	if testing.Short() {
 		turns = 6
 	}
-	for _, c := range []struct{ n, ais, battles int }{{2, 0, 0}, {3, 0, 0}, {2, 2, 0}, {2, 2, netBattlesStrategic}, {3, 1, netBattlesStrategic}, {2, 2, netBattlesTactical}, {2, 0, netBattlesHumans}, {2, 0, netBattlesHumansScreen}, {2, 3, netSoakDiplo}, {3, 2, netSoakDiplo},
+	for _, c := range []struct{ n, ais, battles int }{{2, 0, 0}, {3, 0, 0}, {2, 2, 0}, {2, 2, netBattlesStrategic}, {3, 1, netBattlesStrategic}, {2, 2, netBattlesTactical}, {2, 0, netBattlesHumans}, {2, 0, netBattlesHumansScreen}, {2, 0, netBattlesAllWait}, {2, 3, netSoakDiplo}, {3, 2, netSoakDiplo},
 		{3, 1, netSoakQuit}, {2, 1, netSoakQuit}, {3, 0, netSoakSurrender}, {3, 1, netSoakEliminate}, {2, 1, netSoakEliminate},
 		{3, 1, netSoakDropMain}, {2, 1, netSoakDropMain}, {3, 0, netSoakDropVote}, {2, 1, netSoakDropVote}, {3, 0, netSoakDropUpload}, {2, 1, netSoakDropUpload},
 		{3, 1, netSoakDropHost}, {2, 1, netSoakDropHost}, {3, 1, netSoakCreatorQuit}, {2, 1, netSoakCreatorQuit}, {3, 1, netSoakEliminateCreator}, {2, 1, netSoakEliminateCreator},
@@ -197,6 +209,8 @@ func TestNetSoak(t *testing.T) {
 			name += "-lockstep"
 		case netBattlesHumansScreen:
 			name += "-lockstep-screen"
+		case netBattlesAllWait:
+			name += "-lockstep-allwait"
 		case netSoakDiplo:
 			name += "-diplo"
 		case netSoakQuit:
@@ -259,6 +273,9 @@ const (
 	// tactical: the humans attack an AI's last star, the AIs each other's
 	// first: AI battles come up while the host fights (netSoakNested)
 	netBattlesNested = 15
+	// the lockstep on the combat screen under ship initiative: each side
+	// presses H (community patch 1.51's all-wait), then AUTO
+	netBattlesAllWait = 16
 )
 
 // netSoakDrop is netSoakLeave for the drop modes, on machine m: true once
@@ -519,7 +536,9 @@ func netSoak(t *testing.T, n, ais, turns, battles int) {
 	resultsChecked := 0
 	var live []*Game
 	var clientSnaps [][]snap = make([][]snap, n)
-	nt := &netTurner{turns: turns, firstRow: true}
+	nt := &netTurner{turns: turns, firstRow: true, allWait: battles == netBattlesAllWait}
+	lockstep := battles == netBattlesHumans || battles == netBattlesHumansScreen || battles == netBattlesAllWait
+	allWaits := 0 // barriers with a side all-waiting
 	if os.Getenv("OPENORION2_NET_SOAKLOG") != "" {
 		nt.log = func(m int, f string, a ...any) { t.Logf("machine %d: "+f, append([]any{m}, a...)...) }
 	}
@@ -544,7 +563,7 @@ func netSoak(t *testing.T, n, ais, turns, battles int) {
 		if opt != nil {
 			opt.ListKey = true
 			opt.Seed = uint32(7000 + m)
-			if battles == netBattlesHumans || battles == netBattlesHumansScreen {
+			if lockstep {
 				// 7000's first lockstep battle ends in the original's deadlock
 				// after an AI boarding (docs/net/combat.md, "The lockstep").
 				opt.Seed = uint32(7100 + m)
@@ -606,7 +625,11 @@ func netSoak(t *testing.T, n, ais, turns, battles int) {
 				if inBattle[m] <= 2 {
 					seed = "-"
 				}
-				barriers[m] = append(barriers[m], fmt.Sprintf("%x %s", h[:8], seed))
+				tc := g.tc
+				if m == 0 && tc.allWait != [15]uint8{} {
+					allWaits++
+				}
+				barriers[m] = append(barriers[m], fmt.Sprintf("%x %s ship %d/%d wait %v", h[:8], seed, tc.cur, tc.curPtr, tc.allWait))
 				mems[m] = append(mems[m], slices.Clone(g.tc.mem))
 				mu.Unlock()
 			}
@@ -614,7 +637,10 @@ func netSoak(t *testing.T, n, ais, turns, battles int) {
 			if battles == netBattlesNested {
 				g.net.preTurnHook = func() { netSoakNested(g) }
 			}
-			g.combatUI = netSoakUI{g, battles == netBattlesHumansScreen || battles == netBattlesNested && m == 0}
+			if battles == netBattlesAllWait {
+				g.settings[0xd] = 1 // ship initiative
+			}
+			g.combatUI = netSoakUI{g, battles == netBattlesHumansScreen || battles == netBattlesAllWait || battles == netBattlesNested && m == 0}
 			g.net.battleHook = func(sender, att, def, star, planet int) {
 				// The host's ships and colony there now equal the fighting machine's.
 				var f *Game
@@ -788,8 +814,14 @@ func netSoak(t *testing.T, n, ais, turns, battles int) {
 		if cases[0xf609e] == 0 || resultsChecked == 0 {
 			t.Errorf("no battle results came in (%d checked)", resultsChecked)
 		}
-		if battles == netBattlesHumans || battles == netBattlesHumansScreen {
+		if lockstep {
 			t.Logf("lockstep barriers: %d, %d", len(barriers[0]), len(barriers[1]))
+			if battles == netBattlesAllWait {
+				t.Logf("H pressed: %d, %d; barriers with a side all-waiting: %d", nt.hPressed[0], nt.hPressed[1], allWaits)
+				if nt.hPressed[0] == 0 || nt.hPressed[1] == 0 || allWaits == 0 {
+					t.Errorf("no all-wait in a lockstep battle")
+				}
+			}
 			if len(barriers[0]) == 0 {
 				t.Errorf("no lockstep battle")
 			}

@@ -143,6 +143,7 @@ type tactical struct {
 	order       [0xd2]int16       // _ship_turn_order
 	playerMode  [15]int8          // _player_mode
 	sideEnd     [15]int16         // _side_end_of_turn
+	allWait     [15]uint8         // community patch 1.51: all-wait (H) by owner, 0x45fec5
 	grid        [0x51][0x44]int16 // _combat_grid: 2000 legal move, -1 empty, else record
 	autoCombat  int16             // _auto_combat 0x199900
 	autoAtt     int16             // _auto_combat_flag 0x192b10

@@ -603,3 +603,28 @@ Fixes of 1.51 the port carries (addresses in the linked 1.51 image,
   1.51 clears +0x4b as a word, specials 0..7 (+0x4c) with it; the port
   clears the order byte only. The test runs in `Draw_Retreating_Ship_` off
   screen too, since it changes the record.
+- All-wait, hot key H (1.50.24; `turn_tacallwait.go`). 1.51 adds the hot
+  key "h" after "t" (`Add_Tactical_Combat_Fields_` 0x4696d -> 0x400238 ->
+  0x406f6e, with "0".."9" for its Lua scripts, not ported), and checks it
+  after each `Get_Input_` of `Do_Combat_Turn_` (0x43c10 -> 0x400249 ->
+  0x449e56). With `_combat_init` 0 the key does nothing; otherwise
+  0x41b156: msg 0x3e8 code 0x2721 when the lockstep sends (as WAIT sends
+  0x2719), then 0x41b06a(3): the flag of the current ship's owner in
+  0x45fec5 (15 bytes, cleared at each `Do_Combat_Turn_`, 0x4319c ->
+  0x408746) and the next ship, searched from the current one itself; then
+  the barrier. The WAIT button is unchanged. Tests: `TestAllWaitOrder`,
+  and in network play `TestNetSoak` `2+0ai-lockstep-allwait`.
+- 1.51 replaces `Next_Ship_`'s search (0x41abca for ship initiative 1,
+  called for each `Next_Ship_` of `Do_Combat_Turn_`). Before it searches,
+  it reads the attacker's and the defender's flags (any owner but the
+  defender counts as the attacker) and who has a ship left that may move
+  (an entry >= 0, the planet only with defences, functional, its side not
+  ended): a side waiting for one with no ship left moves; when both wait
+  the attacker moves (the defender outwaits him); the search passes over
+  the ships of a side that waits. The port keeps 1.40's search and adds
+  that test (`allWaitSides`); for H, the current ship stays when its side
+  may move (0x41abca searches from `_cur_ptr` itself in mode 3). The rest
+  of 1.51's search (Ship Initiative 2.0, marking ended sides' entries
+  done) is not ported. In 1.51 an "h" read while the other machine's ship
+  moves (its fields are left in place) would act on that ship on one
+  machine only; the port answers the key on the own ship's turn only.

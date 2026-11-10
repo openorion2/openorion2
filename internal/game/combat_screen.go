@@ -87,6 +87,7 @@ type combatScreen struct {
 	speedx2Btn, legalBoxesBtn, mslImpactBtn, selfDestBtn  int
 	shieldsBtn, gridBtn, scanField, boardField, fleeField int
 	waitField, doneField, endOfTurnBtn, centerBtn         int
+	allWaitKey                                            int // community patch 1.51: H
 	weaponsField, specialsField, infoField, superFastBtn  int
 	autoField                                             int
 	weaponBtn                                             [8]int
@@ -106,7 +107,7 @@ func (g *Game) combatGreen() font.Colors { return g.exeColors(cmbtGreen) }
 func (g *Game) combatScreenLoad() error {
 	e := g.e
 	tc := g.tc
-	sc := &combatScreen{clockFrame: 0xf, lastShipStatus: -2, dontDrawShip: -1, activeMissiles: 1}
+	sc := &combatScreen{clockFrame: 0xf, lastShipStatus: -2, dontDrawShip: -1, activeMissiles: 1, allWaitKey: -100}
 	tc.scr = sc
 	sc.gridFlag = int16(g.settings[0xb8])
 	sc.legalBoxes = int16(g.settings[0xb5])

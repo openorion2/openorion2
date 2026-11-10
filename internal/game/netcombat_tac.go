@@ -31,6 +31,7 @@ const (
 	tacSetCur
 	tacBoard
 	tacEndOfTurn
+	tacAllWait // community patch 1.51: H (0x41b192; 0x40b3c2 replays it)
 )
 
 // netTac is the lockstep's state of the tactical engine (per battle) and of
@@ -376,6 +377,8 @@ func (g *Game) netTacticalReplay(p int16) int16 {
 			T := g.tsp(bx)
 			g.resolveCapture(tc.cur, bx, nn, int16(T.u8(tsX))*0x14, int16(T.u8(tsY))*0x14)
 		}
+	case tacAllWait:
+		done = g.allWait()
 	case tacEndOfTurn:
 		if tc.initOrder != 0 {
 			tc.sideEnd[g.tsp(tc.cur).u8(tsOwner)] = 1

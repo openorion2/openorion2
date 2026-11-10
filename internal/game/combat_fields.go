@@ -54,6 +54,7 @@ func (g *Game) addTacticalCombatFields() error {
 			&sc.gridBtn, &sc.scanField, &sc.boardField, &sc.fleeField, &sc.waitField, &sc.doneField, &sc.endOfTurnBtn} {
 			*f = -100
 		}
+		sc.allWaitKey = -100
 		for i := range sc.weaponBtn {
 			sc.weaponBtn[i] = -1000
 		}
@@ -104,6 +105,9 @@ func (g *Game) addTacticalCombatFields() error {
 		add(&sc.doneField, n, er)
 		n, er = e.AddHotKey(g.cmbtKey(cmbtKeyTurn))
 		add(&sc.endOfTurnBtn, n, er)
+		// community patch 1.51 (0x400238, 0x406f6e): the all-wait hot key.
+		n, er = e.AddHotKey("h")
+		add(&sc.allWaitKey, n, er)
 		sc.legalBoxesBtn, sc.mslImpactBtn, sc.speedx2Btn, sc.shieldsBtn, sc.gridBtn, sc.selfDestBtn = -100, -100, -100, -100, -100, -100
 		human := func(p int16) bool { return p < 8 && s.Players[p].Objective == 100 }
 		if human(tc.att) && human(tc.def) {
@@ -130,6 +134,7 @@ func (g *Game) addTacticalCombatFields() error {
 		n, er = e.AddButtonField(0x11b, 0x15c, none, sc.selfDestruct, none, 0x28)
 		add(&sc.selfDestBtn, n, er)
 		sc.autoField, sc.scanField, sc.boardField, sc.fleeField, sc.waitField, sc.doneField, sc.endOfTurnBtn = -100, -100, -100, -100, -100, -100, -100
+		sc.allWaitKey = -100
 		infoY, infoKey = 0x12d, cmbtKeyInfoBack
 		sc.superFastBtn = -1000
 	}
