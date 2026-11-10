@@ -116,7 +116,7 @@ Pseudocode read from REA (Ghidra) and the assembly; call order:
    `_combat_init`), restricted to special 0x22 in the special phase:
    `Init_Ship_For_Start_Of_Turn_` (retreat completion via `Retreat_Ship_`,
    capture flags, speed).
-3. Turn order `_ship_turn_order` (0x1d2 entries): the eligible records in
+3. Turn order `_ship_turn_order` (0x19296c, 0xd2 entries): the eligible records in
    record order (boarded ones as −1), sorted by initiative with
    `_combat_init`, terminated by −10.
 4. `Next_Ship_` picks the next record (`_cur_ship`, `_cur_ptr`), checks the
@@ -179,6 +179,13 @@ before porting: the port has to replay them without drawing.
   in the loop besides those: +0x3d i16 movement points left, +0x41 cloak
   countdown, +0x42 tractor/0xff, +0x4b retreating, +0x5a/+0x5c weapon mount
   on/state (= `tw(k, twOn)` and `twFired`), +0xb1 defensive fire range.
+- Record limits: `Tactical_Combat_` loads at most 99 ships a side (its
+  counters stop at 0x64), so a battle has at most the planet, 99 + 99 ships
+  and one satellite (200), or at Antares the planet, 99 attackers, the
+  defence fleet (at most 0+0+3+2+7 by the caps at 0x181746) and the
+  fortress; `_ship_turn_order` and `Retreat_Check_`'s hits (0xd2 each) hold
+  them all. Only `Tactical_Bombardment_` loads every ship, and it uses
+  neither (`TestCombatRecordLimit`).
 - Missile record 0x1a × 300 (`_missile`), `tm*` constants.
 - `_combat_grid` (word per square, 0x44 per column): 2000 = legal move,
   else record index; `_combat_mouse_grid` 0x2928 bytes (UI).

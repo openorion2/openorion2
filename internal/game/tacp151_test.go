@@ -171,6 +171,30 @@ func TestDrivelessShipBattle(t *testing.T) {
 	}
 }
 
+// TestCombatRecordLimit: Tactical_Combat_ loads at most 99 ships a side,
+// so the records stay within the turn order's 210 entries.
+func TestCombatRecordLimit(t *testing.T) {
+	t.Parallel()
+	g := techGame(t, "start")
+	g.cache = map[cacheKey]*gfx.Picture{}
+	s := &g.state
+	var att []int16
+	for len(att) < 150 {
+		id := s.NumShips
+		s.Ships[id] = s.Ships[0]
+		s.Ships[id].Design.CombatSpeed = 4
+		s.NumShips++
+		att = append(att, id)
+	}
+	// Player 1's colony ship alone: no battle on screen, the attacker wins.
+	if r := g.tacticalCombat(att, []int16{5}, s.Ships[5].Location, -1, false); r != 1 {
+		t.Errorf("result %d, want 1", r)
+	}
+	if g.tc.n != 100 {
+		t.Errorf("%d records, want the planet and 99 ships", g.tc.n)
+	}
+}
+
 // TestRetreatBlocked: a ship ordered to retreat leaves only when it can
 // still move and still retreats (community patch 1.51).
 func TestRetreatBlocked(t *testing.T) {
