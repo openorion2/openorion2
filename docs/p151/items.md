@@ -54,7 +54,7 @@ A note after the text goes after ` -- `.
 
 ### Interface changes
 
-- `[?]` F9 shows star distance if black hole is in between two stars.
+- `[port]` F9 shows star distance if black hole is in between two stars.
 - `[?]` Race specific Doom Star name is shown in Build screen.
 - `[?]` Avenger and Antarans correct weapon arcs shown in Fleets screen.
 - `[?]` Fix for broken custom tech names after new game (1.50.19 issue).
@@ -89,7 +89,7 @@ A note after the text goes after ` -- `.
 
 ### Interface changes
 
-- `[?]` With new hotkey 'h' in combat, player let's ALL his ships wait at once. In classic ship initiative, if both parties use 'h', defender moves last.
+- `[port]` With new hotkey 'h' in combat, player let's ALL his ships wait at once. In classic ship initiative, if both parties use 'h', defender moves last.
 - `[?]` Ship Officer Ruola is shown in Refit Ship popup.
 - `[?]` Population graph includes freighted population.
 
@@ -381,7 +381,7 @@ A note after the text goes after ` -- `.
 
 ### Interface changes
 
-- `[?]` Leader experience points are now shown in Leaders screen.
+- `[port]` Leader experience points are now shown in Leaders screen.
 - `[?]` Fixed build outpost button appearing when travelling.
 - `[?]` Better disable_vsync, reduces occurences of screen flashes.
 
@@ -575,7 +575,7 @@ A note after the text goes after ` -- `.
 
 ### Interface changes
 
-- `[?]` Enemy Moves in Settings menu now functions, showing red destination lines for all enemy fleets within scanning range.
+- `[port]` Enemy Moves in Settings menu now functions, showing red destination lines for all enemy fleets within scanning range.
 - `[?]` Low-G planets in Planets screen show "-25% prod" for a Heavy-G race instead of "-50% prod".
 - `[?]` New Leader Window_2 is now only shown on Tutor level. Removed parameter new_leader_popup2_diff_level.
 - `[?]` Ships in fleets containing captured ships will no longer have incorrect pictures (1.50.12 bug).
@@ -955,7 +955,7 @@ A note after the text goes after ` -- `.
 
 ### Interface changes
 
-- `[?]` Press PageUp/PageDown anywhere in the game to speed up/slow down animation.
+- `[port]` Press PageUp/PageDown anywhere in the game to speed up/slow down animation.
 - `[?]` Removed unused fast mod from anti-matter torpedo, fixing irregular appearance of mod buttons in design screen.
 - `[?]` Tech no longer appears more than once in the acquired tech list when scrapping a captured ship.
 
@@ -1346,7 +1346,7 @@ A note after the text goes after ` -- `.
 ### Interface changes
 
 - `[done]` Corrupt 6th design slot (when loading pre 1.50.1 saves) is automatically fixed. -- docs/turn/design6.md
-- `[?]` Autosave in local games works like in network games, saves every turn before battles.
+- `[port]` Autosave in local games works like in network games, saves every turn before battles.
 - `[?]` Option to play against a random number of AIs.
 - `[?]` Added pictures for cluster, random and post warp in newgame.lbx.
 - `[?]` Added greyed Wait button for strict combat sequencing mode in combat.lbx.
@@ -1589,8 +1589,8 @@ A note after the text goes after ` -- `.
 - `[?]` Faster fade-ins and fade-outs.
 - `[?]` Additional shortcuts added.
 - `[?]` Design screen clear button behavior changed.
-- `[?]` Stored prod is now displayed in colony.
-- `[?]` Start of turn reports reordered.
+- `[port]` Stored prod is now displayed in colony.
+- `[port]` Start of turn reports reordered.
 
 ### New config parameters
 
