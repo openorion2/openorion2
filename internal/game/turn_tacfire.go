@@ -688,7 +688,7 @@ func (g *Game) fighterOcv(owner int16) int16 {
 }
 
 // missileHits is Get_Missile_Hits_ (0x3e095): hits one missile or fighter
-// takes to destroy.
+// takes to destroy. community patch 1.51 (0x404eea): at least 1.
 func (g *Game) missileHits(w, owner, mods int16) int16 {
 	armor := func(m int32) int16 {
 		return int16((int32(g.armorField(g.bestArmor(int(owner)), armorHitsPct)) + 100) * m / 0xc8)
@@ -717,6 +717,11 @@ func (g *Game) missileHits(w, owner, mods int16) int16 {
 	if uint16(mods)&0x800 != 0 {
 		v += v
 	}
+	if v == 0 {
+		// A monster's fighters (armour class 0) and unknown weapons gave 0:
+		// a division by zero and an endless loop in its callers.
+		v = 1
+	}
 	return v
 }
 
@@ -724,7 +729,9 @@ func (g *Game) missileHits(w, owner, mods int16) int16 {
 // up on the missile stack; *d becomes the number of missiles it destroys.
 func (g *Game) applyDamageToMissile(m int16, d *int16) {
 	M := g.msl(m)
-	h := g.missileHits(M.i16(tmWeapon), int16(g.tsp(M.i16(tmShip)).u8(tsOwner)), M.i16(tmMods))
+	// community patch 1.51: the missile's owner, not its ship's (a crystal
+	// may have taken the ship over since the launch).
+	h := g.missileHits(M.i16(tmWeapon), M.i16(tmOwner), M.i16(tmMods))
 	if h < *d {
 		*d = h
 	}
