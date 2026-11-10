@@ -53,7 +53,7 @@ Labels come from `HESTRNGS.LBX` through `Toggle_Game_Option_` (0x8a216),
 | 0x00 | 1 | End Of Turn Summary | `Has_Msg_` shows the summary only when set | 0 |
 | 0x01 | 1 | End Of Turn Wait | read only when `game_type == 0` (`Set_Current_Game_Option_Flags_`), `Do_Next_Turn_` | 1 |
 | 0x02 | 1 | U: Random events | `Determine_Event_` 0x2233e (`== 1` enables); new-game button `random_events_button_variable` | 1 |
-| 0x03 | 0 | Enemy Moves | toggle case 2 | 0 |
+| 0x03 | 0 | Enemy Moves | toggle case 2; community patch 1.51: red lines of all enemy fleets shown (`Do_Ship_Destination_Lines_`) | 0 |
 | 0x04 | 0 | Expanding Help | popups (`Do_Fleet_Popup_`, `Fade_Into_Main_Screen_`, ...) | 0 |
 | 0x05 | 1 | Auto Select Ships | `Draw_Fleet_Movement_Box_` | 1 |
 | 0x06 | 1 | Animations | council, diplomacy, events, colonisation, science screens | 1 |

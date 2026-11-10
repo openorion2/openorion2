@@ -75,4 +75,6 @@ circle `dx*dx + dy*dy <= r*r` with the raw pointer (no offset).
    Quirk: the test does not depend on i, so the label and the line are drawn
    once per star up to the hovered one (all stars when the pointer left the
    stars), and nothing on the first pass over a new star.
+   Community patch 1.51: the black hole test's `je` at 0x8b06e is a `jmp`,
+   so the parsecs are printed across a black hole too; the port does so.
 4. `_multi_colored_line_start = (start + 1) % 8`, `Clip_Off_`, `Reset_Window_`.

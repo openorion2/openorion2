@@ -13,7 +13,6 @@ const (
 	starDistMouseFrom = 0x1821cc // MAINSCR.C's _mouse_list_from, 5 entries
 	starDistMouseTo   = 0x182208 // _mouse_list_to
 	starDistColors    = 0x8a83b  // the parsecs' font colours (code segment)
-	starDistBHColors  = 0x8a843  // the colours of the black hole message
 	starDistLine      = 0x182135 // _ship_direction_line_green_colors
 	starBHFieldDim    = 0x81bfc  // Add_Star_Fields_'s black hole sizes by zoom
 )
@@ -179,22 +178,17 @@ func (g *Game) drawMainScreenForStarDistances() error {
 }
 
 // printStarDistance is the body of the loop above: the parsecs from a to b
-// (or H 0xea when a black hole is in the way) and the line between them.
+// and the line between them.
 func (g *Game) printStarDistance(a, b int) error {
-	s, t := &g.state, g.e.Text()
+	t := g.e.Text()
 	x1, y1 := g.starDrawCoords(a)
 	x2, y2 := g.starDrawCoords(b)
 	d := g.parsecsBetweenStars(a, b)
-	var str string
 	t.SetOutlineColor(0, 0)
-	if testBit(s.Stars[a].BlackHoleBlocked[:], b) {
-		t.SetStyleShadow(2, g.exeColors(starDistBHColors), font.Outline)
-		str = g.hMessage(0xea)
-		g.changeFontStyle(1)
-	} else {
-		t.SetStyleShadow(2, g.exeColors(starDistColors), font.Outline)
-		str = cSprintf(g.hMessage(0xeb), d)
-	}
+	// community patch 1.51 (0x8b06e je -> jmp): the parsecs also across a
+	// black hole, where 1.40b23 printed H 0xea in 0x8a843's colours.
+	t.SetStyleShadow(2, g.exeColors(starDistColors), font.Outline)
+	str := cSprintf(g.hMessage(0xeb), d)
 	w := t.Width([]byte(str))
 	var err error
 	if w+int(x2)+10 > 0x20a {

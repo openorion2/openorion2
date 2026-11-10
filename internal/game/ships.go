@@ -573,7 +573,9 @@ func (g *Game) doShipDestinationLines() {
 		stk := st.icon[i].node
 		mine := int(sh.Owner) == int(s.PlayerNum)
 		own := mine && absoluteLocation(sh.Location) != s.NumStars
-		threat := !mine && sh.Status != 0 && g.enemyHeadingTowardOurColony(stk)
+		// community patch 1.51 (0xa08a6 -> 0x40452b): with Enemy Moves on
+		// (settings +3 == 1) every moving enemy fleet shown gets its line.
+		threat := !mine && sh.Status != 0 && (g.settings[0x03] == 1 || g.enemyHeadingTowardOurColony(stk))
 		boxed := g.moveableBoxSelected(2) && g.nodePtrFromShipStack(int(g.fb.stack)) == stk
 		if !(own || threat || boxed) || sh.Location < 500 || sh.Location >= 1500 {
 			continue

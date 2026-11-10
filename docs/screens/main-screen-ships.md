@@ -249,6 +249,12 @@ Get_Star_Draw_Coords_(dest)`, `(ix, iy) = Get_Ship_Icon_Coords_(i)`;
 `Draw_Ship_Destination_Line_(sx, sy, ix, iy, threat || enemy ? red :
 green)`. If `500 ≤ location < 1000`: `Print_Eta_On_Ship_Icon_(stk, z, ix, iy)`.
 
+Community patch 1.51: the call to `Enemy_Ship_Heading_Toward_Our_Colony_`
+(0xa08a6) jumps to its code at 0x40452b, which takes the fleet as a threat
+without the call when Enemy Moves (`_settings` +3, 0x199bdf) is 1: every
+moving enemy fleet among the icons (those the player sees) gets its red
+line. Drawing only; the port does so (`doShipDestinationLines`).
+
 `Draw_Ship_Destination_Line_` (0xa1299): `p = max(3 - z, 0)`; if
 `_current_screen` is 0, 0x27 or 0xc: `Get_Ship_Icon_Dimensions_(p)`, `ix +=
 width[p]/2`, `iy += height[p]/2`; else `ix += 4`, `iy += 4`. Then
