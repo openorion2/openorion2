@@ -170,3 +170,38 @@ func TestDrivelessShipBattle(t *testing.T) {
 		t.Errorf("ship view: speed %d, %v; want 4", v.speed, err)
 	}
 }
+
+// TestRetreatBlocked: a ship ordered to retreat leaves only when it can
+// still move and still retreats (community patch 1.51).
+func TestRetreatBlocked(t *testing.T) {
+	t.Parallel()
+	for _, c := range []struct {
+		name     string
+		set      func(T *tship)
+		gone, rt uint8
+	}{
+		{"mobile", func(*tship) {}, 5, 2},
+		{"in a black hole", func(T *tship) { T.set8(0x137, 2) }, 0, 0},
+		{"drive destroyed", func(T *tship) { T.set16(tsDriveCur, 0) }, 0, 0},
+		{"order gone", func(T *tship) { T.set8(0x4b, 0) }, 0, 0},
+	} {
+		g := tacGame(t)
+		g.tc.onScreen = 1
+		T := g.tsp(1)
+		T.set8(tsDrive, 1)
+		T.set16(tsDriveMax, 10)
+		T.set16(tsDriveCur, 10)
+		T.set16(tsStruct, 10)
+		T.set8(tsCSpeed, 4)
+		T.set16(0x3d, 3)
+		T.set8(0x4b, 1)
+		c.set(T)
+		g.retreatShip(1)
+		if T.u8(tsGone) != c.gone || T.u8(0x4b) != c.rt {
+			t.Errorf("%s: gone %d, retreat %d; want %d, %d", c.name, T.u8(tsGone), T.u8(0x4b), c.gone, c.rt)
+		}
+		if c.gone == 0 && c.name != "order gone" && T.i16(0x3d) != 0 {
+			t.Errorf("%s: %d moves left, want 0", c.name, T.i16(0x3d))
+		}
+	}
+}

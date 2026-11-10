@@ -1104,7 +1104,7 @@ func (g *Game) retreatShip(i int16) {
 		}
 		g.drawRetreatingShip(i)
 	}
-	if g.isCombatShipDead(i) != 0 {
+	if g.retreatBlocked(i) {
 		return
 	}
 	t := g.tsp(i)
@@ -1130,10 +1130,30 @@ func (g *Game) drawRetreatingShip(i int16) {
 	if int16(T.u8(tsFacing)) != face {
 		g.rotateShip(i, face)
 	}
-	if tc.scr == nil || g.isCombatShipDead(i) != 0 {
+	// The test changes the record, so it runs off screen too.
+	if blocked := g.retreatBlocked(i); tc.scr == nil || blocked {
 		return
 	}
 	g.retreatJump(i)
+}
+
+// retreatBlocked is community patch 1.51's 0x4019c9, which replaces
+// Is_Combat_Ship_Dead_ in Retreat_Ship_ and Draw_Retreating_Ship_: a dead or
+// immobile ship stays (moves and order cleared), and so does one no longer
+// retreating (+0x4b != 1, e.g. captured by assault shuttles meanwhile).
+func (g *Game) retreatBlocked(i int16) bool {
+	t := g.tsp(i)
+	stuck := g.isCombatShipDead(i) != 0 || g.calcCurrentSpeed(i) <= 0
+	if !stuck && t.u8(0x4b) == 1 {
+		return false
+	}
+	if stuck {
+		t.set8(0x3d, 0) // the low byte of the i16 moves left, as 1.51 does
+	}
+	// 1.51 clears the word at +0x4b, and specials 0..7 (+0x4c) with it;
+	// the port clears the retreat order only.
+	t.set8(0x4b, 0)
+	return true
 }
 
 // retreatJump is the end of Draw_Retreating_Ship_ (0x32eaf..0x33151): the

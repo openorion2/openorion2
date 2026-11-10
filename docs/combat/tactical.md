@@ -587,3 +587,12 @@ Fixes of 1.51 the port carries (addresses in the linked 1.51 image,
   view (`Load_Display_Combat_Ship_`, 0x4cf77 -> 0x400b79) shows speed 0 (+4)
   without drive, and otherwise reckons damage from half the drive hits as
   combat does, not two thirds.
+- Retreat. `Retreat_Ship_` (0x459b6) and `Draw_Retreating_Ship_` (0x32ea1)
+  call 0x4019c9 instead of `Is_Combat_Ship_Dead_` (`retreatBlocked`): a
+  dead ship or one `Calc_Current_Speed_` leaves at 0 or less (a black hole,
+  tractors) stays, its moves left (low byte of +0x3d) and retreat order
+  (+0x4b) cleared; so does one whose order is no longer 1 (assault shuttles
+  took it meanwhile). 1.40 let an immobilised ship jump out and lose it.
+  1.51 clears +0x4b as a word, specials 0..7 (+0x4c) with it; the port
+  clears the order byte only. The test runs in `Draw_Retreating_Ship_` off
+  screen too, since it changes the record.
