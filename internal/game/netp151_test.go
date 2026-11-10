@@ -157,3 +157,56 @@ func TestNetBattleBusySlots(t *testing.T) {
 		return nil
 	})
 }
+
+// TestNetDismissedLeader: a leader a client dismissed goes up with the
+// client's orders (community patch 1.51), so the host has him back in the
+// pool one level up, as the client has; in 1.40b23 the host ditched him at
+// his old level.
+func TestNetDismissedLeader(t *testing.T) {
+	t.Parallel()
+	s1 := recipeSaveFile(t, "net3", 1)
+	withGames(t, []string{s1, s1}, func(gs []*Game) error {
+		logs := make([][]NetRecord, 2)
+		netPair(t, gs, logs)
+		h, c := gs[0], gs[1]
+		if err := c.loadNetNextTurnScreen(false); err != nil {
+			return err
+		}
+		// A leader of player 1's at level 1, on no post.
+		const l = 5
+		for _, g := range gs {
+			ld := &g.state.Leaders[l]
+			ld.Owner, ld.Status, ld.Location, ld.ETA, ld.Experience = 1, 0, -1, 0, 0
+		}
+		c.dismissOfficer(l)
+		if c.state.Leaders[l].Owner != -1 || c.state.Leaders[l].Experience == 0 {
+			t.Fatalf("the dismissed leader: owner %d, experience %d", c.state.Leaders[l].Owner, c.state.Leaders[l].Experience)
+		}
+		orders := func() []byte {
+			logs[1] = nil
+			if err := c.sendGameOrders(); err != nil {
+				t.Fatal(err)
+			}
+			var b []byte
+			for _, r := range logs[1] {
+				if r.Dir == 'S' && r.ID == 0xe {
+					b = append(b, r.Payload...)
+				}
+			}
+			return b
+		}
+		b := orders()
+		h.decodeGameOrders(b, len(b))
+		if a, b := recBytes(&h.state.Leaders[l]), recBytes(&c.state.Leaders[l]); !slices.Equal(a, b) {
+			t.Errorf("the host's leader %d differs from the client's after the orders: % x, % x", l, a, b)
+		}
+		// Sent once: the next orders leave him out.
+		h.state.Leaders[l].Experience = 1234
+		b = orders()
+		h.decodeGameOrders(b, len(b))
+		if e := h.state.Leaders[l].Experience; e != 1234 {
+			t.Errorf("the leader went up again with the next orders (experience %d)", e)
+		}
+		return nil
+	})
+}

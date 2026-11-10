@@ -97,7 +97,7 @@ Built in a `Push_Block_` of 0x55730 bytes:
 | per star (NUM_STARS × 0x18, below) | |
 | `NUM_COLONIES`, then from the last colony down each own one: u16 index, 0x169 bytes; u16 −1 | |
 | `NUM_SHIPS`, then from 0 up each own ship whose status is not 5: u16 index, 0x81 bytes; u16 −1 | |
-| from leader 0 to 0x42 each own one: u16 index, 0x3b bytes; u16 −1 | |
+| from leader 0 to 0x42 each own one (community patch 1.51: or dismissed since the last upload): u16 index, 0x3b bytes; u16 −1 | |
 
 A star's entry, from a zeroed 0x6c0-byte frame buffer, stars from the last
 down:
@@ -131,6 +131,22 @@ p's ships missing from the list (status not 5) get officer −1 and
 are freed by `Ditch_Leader_` (0xf83b7: ETA 0, status −1, location −1,
 owner −1), the listed ones copied. `Mox_Update_` after the player, the
 stars, each colony, each ship and the leaders. Nothing is validated.
+
+**Community patch 1.51: dismissed leaders.** `Dismiss_Officer_` (0x98771)
+runs `Deassign_Officer_`, which puts the leader back in the pool one level
+up (`Increase_Officer_Level_By_One_`) with no owner. In 1.40b23 the upload
+lists only the sender's own leaders, so the host ditched the dismissed one
+at his old level: the client's +1 was lost with the next broadcast. 1.51
+sets a per-leader flag (0x460095[l], hook 0x4031da) before
+`Deassign_Officer_`; `Send_Game_Orders_` also uploads a flagged leader
+(0x4031e7) and clears the flags after the leaders (0x40320d), and
+`Host_Next_Turn_` clears them at its start (0x403226). The host copies the
+record: the leader is in the pool, one level up, on every machine. The
+port keeps the flags in `netGame.dismissed`, in memory as 1.51 does, out
+of the saved state and `netStateHash`. The other `Deassign_Officer_`
+callers are not flagged, as in 1.51: on a client only a hire with a full
+roster (`Set_Officer_To_Player_` lets the longest offered one go), whose
+level up the host still misses. Test: `TestNetDismissedLeader`.
 
 ## The combat phase (Search_For_Battles_, phase 4 for the battles)
 

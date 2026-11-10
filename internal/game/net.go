@@ -66,6 +66,8 @@ type netGame struct {
 	combatBusy bool       // 0x183579: Do_Net_Combat_Update_ runs
 	resBuf     []byte     // 0x1ab04c: Client_Combat_Loop_'s record for msgs 0x16, 0x18
 	tac        netTac     // the tactical lockstep's receive side
+	// community patch 1.51 (0x460095): leaders dismissed since the last upload
+	dismissed [maxLeaders]bool
 
 	tempString    string         // _temp_string of the net screens (Draw_SendGet_Net_Info_Screen_)
 	name          [10]byte       // 0x1ab082: the game's name
