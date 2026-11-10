@@ -59,8 +59,9 @@ Screen_Control_ 0xc → Next_Turn_
     end of game checks → screen 10, else screen 0x27
 Screen_Control_ 0x27 → Reports_Screen_ → Do_Begin_Of_Turn_
     Begin_Of_Turn_ → Main_Screen_Report_Handler_ → Display_Report_ loop
-        (Antarans, GNN, tech picks, officers, colonisation, exploration,
-         reports, AI diplomacy screens, turn summary, colony prompts)
+        (Antarans, GNN, reports, tech picks, exploration, colonisation,
+         officers, AI diplomacy screens, turn summary, colony prompts;
+         community patch 1.51's order)
     auto next turn or → Main_Screen_
 ```
 

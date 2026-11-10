@@ -144,14 +144,33 @@ if !r:
     if displayed_gnn bit p == 0 and Check_For_Event_Message_():   ; 0x2023f
         r = 7; if show: Check_For_Event_(); displayed_gnn |= 1<<p
     if !r: r = first non-zero, in order, of (p, show):
-        Set_Initial_Tech_, Has_Research_Breakthrough_, Has_Evolutionary_Upgrade_,
-        Has_Officer_For_Hire_, Colonization_, Explored_New_Star_,
-        Officer_Made_Level_Report_, Has_Report_, Has_Diplomacy_Messages_,
-        Has_Msg_, Empty_Colony_Queue_, Need_To_Set_Occupation_Policy_
+        Set_Initial_Tech_, Has_Report_, Has_Research_Breakthrough_,
+        Has_Evolutionary_Upgrade_, Explored_New_Star_, Colonization_,
+        Has_Officer_For_Hire_, Officer_Made_Level_Report_,
+        Has_Diplomacy_Messages_, Has_Msg_, Empty_Colony_Queue_,
+        Need_To_Set_Occupation_Policy_
 if !r: done_player_reports |= 1<<p          ; also in query mode
 return r
 ```
 `Has_GNN_` (0xfe514) duplicates the GNN test; no caller here.
+
+Community patch 1.51 reorders the calls in place (0xfe6dd..0xfe737; the
+code is otherwise 1.40b23's). 1.40b23's order was Set_Initial_Tech_,
+Has_Research_Breakthrough_, Has_Evolutionary_Upgrade_,
+Has_Officer_For_Hire_, Colonization_, Explored_New_Star_,
+Officer_Made_Level_Report_, Has_Report_, then the same tail. So the spy
+reports (a stolen tech's show-off) come before Tech_Select_ of a
+breakthrough, every newly explored system before the colonisation
+prompts, and the hire offer after both (a marooned hero found this turn
+is offered while there is still room among the four leaders). The order
+changes no state but through the player's answers: the BC a hire costs
+is now paid after a colony base's scrapping refund, and the rare RNG
+draws of the show sides (a joining hero's tech refitting designs,
+`pickRandomPlayerColony` for a hire without a capitol) come in the new
+order; query mode's writes (done_colonize_check, the omniscient
+star+0x34) are independent of each other. 1.51 also changes Has_Report_
+for its report type 3 (finds presented by a scientist), not ported.
+`rep.last` (port-only) names the check that answered; `TestReportOrder`.
 
 ### The checks
 
