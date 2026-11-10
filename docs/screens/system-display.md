@@ -321,6 +321,11 @@ Y, dx, dy, 0xd, 0x2f)`.
 
 1. `_ship_frame = (_ship_frame + 1) % 32000`. Screen 0: `Set_Window(0x16,
    0x16, 0x20f, 0x1a5)`, `Clip_On`. `_system_display_base_x/y = X, Y`.
+   Community patch 1.51: the counter is read unsigned (`movzx`, 0xa31ed):
+   `(u16 + 1) % 32000`. `Detailed_View_Ship_` decrements it, and views
+   opened where no popup redraws (fleet screen, leaders) take it below 0;
+   from −2 1.40b23 drew planet frame −1 (the port's draw failed there),
+   1.51 goes on at 1535.
 2. If `!_look_at_colonies` and `!Ok_To_View_System_(star, player)`:
    - **Monster sighted** (`Player_Sighted_Monster_`): `Hide_System_Display_(…,
      1)` = `Diagonal_Line_Fill_(BX+L−1, BY+T−1, BX+L+0x13f−5, min(BY+T+0xb6,

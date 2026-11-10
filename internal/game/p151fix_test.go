@@ -8,6 +8,58 @@ import (
 	"github.com/openorion2/openorion2/internal/host"
 )
 
+// TestPopupFrameAfterShipViews: two ship views from the fleet screen leave
+// the frame counter at -2; the system popup still draws its planets.
+func TestPopupFrameAfterShipViews(t *testing.T) {
+	t.Parallel()
+	dir := scratchGameDir(t, filepath.Join("..", "..", "game"))
+	putRecipeSave(t, "mid", dir, 1)
+	step := 0
+	var drawErr error
+	var frame int16
+	err := host.Run(host.Options{Headless: true, Frames: 60 * 60}, func(sys *host.System) error {
+		opt := Options{Load: 1}
+		opt.testHook = func(g *Game) {
+			g.Log = func(string, ...any) {}
+			idle := 0
+			g.e.InputHook = func() {
+				idle++
+				switch {
+				case step == 0 && !netMainScreenUp(g):
+					if idle%20 == 0 {
+						sys.PushKey(letterKey('\r'))
+					}
+				case step == 0:
+					s := &g.state
+					for i := 0; i < int(s.NumColonies); i++ {
+						if c := &s.Colonies[i]; int(c.Owner) == int(s.PlayerNum) {
+							s.MoveableBoxes[0].Content = int16(s.Planets[c.Planet].Star)
+							break
+						}
+					}
+					// Loaded first: a newly loaded system skips its planets once.
+					if drawErr = g.initSystemDisplay(int(s.MoveableBoxes[0].Content)); drawErr == nil {
+						g.sd.shipFrame, g.sd.skipPlanets = -2, false
+						drawErr = g.drawSystemDisplayBox()
+					}
+					frame, step = g.sd.shipFrame, 1
+					sys.Quit()
+				}
+			}
+		}
+		return Run(sys, dir, opt)
+	})
+	if err != nil && !errors.Is(err, host.ErrQuit) {
+		t.Fatal(err)
+	}
+	if step != 1 {
+		t.Fatalf("stopped at step %d", step)
+	}
+	if drawErr != nil || frame != 1535 {
+		t.Errorf("frame %d, %v", frame, drawErr)
+	}
+}
+
 // TestRepeatAndroidNo: answering "No" to the androids-past-room question
 // while placing a repeat mark queues nothing, not a bare repeat (1.40b23).
 func TestRepeatAndroidNo(t *testing.T) {

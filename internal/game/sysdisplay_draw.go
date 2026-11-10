@@ -27,7 +27,9 @@ func (g *Game) drawSystemDisplayBox() error {
 // main screen.
 func (g *Game) drawSystemDisplayPopup(star int, border bool, title string, x, y, dx, dy int) error {
 	e, s, sd := g.e, &g.state, &g.sd
-	sd.shipFrame = int16((int(sd.shipFrame) + 1) % 32000)
+	// community patch 1.51 (0xa31ed): read unsigned, so the -2 two ship views
+	// leave (each a -1) becomes 1535, not the frame -1 1.40b23 drew.
+	sd.shipFrame = int16((int(uint16(sd.shipFrame)) + 1) % 32000)
 	if g.currentScreen == ScreenMain {
 		g.mapWindow()
 	}
