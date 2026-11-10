@@ -67,8 +67,19 @@ strategic combat (hook at 0x5646b; 1.40b23 always made the tactical one).
 - `-control`'s queue codes (`queueCodeSlot`) look at six designs; a
   support ship answers `queueSupportSlot`.
 
+## ALT-AD
+
+In the build screen the multi hot key AD (registered after the military
+rows by the patch's 0x406ed2, handled at 0x406dd6 and 0x42295e) makes the
+viewing player's six designs anew with `Init_Ship_Designs_`: while the
+doom star hull is known, the tech level setting (0x199cb5, settings 0xd9)
+is 2 for the call, so the hulls run destroyer to doom star instead of
+frigate to titan (`autoDesignAll`, `buildq.go`). It draws random numbers
+like any autodesign.
+
 ## Tests
 
 `design6_test.go`: the new game's six designs; a support ship and the 500
 ships limit leave the sixth design; a refit gives it back; the load fix;
-the military list under both combat modes and `design6` in a list.
+the military list under both combat modes and `design6` in a list;
+ALT-AD's hulls with and without the doom star, and the keys.

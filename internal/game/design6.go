@@ -38,3 +38,17 @@ func (g *Game) fixSpareDesigns() {
 		}
 	}
 }
+
+// autoDesignAll is ALT-AD in the build screen (community patch 1.51, its
+// 0x406dd6): the player's six designs are made anew as at a new game, a
+// hull up (destroyer to doom star) once the doom star hull is known.
+func (g *Game) autoDesignAll() {
+	s := &g.state
+	p := int(s.PlayerNum)
+	level := g.settings[0xd9]
+	if s.Players[p].AppStatus[appDoomStar] == techKnown {
+		g.settings[0xd9] = 2
+	}
+	g.initShipDesigns(p)
+	g.settings[0xd9] = level
+}

@@ -72,6 +72,7 @@ type buildQueueState struct {
 	fCancel, fOK, fEsc, fAuto, fRefit, fDesign, fRepeat, fCheat int
 	fPrev, fNext, fBuy                                          int
 	fList, fListShift                                           [11]int // port-only: build lists
+	fAutoDesign                                                 int     // community patch 1.51: ALT-AD
 }
 
 // setBuildingQueueScreenHelpList is Set_Building_Queue_Screen_Help_List_
@@ -247,6 +248,9 @@ func (g *Game) bqAddFields() error {
 	}
 	bq.fCheat = bqCheatField
 	if err := g.addBuildListKeys(&bq.fList, &bq.fListShift); err != nil {
+		return err
+	}
+	if bq.fAutoDesign, err = e.AddMultiHotKeyField("AD"); err != nil {
 		return err
 	}
 	if err := g.addBuildQueueFields(); err != nil {
@@ -431,6 +435,12 @@ func (g *Game) bqEvaluateInput(r *int, scan int) error {
 		}
 		g.col.fullDraw = true
 	case r0 == bq.fAuto:
+	case r0 == bq.fAutoDesign:
+		g.autoDesignAll()
+		g.calculateMilitaryArray()
+		if err := g.bqRestore(); err != nil {
+			return err
+		}
 	case g.isBuildListField(r0, &bq.fList, &bq.fListShift):
 		k, _ := g.buildListKey(r0, &bq.fList, &bq.fListShift)
 		ops, err := g.loadBuildList(k)

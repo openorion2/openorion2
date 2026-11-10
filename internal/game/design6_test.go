@@ -1,10 +1,13 @@
 package game
 
 import (
+	"errors"
+	"path/filepath"
 	"slices"
 	"testing"
 
 	"github.com/openorion2/openorion2/internal/gfx"
+	"github.com/openorion2/openorion2/internal/host"
 	"github.com/openorion2/openorion2/internal/save"
 )
 
@@ -156,5 +159,110 @@ func TestDesign6Lists(t *testing.T) {
 	q := blApply(t, g, "design6")
 	if q[0] > -100 {
 		t.Fatalf("queue %v", q)
+	}
+}
+
+// TestAutoDesignAll: ALT-AD redoes the six designs a hull up once the doom
+// star hull is known, and leaves the tech level as it was.
+func TestAutoDesignAll(t *testing.T) {
+	t.Parallel()
+	g, p, _ := d6Game(t, "mid")
+	g.settings[0xd8], g.settings[0xd9] = 0, 1
+	pl := &g.state.Players[p]
+	for _, doom := range []bool{false, true} {
+		pl.AppStatus[appDoomStar] = 0
+		if doom {
+			pl.AppStatus[appDoomStar] = techKnown
+		}
+		pl.Designs = [6]save.Design{}
+		g.autoDesignAll()
+		first := uint8(0)
+		if doom {
+			first = 1
+		}
+		if pl.Designs[0].Size != 0 {
+			t.Errorf("doom %v: design 1 size %d, want the scout", doom, pl.Designs[0].Size)
+		}
+		for k := 1; k < 6; k++ {
+			if d := &pl.Designs[k]; d.Size != first+uint8(k-1) || save.CString(d.Name[:]) == "" {
+				t.Errorf("doom %v: design %d size %d %q", doom, k+1, d.Size, save.CString(d.Name[:]))
+			}
+		}
+		if g.settings[0xd9] != 1 {
+			t.Fatalf("tech level left at %d", g.settings[0xd9])
+		}
+	}
+}
+
+// TestAutoDesignKey: Alt+A, Alt+D in the build screen runs it.
+func TestAutoDesignKey(t *testing.T) {
+	t.Parallel()
+	dir := scratchGameDir(t, filepath.Join("..", "..", "game"))
+	putRecipeSave(t, "start", dir, 1)
+	step := 0
+	err := host.Run(host.Options{Headless: true, Frames: 60 * 120}, func(sys *host.System) error {
+		opt := Options{Load: 1}
+		opt.testHook = func(g *Game) {
+			g.Log = func(string, ...any) {}
+			idle, wait := 0, 0
+			var fx, fy int
+			g.e.InputHook = func() {
+				s := &g.state
+				idle++
+				switch {
+				case step == 0 && !netMainScreenUp(g):
+					if idle%20 == 0 {
+						sys.PushKey(letterKey('\r'))
+					}
+				case step == 0:
+					step = 1
+				case step == 1 && g.currentScreen != ScreenColonySummary:
+					if idle%30 == 0 {
+						sys.PushKey(letterKey('c'))
+					}
+				case step == 1:
+					x1, y1, x2, y2 := g.e.FieldRect(g.cs.prodF[0])
+					fx, fy = (x1+x2)/2, (y1+y2)/2
+					sys.WarpMouse(fx, fy)
+					step, wait = 2, 0
+				case step == 2 && g.currentScreen != ScreenBuildQueue:
+					if wait++; wait == 5 {
+						sys.Press(fx, fy, 1)
+					}
+				case step == 2:
+					s.Players[s.PlayerNum].Designs = [6]save.Design{}
+					step, wait = 3, 0
+				case step == 3:
+					wait++
+					if wait == 5 {
+						k := letterKey('a')
+						k.Alt = true
+						sys.PushKey(k)
+						k = letterKey('d')
+						k.Alt = true
+						sys.PushKey(k)
+					}
+					if wait == 40 {
+						step = 4
+						sys.Quit()
+					}
+				}
+			}
+			t.Cleanup(func() {
+				d := &g.state.Players[g.state.PlayerNum].Designs
+				for k := range d {
+					if save.CString(d[k].Name[:]) == "" {
+						t.Errorf("design %d empty after Alt+A, Alt+D", k+1)
+					}
+				}
+			})
+		}
+		return Run(sys, dir, opt)
+	})
+	if err != nil && !errors.Is(err, host.ErrQuit) {
+		t.Fatal(err)
+	}
+	if step != 4 {
+		t.Fatalf("stopped at step %d", step)
 	}
 }

@@ -20,6 +20,17 @@ transports and to refit ships, so you never had it.
   before; the sixth one is the doom star, offered once you know the titan
   or the doom star hull. The separate Doom Star entry of the list is gone.
 
+### Automatic designs: ALT-AD
+
+In the Build screen, hold Alt and type A, D: all six of your designs are
+replaced by the game's own automatic designs, the best it can make with
+what you have researched. Design 1 is always a scout; designs 2 to 6 are
+a frigate, destroyer, cruiser, battleship and titan, or once you know the
+doom star hull a destroyer to a doom star (in an Advanced start always
+the latter). Use it to keep up with new technology without designing
+each ship by hand, or to play with the AI's designs. Ships already built
+or queued keep their designs.
+
 ### Older saves
 
 A game saved by 1.40b23 (or by an earlier OpenOrion2) may have a colony

@@ -54,6 +54,7 @@ time, straight into master.
 
 - Build lists and taking a purchase back: `docs/screens/build-lists.md`,
   `docs/manual/build-queue.md`.
-- The sixth ship design: `docs/turn/design6.md`, `docs/manual/ships.md`.
+- The sixth ship design and ALT-AD: `docs/turn/design6.md`,
+  `docs/manual/ships.md`.
 - Crash, freeze and desync fixes: `docs/manual/bug-fixes.md` (specs in
   the docs each `items.md` line names).
