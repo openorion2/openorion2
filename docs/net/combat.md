@@ -174,14 +174,19 @@ planet, result).
 
 The info messages, built in a `Push_Block_` and sent whole up to 0x8000
 bytes, else as a u16 chunk count and chunks of 0x7800 with chat loops
-while sending:
+while sending (**community patch 1.51**, msgs 0x10 and 0x12 only: a
+0xff00-byte block, whole up to 0x7800 bytes, one chat loop per chunk
+without `Net_Is_Sending_`; 0xf890d, 0xf8bbf, 0xf8c48 and the same in
+`Send_You_Are_Target_Info_`):
 
 **Pick target** (`Send_Pick_Target_Info_` 0xf88d8, msg 0x10 / 0x2e, 0x2f):
 s16 star, the 0x2c bytes of the targets (0x1aa380: colony targets[5],
 count, ship owner targets[15], count). Unless the attacker's machine is the
 host: the star's presence (`Send_Star_Player_Presence_` 0xe691a: the 0x58
 bytes of `_star_has_player`[star] and the monster byte), each player's
-0xd4 bytes from +0x117 (from the last player), every leader (u16 index,
+0xd4 bytes from +0x117 (**community patch 1.51**: the 0x127 bytes from
++0xc4, the tech fields' status first; 0xf8991, and 0xf8c8e's decode)
+(from the last player), every leader (u16 index,
 0x3b bytes, from 0x42 down; then −1), the star's `Officer` bytes (+0x42,
 from the last player), u16 `NUM_COLONIES`, per planet of the star from the
 last orbit {planet +0 (colony), +4, +8, +0 again, the colony record if
@@ -197,7 +202,7 @@ Turns_`, own slot and state 0x10.
 0x34, 0x35; arguments defender, attacker, ship target, colony, star):
 s16 star, attacker, ship target, colony. Unless the defender's machine is
 the host: the presence, the attacker's and the defender's 0xd4 bytes (each
-if < 8), the leaders of either (from 0x42, then −1), their `Officer`
+if < 8; **community patch 1.51**: 0x127 from +0xc4, in both routines), the leaders of either (from 0x42, then −1), their `Officer`
 bytes, with a colony {u16 `NUM_COLONIES`, u16 planet, planet +0, +4, +8,
 the colony record}, u16 `NUM_SHIPS` and their ships there; −1.
 `Decode_You_Are_Target_Info_` (0xf93e3): the block's star, attacker, ship
@@ -416,6 +421,20 @@ Both machines run `Tactical_Combat_` (0x47939) with `_net_flag`
   draws, the beam effects' included) equals the oracle's RNG.LOG
   (`netRNGAlign`, always on for netbattle4).
 
+## Community patch 1.51: the tech fields in a battle
+
+1.40b23's msgs 0x10 and 0x12 carry each player's record from +0x117 (the
+applications on); the tech fields' status (+0xc4, 0x53 bytes) stays as the
+fighting machine had it since the broadcast. A battle the host fought
+earlier in the same combat phase (a capture or an invasion that gives a
+tech, `Player_Gets_Tech_App_` advancing the field) leaves the fighting
+machine with the new applications but the old fields. 1.51 sends from
++0xc4 for 0x127 bytes; the port does the same (`netTargetRec`). The
+results (msg 0x15) keep 0xd4 bytes from +0x117 in 1.51 too: the next
+broadcast carries the host's fields. The messages grow by 0x53 bytes a
+player, hence 1.51's larger block and its chunking from 0x7800 bytes.
+Test: `TestNetTargetInfoFields`, `TestNetTargetInfoChunks`.
+
 ## Long messages
 
 An info message longer than 0x8000 bytes (pick target 0x2e/0x2f, you
@@ -434,6 +453,9 @@ in the original over IPX. The port sends synchronously over TCP and
 completes them; `TestNetLoadOracle/netlong1` compares the sends up to the
 original's stall (the first chunk byte for byte) and checks that the
 port's machines go on through 0x30..0x33.
+**Community patch 1.51** takes `Net_Is_Sending_` out of the chunk loops of
+msgs 0x2e/0x2f and 0x34/0x35 (one chat loop per chunk), which ends that
+stall for them; the results' loop (0x30..0x33) keeps it.
 
 ## Open
 
