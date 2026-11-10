@@ -13,8 +13,7 @@ at moo2mod.com/manual/MANUAL_150.html), `PARAMETERS.CFG`, `config.json`
 - No strings built into the game: new texts come from our own LBX files
   or not at all.
 - Each item's fate (undecided, port, skip, ported) is tracked per
-  changelog line in `items.json` (generated from `CHANGELOG_150.TXT`;
-  ids are a hash of version and text) and decided item by item.
+  changelog line in `items.md` and decided item by item.
 
 ## What "1.51" means here
 
