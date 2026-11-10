@@ -130,7 +130,7 @@ func (s *System) webEvent(e js.Value) {
 			s.buttons &^= bit
 		}
 	case "key":
-		s.keys = append(s.keys, Key{
+		s.addKey(Key{
 			Code:     uint32(e.Get("code").Int()),
 			Scancode: e.Get("hid").Int(),
 			Shift:    e.Get("shift").Bool(),

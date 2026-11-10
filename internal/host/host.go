@@ -105,6 +105,10 @@ type System struct {
 	start   time.Time
 	frames  int
 
+	// animSpeed is community patch 1.51's animation speed, -3..3, which
+	// PageUp and PageDown step as the keys arrive (AnimSpeed).
+	animSpeed int
+
 	// The buffered press and its two flags (mouse_buffer_flag/flag2).
 	press          Press
 	pressA, pressB bool
@@ -524,7 +528,7 @@ func (s *System) tick(n int, clicks []Click, keys []ScriptedKey, shown *Screen) 
 	}
 	for _, k := range keys {
 		if n == k.Frame {
-			s.keys = append(s.keys, k.Key)
+			s.addKey(k.Key)
 		}
 	}
 	for _, c := range clicks {
@@ -566,10 +570,34 @@ func (s *System) Press(x, y, buttons int) {
 	s.pressA, s.pressB = true, true
 }
 
+// addKey queues a key press as the keyboard interrupt does; s.mu is held.
+func (s *System) addKey(k Key) {
+	s.keys = append(s.keys, k)
+	if k.Ctrl || k.Alt {
+		return // the BIOS words differ: 0x84E0, 0x9900 and so on
+	}
+	// community patch 1.51 steps the speed in New09_Handler_ (0x40a34e) on
+	// PageUp and PageDown (0x49E0, 0x51E0), on any screen; the key stays queued.
+	switch k.Scancode {
+	case 75: // PageUp
+		s.animSpeed = min(s.animSpeed+1, 3)
+	case 78: // PageDown
+		s.animSpeed = max(s.animSpeed-1, -3)
+	}
+}
+
+// AnimSpeed is community patch 1.51's animation speed, -3..3: the number of
+// ticks Release_Time_ waits less (0x403e71); 0 until PageUp or PageDown.
+func (s *System) AnimSpeed() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.animSpeed
+}
+
 // PushKey queues a key press (development: scripted input in tests).
 func (s *System) PushKey(k Key) {
 	s.mu.Lock()
-	s.keys = append(s.keys, k)
+	s.addKey(k)
 	s.mu.Unlock()
 }
 

@@ -84,6 +84,9 @@ func (e *Engine) MarkTime() { e.mark = e.Ticks() }
 // ReleaseTime is Release_Time_(n): wait until n ticks have passed since the
 // last MarkTime. It does not mark again.
 func (e *Engine) ReleaseTime(n int) error {
+	// community patch 1.51 sends all 95 calls through 0x403e71, which waits
+	// the animation speed's ticks less (PageUp, PageDown).
+	n -= e.Sys.AnimSpeed()
 	for {
 		d := e.Ticks() - e.mark
 		if d < 0 || d >= int64(n) {
