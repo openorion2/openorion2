@@ -8,6 +8,8 @@ at moo2mod.com/manual/MANUAL_150.html), `PARAMETERS.CFG`, `config.json`
 
 ## Decisions
 
+- How a feature is ported: `process.md`.
+
 - 1.51 rules replace 1.40's; the port keeps one game, not two rulesets
   (2026-11-10).
 - No strings built into the game: new texts come from our own LBX files

@@ -15,7 +15,8 @@ are not part of this repository.
 - Port-only additions (the online lobby, network play over TCP and
   WebSocket, window handling, Unicode text in the lobby) are marked
   `port-only` in comments and documented in `docs/`.
-- Features of the unofficial community patch 1.51 come over one by one
+- Features of the unofficial community patch 1.51 come over one by one,
+  each on its branch into master, by `docs/p151/process.md`
   (`docs/p151/`: what it changes and each item's fate) and are marked
   `community patch 1.51` in comments. Where 1.51 changes a rule, its rule
   replaces 1.40's; the game is one game, not two rulesets.
