@@ -359,6 +359,7 @@ Both machines run `Tactical_Combat_` (0x47939) with `_net_flag`
 | 0x271e {ship} | another own ship taken (no initiative) | `Set_Cur_Ship_To_` |
 | 0x271f {target, marines, kind} | boarding (`Initiate_Boarding_Action_`, `Resolve_Ai_Boarding_`) | raid or capture (the raid's cloak drawing compares the kind with `_combat_on_screen`) |
 | 0x2720 {x, y} | end of turn | initiative: the side ends, `Next_Ship_`; else the turn ends |
+| 0x2721 | all-wait, H (community patch 1.51) | the side waits, `Next_Ship_` from the current ship |
 
 - **AUTO** off on one machine (`Toggle_Auto_Combat_Flags_` 0x29616) sends
   **msg 0x3ea** {0 attacker, 1 defender}; the receiver clears that flag
@@ -395,11 +396,19 @@ Both machines run `Tactical_Combat_` (0x47939) with `_net_flag`
   It holds in every game type: the ship is marked as having boarded, a
   cloak drops and the report shows. `Resolve_Ai_Boarding_` keeps its kind
   0 (both machines replay it alike).
+- **Community patch 1.51**: code 0x2721 is H, the all-wait
+  (`docs/combat/tactical.md`): sent like WAIT (0x41b192), then the
+  barrier. The receiver turns it into WAIT's 0x2719 with a flag
+  (0x40b3c2, flag 0x45febd) that makes its `Next_Ship_` the all-wait
+  (0x41b071); the port replays `allWait` for it.
 - Quirk: `Resolve_Ai_Boarding_`'s msg 0x3e8 during a replayed
   `Do_Auto_Ship_Turn_` is overwritten when the replay ends.
 
 ## Tests
 
+- Community patch 1.51: `TestNetSoak` `2+0ai-lockstep-allwait` (ship
+  initiative on; each machine presses H on its first ship, then AUTO; the
+  barriers carry the current ship and the all-wait flags too).
 - Community patch 1.51 (`netp151_test.go`): `TestNetTargetInfoFields`,
   `TestNetTargetInfoChunks` (msgs 0x10/0x12), `TestNetBattleBusySlots`
   (the host starts a battle of an AI that another battle elsewhere holds:

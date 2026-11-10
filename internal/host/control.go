@@ -161,7 +161,7 @@ func (s *System) controlTick() {
 	st := c.steps[0]
 	c.steps = c.steps[1:]
 	if st.key != nil {
-		s.keys = append(s.keys, *st.key)
+		s.addKey(*st.key)
 		return
 	}
 	// The game draws the pointer itself; the system's is not warped (its

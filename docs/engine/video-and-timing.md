@@ -256,6 +256,31 @@ Nothing else in the layer waits on the timer. `Toggle_Pages` waits only on
 vsync inside `Refresh_Palette` (one wait per changed run). Fades are paced
 by vsync, not ticks.
 
+### Community patch 1.51: animation speed
+
+1.51 sends all 95 `Release_Time_` calls through a wrapper (0x403e71,
+blob address in `build/p151`'s linked image) that calls
+`Release_Time_(n - speed)`, `speed` a dword (0x45fb65) from -3 to 3, 0 at
+start and never saved. Its keyboard interrupt (`New09_Handler_` 0x12c4d8,
+hook at 0x12c52c to 0x403e63, then 0x40a34e) steps it on every key it
+queues: BIOS word 0x49E0 (gray PageUp) adds 1 up to 3, 0x51E0 (gray
+PageDown) subtracts 1 down to -3; Ctrl or Alt give other words and do
+nothing. The key stays in the buffer for the game. So at +3 a
+`Release_Time_(1..3)` loop runs as fast as it draws, and at -3
+`Release_Time_(1)` waits 4 ticks. Loops paced by vsync or by
+`PaceNextToggle` (no timer in the original) are not affected.
+
+Port: `host.System` steps the speed as a key arrives (`addKey`, the
+interrupt's level, so keys pressed during a loop that reads no input count
+at once), `AnimSpeed` reads it, and `Engine.ReleaseTime` subtracts it.
+Under virtual time the waits stay whole ticks of the virtual clock
+(`TestAnimSpeedReleaseTime`).
+
+1.51 also prints "Animation speed +N" at the top right of the combat
+screen (`Draw_Main_Combat_Screen_` 0x30048 to 0x403e7c, then 0x40e83e)
+for 54 ticks after a press; the words are not in the game's LBX files, so
+the port shows nothing.
+
 ## Mox_Update_ (0xfe8be)
 
 `Sound_Update_()` then `Mox_Net_Update_()`. Called 699 times, including from

@@ -227,18 +227,18 @@ func (s *System) handle(pv *presenter, ev *sdl.Event) {
 		s.wheel += ev.MouseWheelEvent().Y
 	case sdl.EVENT_TEXT_INPUT:
 		if t := ev.TextInputEvent().Text; t != "" {
-			s.keys = append(s.keys, Key{Text: t})
+			s.addKey(Key{Text: t})
 		}
 	case sdl.EVENT_KEY_DOWN:
 		k := ev.KeyboardEvent()
 		if k.Key == sdl.K_V && k.Mod&(sdl.KMOD_CTRL|sdl.KMOD_GUI) != 0 {
 			// Paste: the text goes to the active input field, if any.
 			if text, err := sdl.GetClipboardText(); err == nil && text != "" {
-				s.keys = append(s.keys, Key{Paste: text})
+				s.addKey(Key{Paste: text})
 			}
 			break
 		}
-		s.keys = append(s.keys, Key{
+		s.addKey(Key{
 			Code:     uint32(k.Key),
 			Scancode: int(k.Scancode),
 			Shift:    k.Mod&sdl.KMOD_SHIFT != 0,
