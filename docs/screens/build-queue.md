@@ -164,3 +164,6 @@ more entry.
 Nothing on these paths: DESIGN, refit and refit-to-new-design reach the
 design screen (docs/screens/design-screen.md). The custom ship (−13) is
 never in the military list.
+
+The keys Q and 0-9 (build lists) and BUY taking a purchase back come
+from the community patch 1.51: `build-lists.md`.

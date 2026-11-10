@@ -441,8 +441,8 @@ A note after the text goes after ` -- `.
 ### Interface changes
 
 - `[?]` Redirecting out of a Jump Gate now works without warning dialog and redirecting back to Jump Gate path is possible until end of turn.
-- `[port]` Loading a build list (e.g. with Q) now always updates income. Previously, negative income resulting from Q would not be displayed immediately which could lead to unexpected scrapping of stuff. -- build lists
-- `[port]` Renamed buy1-3 build list commands and added a new one: • buy75% - when product is 75% built (new), • buy50% - when product is 50% built (was buy1), • buy10% - when product is 10% built (was buy2), • buy - regardless of build progress (was buy3). -- build lists
+- `[done]` Loading a build list (e.g. with Q) now always updates income. Previously, negative income resulting from Q would not be displayed immediately which could lead to unexpected scrapping of stuff. -- docs/screens/build-lists.md
+- `[done]` Renamed buy1-3 build list commands and added a new one: • buy75% - when product is 75% built (new), • buy50% - when product is 50% built (was buy1), • buy10% - when product is 10% built (was buy2), • buy - regardless of build progress (was buy3). -- docs/screens/build-lists.md
 
 ### Config
 
@@ -530,7 +530,7 @@ A note after the text goes after ` -- `.
 
 ### Interface changes
 
-- `[port]` Colonies screen: Swapped around meaning of SHIFT for build shortcuts; SHIFT-X now acts on all colonies, X only on current colony. -- build lists
+- `[done]` Colonies screen: Swapped around meaning of SHIFT for build shortcuts; SHIFT-X now acts on all colonies, X only on current colony. -- docs/screens/build-lists.md
 - `[?]` Colonies screen: Added extra info about population and production to the Colony Info Summary window.
 - `[?]` Planets screen: Fixed misalignment of the scrollbar with the planets list when using the filter buttons.
 - `[?]` Build screen: Removed junk info from trade goods and housing options.
@@ -647,7 +647,7 @@ A note after the text goes after ` -- `.
 
 ### Interface changes
 
-- `[port]` Default build list 7 is now 'prepend freighter fleet', 8 is 'prepend spy' and 9 is 'append housing'. -- build lists
+- `[done]` Default build list 7 is now 'prepend freighter fleet', 8 is 'prepend spy' and 9 is 'append housing'. -- docs/screens/build-lists.md
 - `[?]` Fixed 3 detection giveaways when undetected ships are indirectly revealed: • In fleet summary tooltip in Star System popup. • In summary below galaxy map in Fleets screen. • When scrolling in Fleets screen via <> with either ships filter off, seemingly empty fleets would appear suggesting the presence of filtered ships (normally empty fleets are skipped).
 - `[?]` In Fleets screen "support / combat ships" filter buttons now always work.
 - `[?]` Opponents' ships will no longer color green in the Fleets screen when no player owned ships are present.
@@ -1259,8 +1259,8 @@ A note after the text goes after ` -- `.
 
 ### Interface changes
 
-- `[port]` Advanced build list with the ability to apply on all colonies. -- build lists
-- `[port]` Undo buy action by clicking buy button again. -- build lists
+- `[done]` Advanced build list with the ability to apply on all colonies. -- docs/screens/build-lists.md
+- `[done]` Undo buy action by clicking buy button again. -- docs/screens/build-lists.md
 - `[?]` Fixed most build queue bugs including repeat build cheat.
 - `[?]` Colony Base button disappearance trigger corrected.
 - `[?]` Disabled weapon slots are colored red even if spent (used to be yellow).
@@ -1538,7 +1538,7 @@ A note after the text goes after ` -- `.
 
 ### Interface changes
 
-- `[port]` Build list now supports artificial_planet. -- build lists
+- `[done]` Build list now supports artificial_planet. -- docs/screens/build-lists.md
 
 ## 1.50.0.1
 
@@ -1585,7 +1585,7 @@ A note after the text goes after ` -- `.
 
 ### Interface changes
 
-- `[port]` Load build queue from BUILD.CFG. -- build lists
+- `[done]` Load build queue from BUILD.CFG. -- docs/screens/build-lists.md
 - `[?]` Faster fade-ins and fade-outs.
 - `[?]` Additional shortcuts added.
 - `[?]` Design screen clear button behavior changed.

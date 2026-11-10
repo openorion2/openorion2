@@ -117,3 +117,6 @@ limit question, YES; the settlers boxes), the name's right-click popup,
 three buys (trade goods refused, too dear, one bought with YES), the scroll
 bar. Every capture (colonist blink and the small map's line phases
 skipped), every draw and the F10 save match the original.
+
+The keys Q and 0-9 (build lists) and BUY taking a purchase back come
+from the community patch 1.51: `build-lists.md`.

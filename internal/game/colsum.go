@@ -89,6 +89,8 @@ type colonySummaryState struct {
 	sortBtn                                   [7]int
 
 	drawPlanetSum bool // _draw_planet_sum
+
+	fList, fListShift [11]int // port-only: build lists
 }
 
 func (g *Game) initColonyStatics() {
@@ -603,6 +605,9 @@ func (g *Game) colsumAddFields() error {
 	}
 	add(&cs.redraw, func() (int, error) { return e.AddHotKey(g.eStr(0x254)) })
 	if err != nil {
+		return err
+	}
+	if err := g.addBuildListKeys(&cs.fList, &cs.fListShift); err != nil {
 		return err
 	}
 	y1, y2 := 0x23, 0x41
@@ -1951,7 +1956,11 @@ func (g *Game) testedColonyBuysOutright(ci int) error {
 	var msg string
 	switch {
 	case c.Pending != 0:
-		msg = g.eStr(0x24a)
+		// Community patch 1.51: BUY again takes the purchase back (it said
+		// E 0x24a, already bought).
+		g.colonyUnbuy(ci)
+		g.colonyCalculation(ci)
+		return nil
 	case s.Stars[g.colonyStar(ci)].Blockaded>>s.PlayerNum&1 != 0:
 		msg = g.eStr(0x239)
 	case c.Queue[0] == -2 || c.Queue[0] == -3:
@@ -2022,6 +2031,8 @@ func (g *Game) colsumEvaluateInput(r *int, scan int) (bool, error) {
 	case *r == cs.redraw:
 		cg.fullDraw = true
 		return true, nil
+	case g.isBuildListField(*r, &cs.fList, &cs.fListShift):
+		return true, g.colsumBuildList(*r)
 	}
 	for _, b := range cs.sortBtn {
 		if *r == b {

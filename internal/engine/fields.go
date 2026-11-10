@@ -110,6 +110,7 @@ var (
 type fieldState struct {
 	fields            [maxFields + 1]Field
 	count             int // fields_count, the next free number
+	lastKey           int // port-only: the key word interpretKey last took
 	inputDelay        int
 	downMouseButton   int
 	selectedCount     int
@@ -294,6 +295,10 @@ func (e *Engine) AddHotKey(hotkey string) (int, error) {
 	}
 	return e.addField(Field{X1: 5000, Y1: 5000, X2: 5000, Y2: 5000, Type: FieldHidden, Hotkey: upperHotkey(hotkey), Sound: sound})
 }
+
+// LastKey is the BIOS key word (scan << 8 | ASCII) of the last key the
+// input took, so a hot key can tell Shift (port-only).
+func (e *Engine) LastKey() int { return e.f.lastKey }
 
 // SetInputDelay is Set_Input_Delay.
 func (e *Engine) SetInputDelay(n int) {
@@ -644,6 +649,7 @@ func (e *Engine) interpretMouseInputPaths() (int, bool, error) {
 
 func (e *Engine) interpretKey(k, mx, my int) (int, bool, error) {
 	f := &e.f
+	f.lastKey = k
 	field := 0
 	c := e.interpretKeyboardInput(k, &field)
 	if c == 0 || field < 0 || c == -1 {

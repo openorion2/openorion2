@@ -71,6 +71,7 @@ type buildQueueState struct {
 
 	fCancel, fOK, fEsc, fAuto, fRefit, fDesign, fRepeat, fCheat int
 	fPrev, fNext, fBuy                                          int
+	fList, fListShift                                           [11]int // port-only: build lists
 }
 
 // setBuildingQueueScreenHelpList is Set_Building_Queue_Screen_Help_List_
@@ -245,6 +246,9 @@ func (g *Game) bqAddFields() error {
 		return err
 	}
 	bq.fCheat = bqCheatField
+	if err := g.addBuildListKeys(&bq.fList, &bq.fListShift); err != nil {
+		return err
+	}
 	if err := g.addBuildQueueFields(); err != nil {
 		return err
 	}
@@ -424,6 +428,18 @@ func (g *Game) bqEvaluateInput(r *int, scan int) error {
 		}
 		g.col.fullDraw = true
 	case r0 == bq.fAuto:
+	case g.isBuildListField(r0, &bq.fList, &bq.fListShift):
+		k, _ := g.buildListKey(r0, &bq.fList, &bq.fListShift)
+		ops, err := g.loadBuildList(k)
+		if err != nil {
+			return err
+		}
+		bq.mode, bq.active = 0, -1
+		g.resetMousePicture()
+		g.applyBuildList(ops)
+		if err := g.bqRestore(); err != nil {
+			return err
+		}
 	case r0 == bq.fBuy:
 		g.doExitScreenCleanup()
 		if err := g.testedColonyBuysOutright(ci); err != nil {
