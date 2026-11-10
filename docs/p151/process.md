@@ -58,3 +58,6 @@ time, straight into master.
   `docs/manual/ships.md`.
 - Crash, freeze and desync fixes: `docs/manual/bug-fixes.md` (specs in
   the docs each `items.md` line names).
+- Interface: auto save every turn, PageUp/PageDown, H in combat, Enemy
+  Moves, F9 across black holes, stored production, leader experience,
+  report order: `docs/manual/interface.md`.

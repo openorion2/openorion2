@@ -24,7 +24,9 @@ has something in it.
 2. [Ships and Fleets](ships.md): the sixth ship design, ALT-AD.
 3. [Critical Bug Fixes](bug-fixes.md): crashes, freezes and network
    desyncs.
-4. [Keyboard Shortcuts](keyboard.md): the keys that differ from
+4. [Interface Changes](interface.md): auto save, animation speed, Enemy
+   Moves, F9, the colony and leaders screens, the order of reports.
+5. [Keyboard Shortcuts](keyboard.md): the keys that differ from
    1.40b23.
 
 Still to come, as features land: Compatibility (saves, network play),

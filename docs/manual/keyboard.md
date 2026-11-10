@@ -2,6 +2,19 @@
 
 Only the keys that differ from 1.40b23. Each says where it came from.
 
+## Any Screen
+
+| Key | Action |
+|---|---|
+| PageUp | Speed up all animation, up to +3 *(from 1.51)* |
+| PageDown | Slow down all animation, down to -3 *(from 1.51)* |
+
+## Main Screen
+
+| Key | Action |
+|---|---|
+| F9 | Distance between two stars, now also across a black hole *(from 1.51)* |
+
 ## Colonies Screen
 
 | Key | Action |
@@ -18,8 +31,14 @@ Only the keys that differ from 1.40b23. Each says where it came from.
 | B | BUY, or take the purchase back when already bought *(from 1.51)* |
 | Alt+A, D | Replace all six designs with automatic ones *(from 1.51)* |
 
+## Battle Map (Tactical Combat)
+
+| Key | Action |
+|---|---|
+| H | All your ships wait (with ship initiative on) *(from 1.51)* |
+
 ## Compared with 1.51
 
-1.51 has more new keys (PageUp/PageDown animation speed, H in combat,
-Lua scripts on the main screen's digits, config reloads). They
+1.51 has more new keys (Lua scripts on the digits of the main screen and
+of combat, config reloads). They
 come here when their features do.
