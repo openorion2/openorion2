@@ -1529,13 +1529,17 @@ func embedSpecialColorCodes(d []byte) {
 	d[0], d[n+1] = 3, 1
 }
 
-// removeEmbeddedSpecialCodes is Remove_Embedded_Special_Codes_ (0x80658).
+// removeEmbeddedSpecialCodes is Remove_Embedded_Special_Codes_ (0x80658):
+// memmove(d, d+1, strlen(d)) takes the terminating NUL along.
 func removeEmbeddedSpecialCodes(d []byte) {
 	if d[0] != 3 {
 		return
 	}
 	n := cLen(d)
-	copy(d, d[1:n])
+	copy(d, d[1:min(n+1, len(d))])
+	if n == len(d) {
+		d[n-1] = 0
+	}
 	if k := bytes.IndexByte(d[:cLen(d)], 1); k >= 0 {
 		d[k] = 0
 	}

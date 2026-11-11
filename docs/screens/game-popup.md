@@ -82,6 +82,13 @@ description with a stardate gets H 0xcb with the 0-based slot. The selected
 slot (`_settings` +0x15, the last one loaded) becomes −1 unless 0..9 with a
 positive stardate.
 
+The selected slot's description is shown between the colour codes 0x03 and
+0x01 (`Embed_Special_Color_Codes_` 0x806a2), the others have them taken off
+(`Remove_Embedded_Special_Codes_` 0x80658: `memmove(d, d+1, strlen(d))`,
+which moves the terminating NUL too, then a NUL at the 0x01). A save made
+while its slot is selected keeps the codes in its file, so a description
+can start with 0x03 without the 0x01 after it.
+
 ## Add_Game_Popup_Fields_ (0x7d061), _screen_data 2
 
 The popup centred on the screen. `Check_For_Saved_Games_`: 1 no file, 2 no
