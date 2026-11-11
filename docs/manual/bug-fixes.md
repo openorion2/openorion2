@@ -5,7 +5,7 @@ Crashes, freezes and network desyncs of 1.40b23 that the community patch
 because OpenOrion2 never had those bugs; the list of every 1.51 fix and
 what became of it is `docs/p151/items.md`.
 
-All of these are *(from 1.51)*.
+All of these are *(from 1.51)* unless marked otherwise.
 
 ## General
 
@@ -22,6 +22,11 @@ it froze the game.
 **Star system popup.** After you look at ship details more than once from
 the Fleets or Leaders screen, the star system popup shows its planets as
 normal. Before, it could fail to draw them.
+
+**The map behind popups after the news.** *(new in OpenOrion2)* With the
+GNN setting off, the news comes as a small box over the map; the popup
+after it (for example scouts arriving at Orion) showed the map without
+its stars, names and figures. The original and 1.51 do this too.
 
 **Ship costs follow their owner's government.** A design's cost now
 always uses its own empire's government and technology. Before, the

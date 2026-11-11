@@ -48,6 +48,7 @@ func setEv16(e []byte, o int, v int16) { e[o], e[o+1] = byte(v), byte(uint16(v)>
 // checkForEvent is Check_For_Event_ (0x2027e).
 func (g *Game) checkForEvent() error {
 	s := &g.state
+	behind := g.e.GetAutoFunction() // port-only, see below
 	g.currentEvent = 0
 	for i := 0; i < 0x24; i++ {
 		if st := s.event(i)[1]; st == 4 || st == 6 || st == 5 {
@@ -69,7 +70,14 @@ func (g *Game) checkForEvent() error {
 		}
 		g.playBackgroundMusic() // 0x202ef
 		g.ms.autoTurnExit = true
-		e.PutAutoFunction(g.gnn.savedAuto)
+		// Port-only: the news in a box (settings 9 off) never set
+		// _jim_saved_autofunction, so the original put back a stale or null
+		// one and the next popup lost the map behind it (stars, names).
+		if g.settings[9] == 1 {
+			e.PutAutoFunction(g.gnn.savedAuto)
+		} else {
+			e.PutAutoFunction(behind)
+		}
 	}
 	g.ms.autoTurnExit = true
 	g.resetEvents()

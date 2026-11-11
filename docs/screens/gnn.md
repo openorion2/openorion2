@@ -15,6 +15,15 @@ back. Always `_auto_turn_exit` = 1 and `Reset_Events_` (every 20 stardates,
 with no idle event left, `Init_Events_`: records −1/0, `_event_delay_count`
 0, `_last_event_year` = stardate). `displayed_gnn` gets p's bit.
 
+Port-only: with GNN off the news comes as a box over the map
+(`Mini_Main_Screen_Text_Box_`) and nothing ever set
+`_jim_saved_autofunction`, so the original put back a stale or null auto
+function; the next popup of the report phase (a discovery, say) then drew
+over a map without stars, names and the side panel's figures, as the
+original does (checked in DOSBox). The port puts back the auto function
+it found instead (`TestGNNBoxKeepsAutoFunction`). With GNN on it is as the
+original.
+
 ## Setup_Next_Event_(i) (0x21371)
 
 A jump table (0x212e1) by event picks the message variant (ESI, −1 = no
