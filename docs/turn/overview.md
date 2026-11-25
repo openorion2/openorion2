@@ -1071,7 +1071,7 @@ Iterates colonies **0..NUM_COLONIES−1 (ascending)**, skipping empty slots and 
 
 | Routine | Addr | Mod | Purpose | RNG | Go | n |
 |---|---|---|---|---|---|---|
-| Player_Colony_Autobuild_ | 0xd2783 | AIBUILD.C | Colony_Calculation_ + Assign_Colony_New_Building_ | R | yes | 16 |
+| Player_Colony_Autobuild_ | 0xd2783 | AIBUILD.C | Colony_Calculation_ + Assign_Colony_New_Building_ (community patch 1.51: Assign_Colony_New_Building_ alone) | R | yes | 16 |
 | Colony_Calculation_ | 0xe2a70 | COLCALC.C | Pre_Import_Computing_, Pass_Out_Imports_, Update_Player_Stats_ for one colony's owner (all three ported, wrapper not) | - | yes | 21 |
 | Assign_Colony_New_Building_ | 0xd0b08 | AIBUILD.C | score buildable products (Colony_Can_Build_Product_, Colony_Building_Score_), drop the weak ones by difficulty, plus housing/trade, **Get_Weighted_Choice_Short_** → queue[0] | R | yes | 118 |
 | Colony_Can_Build_Product_ | 0xe11bc | COLCALC.C | product legality | - | yes | 427 |
@@ -1117,6 +1117,12 @@ Colony_Building_Score_ in turn_aibuild.go), byte-exact on t1, s2..s5. Correction
   warlords divide by half as much.
 - Colony_Building_Score_ case 8 (and 41) jump into case 40's tail with the partial sum in
   eax, so the sum (not a2) is shifted left by four; ported as executed.
+- Community patch 1.51 replaces six scores of Colony_Building_Score_ (pop = the
+  colony's pop count): Astro University (4) 5 → pop; Autolab (6) objective-3 bonus
+  4 → 2; Food Replicators (16) also needs pop > food output (1.51 compares its low
+  byte); Stock Exchange (29) and Spaceport (39) need 4 pops (were 5 and 3);
+  Recyclotron (33) first term (info[1] + 2·pop)/3 → pop. And Player_Colony_Autobuild_
+  no longer calls Colony_Calculation_. The AI's choices differ from 1.40b23's from then on.
 - Fix_Colony_Queue_ uses COLONY.C's Squish_Out_Colony_Queue_Slot_ (0xba9ec), which keeps
   repeat markers; Delete_From_Colony_Queue_ uses the one at 0xb20ed, which squeezes them.
 - Ghost colonies are destroyed by Destroy_Colony_ (Kill_All_Events_At_Colony_,

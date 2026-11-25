@@ -61,3 +61,5 @@ time, straight into master.
 - Interface: auto save every turn, PageUp/PageDown, H in combat, Enemy
   Moves, F9 across black holes, stored production, leader experience,
   report order: `docs/manual/interface.md`.
+- AI and AUTO build: the building scores and AUTO without recalculating
+  the colony: `docs/turn/overview.md`, `docs/manual/gameplay.md`.

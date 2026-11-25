@@ -26,13 +26,13 @@ has something in it.
    desyncs.
 4. [Interface Changes](interface.md): auto save, animation speed, H in combat, Enemy
    Moves, F9, the colony and leaders screens, the order of reports.
-5. [Keyboard Shortcuts](keyboard.md): the keys that differ from
+5. [Gameplay Changes](gameplay.md): what the AI and AUTO build choose.
+6. [Keyboard Shortcuts](keyboard.md): the keys that differ from
    1.40b23.
 
 Still to come, as features land: Compatibility (saves, network play),
-Gameplay Changes (galaxy generation, tactical and strategic combat,
-production, research, spying, AI and diplomacy, population, leaders,
-events).
+more Gameplay Changes (galaxy generation, tactical and strategic combat,
+research, spying, diplomacy, population, leaders, events).
 
 ## How a chapter is written
 

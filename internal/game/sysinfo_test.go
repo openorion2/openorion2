@@ -140,8 +140,8 @@ func TestPlanetMaxPopulation(t *testing.T) {
 	}
 }
 
-// The late game's Dhira I: a Darlok (the human) colony with a battlestation, its one
-// special building, and no planet special.
+// The late game's Dhira I: a Darlok (the human) colony, its buildings cut down
+// to a battlestation alone, and no planet special.
 func TestPlanetInfoBattlestation(t *testing.T) {
 	t.Parallel()
 	g := sysInfoGame(t, "late")
@@ -155,6 +155,8 @@ func TestPlanetInfoBattlestation(t *testing.T) {
 	if pl < 0 || s.Planets[pl].Colony < 0 || s.Colonies[s.Planets[pl].Colony].Buildings[8] == 0 {
 		t.Fatal("no Dhira I with a battlestation")
 	}
+	clear(s.Colonies[s.Planets[pl].Colony].Buildings[:])
+	s.Colonies[s.Planets[pl].Colony].Buildings[8] = 1
 	w, h, err := g.doPrintPlanetInfo(0, 0, pl, false)
 	if err != nil {
 		t.Fatal(err)

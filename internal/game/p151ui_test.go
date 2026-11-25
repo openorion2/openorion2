@@ -120,7 +120,8 @@ func TestEnemyMovesLines(t *testing.T) {
 	n := 0
 	for i := range on {
 		if on[i] != off[i] {
-			if off[i] != 0 {
+			// The red line may cross another; it must not erase one.
+			if on[i] == 0 {
 				t.Fatal("Enemy Moves took a pixel away")
 			}
 			n++

@@ -22,7 +22,7 @@ A note after the text goes after ` -- `.
 - `[?]` Winning an election and rejecting the ruling no longer crashes the game.
 - `[?]` You can no longer build ship designs that use up too much space.
 - `[?]` Fixed Bombs and A-M Rockets hit points in tactical combat.
-- `[?]` Adjusted colony building scores for AI and AUTO build.
+- `[done]` Adjusted colony building scores for AI and AUTO build. -- docs/manual/gameplay.md, docs/turn/overview.md
 - `[?]` Restored broken command line switches.
 
 ### New config parameters
@@ -707,7 +707,7 @@ A note after the text goes after ` -- `.
 - `[?]` Restored corner area where bombing is allowed to classic (1.50.4 bug).
 - `[?]` Restored planet sizes for bombardment to classic 3-4-6-7-8.
 - `[?]` In strategic mode ships now upgrade to the highest available missile/torpedo (was broken since 1.50.7)
-- `[?]` Colony is not recalculated in autobuild anymore, so newly grown pop doesn't participate in production when autobuild is on.
+- `[done]` Colony is not recalculated in autobuild anymore, so newly grown pop doesn't participate in production when autobuild is on. -- docs/manual/gameplay.md, docs/turn/overview.md
 
 ### Interface changes
 

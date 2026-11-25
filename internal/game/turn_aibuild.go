@@ -21,9 +21,9 @@ func (g *Game) colonyIsConquered(c *save.Colony) bool {
 	return false
 }
 
-// playerColonyAutobuild is Player_Colony_Autobuild_ (0xd2783).
+// playerColonyAutobuild is Player_Colony_Autobuild_ (0xd2783). Community
+// patch 1.51 drops its Colony_Calculation_: pops grown this turn don't produce.
 func (g *Game) playerColonyAutobuild(ci int) {
-	g.colonyCalculation(ci)
 	g.assignColonyNewBuilding(ci)
 }
 
@@ -218,14 +218,14 @@ func (g *Game) colonyBuildingScore(ci, b int) int32 {
 			v = 16
 		}
 	case 4:
-		v = 5
+		v = pop // community patch 1.51; 1.40: 5
 	case 6, 19:
 		if busy || pl.Unknown59D != 0 {
 			break
 		}
 		v = 11
 		if b == 6 {
-			v = f3*4 + 11
+			v = f3*2 + 11 // community patch 1.51; 1.40: f3*4
 		}
 	case 7:
 		v = f4*2 + pop + 13
@@ -262,7 +262,9 @@ func (g *Game) colonyBuildingScore(ci, b int) int32 {
 			v = f5 + 18
 		}
 	case 16:
-		if info[2] != 0 {
+		// Community patch 1.51: only where the pops outnumber the food grown
+		// (1.51 compares the food's low byte).
+		if info[2] != 0 && pop > int32(c.Output[save.Food]) {
 			v = 4 + f5
 			if pl.FoodSurplus < 0 {
 				v = 8 + f5
@@ -313,11 +315,8 @@ func (g *Game) colonyBuildingScore(ci, b int) int32 {
 			}
 		}
 	case 29, 39:
-		lim := int32(5)
-		if b == 39 {
-			lim = 3
-		}
-		if !busy && pop >= lim {
+		// Community patch 1.51: 4 pops for both; 1.40: 5, Spaceport 3.
+		if !busy && pop >= 4 {
 			v = (int32(info[1]) + pop + f4) / 3
 		}
 	case 30, 35:
@@ -329,7 +328,7 @@ func (g *Game) colonyBuildingScore(ci, b int) int32 {
 			v = f3*2 + 5
 		}
 	case 33:
-		v = (int32(info[1])+2*pop)/3 + 2*(t+f5+f4)
+		v = pop + 2*(t+f5+f4) // community patch 1.51; 1.40: (info[1]+2*pop)/3
 	case 34:
 		v = f4*2 + 12
 	case 36:
