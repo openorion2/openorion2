@@ -23,7 +23,7 @@ A note after the text goes after ` -- `.
 - `[?]` You can no longer build ship designs that use up too much space.
 - `[?]` Fixed Bombs and A-M Rockets hit points in tactical combat.
 - `[done]` Adjusted colony building scores for AI and AUTO build. -- docs/manual/gameplay.md, docs/turn/overview.md
-- `[?]` Restored broken command line switches.
+- `[n/a]` Restored broken command line switches. -- the patch's own command line
 
 ### New config parameters
 
@@ -37,7 +37,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Fixed extra boarding from AI and AUTO combat for initiative 2.0.
+- `[n/a]` Fixed extra boarding from AI and AUTO combat for initiative 2.0. -- ship initiative 2.0 is a 1.50 feature
 - `[?]` Proper fix for Warlord ships getting +1 level in combat after refit. (replaced prior 1.50.19 fix for 1.50.6 bug)
 
 ### Mods
@@ -264,8 +264,8 @@ A note after the text goes after ` -- `.
 - `[?]` Removed bugged hard shields patch for strategic combat (1.50.2 issue).
 - `[?]` Fixed warlord ship get +1 level in combat after refit (1.50.6 bug).
 - `[?]` Fixed PD weapons not firing automatically in some cases (1.50.8 bug).
-- `[?]` Made 1.50.1 patch "Improved spy formula ..." optional.
-- `[?]` Made 1.50.2 patch "Bombardment can destroy capitol" optional.
+- `[n/a]` Made 1.50.1 patch "Improved spy formula ..." optional. -- the option defaults to off
+- `[n/a]` Made 1.50.2 patch "Bombardment can destroy capitol" optional. -- the option defaults to off
 - `[?]` One dimensional portal buildable per system, like artemis system net.
 - `[?]` Fighter garrison strength calculation now accounts for bomber bays.
 - `[?]` Monster now always goes first in case of tied ship initiative.
@@ -343,7 +343,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` In Hotseat, it's allowed to reload config and use ALT-x.
+- `[n/a]` In Hotseat, it's allowed to reload config and use ALT-x. -- config reloading is the patch's
 
 ### Interface changes
 
@@ -363,7 +363,7 @@ A note after the text goes after ` -- `.
 
 ### Game changes
 
-- `[?]` Fixed inability to start in pure DOS or some custom DOSBox setups.
+- `[n/a]` Fixed inability to start in pure DOS or some custom DOSBox setups. -- DOS start-up of the patch's exe
 
 ### Mods
 
@@ -377,7 +377,7 @@ A note after the text goes after ` -- `.
 - `[done]` Fixed combat crash in network multiplayer game with AI. Occured when AI versus AI combat had been processed in the middle of human combat. -- docs/net/combat.md
 - `[?]` Fixed buggy capitol check when homeworld has been bombed or destroyed. Now capitol can be rebuilt immediately.
 - `[?]` Fixed bug in nebula check.
-- `[?]` Strategic combat no longer honors crew level bonus for BA/BD/MD (reverted 1.50.9 patch back to classic and created parameter).
+- `[n/a]` Strategic combat no longer honors crew level bonus for BA/BD/MD (reverted 1.50.9 patch back to classic and created parameter). -- reverts 1.50.9's own change
 
 ### Interface changes
 
@@ -526,7 +526,7 @@ A note after the text goes after ` -- `.
 - `[?]` A zero colony is no longer lost when colonists are inbound (reverted back to classic).
 - `[?]` Fixed score calculation in games with modded picks (1.50.2 bug).
 - `[?]` Fixed cluster not getting 71 but 54 stars (1.50.10 bug).
-- `[?]` Fixed parameter satellite_size_class_plus_one giving Star Fortress Beam Attack bonus to the defending fleet at an outpost or at a colony without a starbase. Also fixed satellite repair (1.50.14 bugs).
+- `[n/a]` Fixed parameter satellite_size_class_plus_one giving Star Fortress Beam Attack bonus to the defending fleet at an outpost or at a colony without a starbase. Also fixed satellite repair (1.50.14 bugs). -- 1.50.14 bugs of its own parameter
 
 ### Interface changes
 
@@ -571,7 +571,7 @@ A note after the text goes after ` -- `.
 ### Game changes
 
 - `[?]` Fighter bays are allowed in post-warp by default.
-- `[?]` Marines above ship capacity will no longer die immediately after ship capture (1.50.4 change restored to classic).
+- `[n/a]` Marines above ship capacity will no longer die immediately after ship capture (1.50.4 change restored to classic). -- reverts 1.50.4's own change
 
 ### Interface changes
 
@@ -775,8 +775,8 @@ A note after the text goes after ` -- `.
 - `[done]` Fixed the game freezing when an AI without Fungi tech gets stuck optimizing pop for food on a liberated and blockaded non-food planet in case previous owner has Fungi. -- docs/turn/overview.md
 - `[?]` Reduced satellite space compensation for beam arc and missile mods from +40% to +33.3%.
 - `[?]` Stealth Field is now mutually exclusive with Cloaking Device and Phasing Cloak.
-- `[?]` Scout Lab & Galactic Lore no longer provide bonus against Antarans (reverted back to classic).
-- `[?]` Warp Interdictor range reverted back to classic 3 parsecs.
+- `[n/a]` Scout Lab & Galactic Lore no longer provide bonus against Antarans (reverted back to classic). -- reverts 1.50.2's own change
+- `[n/a]` Warp Interdictor range reverted back to classic 3 parsecs. -- reverts 1.50.0's own change
 - `[done]` Fixed canceling warning for repeat+android resulting in a bare repeat (adding a new product to it caused the game to freeze). -- docs/screens/build-queue.md
 
 ### Interface changes
@@ -818,7 +818,7 @@ A note after the text goes after ` -- `.
 - `[?]` Lightning_field default setting is no longer 'uniform' but 'classic'.
 - `[?]` Satellite can no longer be destroyed by bombing the planet or earthquake (1.50.2 bug).
 - `[?]` Antaran defensive Titan 8th weapon slot restored (1.50.8 bug).
-- `[?]` Strategic combat now honors crew level bonus for BA/BD/MD.
+- `[n/a]` Strategic combat now honors crew level bonus for BA/BD/MD. -- reverted in 1.50.18
 - `[?]` Fixed bomb hits calculation for orbital bombardment: • Bomb weapons now get bomb hits equivalent to 10 instead of 5 attacks. • Fighters get the equivalence of 1 strike instead of 0.
 
 ### Interface changes
@@ -974,7 +974,7 @@ A note after the text goes after ` -- `.
 - `[?]` Ship captured on retreat by Assault Shuttles now stays in battle.
 - `[?]` AI won't self-destruct ship immobilized by BHG to avoid capture if boarding in black hole is disabled.
 - `[?]` Fixed a crash when ship is destroyed by BHG and ship initiative is off.
-- `[?]` Enabling strict_combat_sequencing now forces ship initiative.
+- `[n/a]` Enabling strict_combat_sequencing now forces ship initiative. -- strict combat sequencing is a 1.50 feature
 - `[?]` Comet now counts as destroyed as soon as 100% of it is destroyed, not the turn after as in classic.
 - `[?]` Ship scrap total won't overflow. Scrapping ships for total sum of more than ~32k BC overflows in classic.
 - `[n/a]` Fixed game crashing on random sounds, for example in system window or colony view. -- a bad sound index plays nothing (lbx.Archive.Entry checks it)
@@ -1143,7 +1143,7 @@ A note after the text goes after ` -- `.
 - `[?]` Human players cannot build spies now without spy network technology.
 - `[?]` Capitol can't be built now without capitol building technology.
 - `[?]` Shield will not be installed on a starbase if damper field is present.
-- `[?]` Enabling strict_combat_sequencing now forces ship initiative in combat.
+- `[n/a]` Enabling strict_combat_sequencing now forces ship initiative in combat. -- strict combat sequencing is a 1.50 feature
 - `[?]` Fixed heavy fighters not spending ammo when attacking missiles (1.50.1 bug).
 - `[?]` Fixed garbage appearing in retreating ship's weapon list (1.50.3.1 bug).
 - `[n/a]` Fixed a crash with ship captures during battle at Antares (1.50.2 bug). -- a 1.50.2 bug, fixed later
@@ -1206,7 +1206,7 @@ A note after the text goes after ` -- `.
 
 - `[?]` Initial autosave now happens after the mapgen.
 - `[?]` Uncreative will not lose techs in modded greybox field now.
-- `[?]` TWF fixups for combat with ship initiative off.
+- `[n/a]` TWF fixups for combat with ship initiative off. -- fixes 1.50.4's own TWF rework
 - `[?]` Some inherent mods now work for missiles.
 
 ### New config parameters
@@ -1250,7 +1250,7 @@ A note after the text goes after ` -- `.
 - `[?]` Ship capture removes wait and done states.
 - `[?]` Fixed integer overflow for Energy Absorber's stored damage.
 - `[?]` Different cloaks now work correctly if put on a ship together.
-- `[?]` Marines above ship capacity will now die after ship capture.
+- `[n/a]` Marines above ship capacity will now die after ship capture. -- reverted in 1.50.14
 - `[?]` Equal marines and armor limits now apply to colonies with and without Barracks.
 - `[?]` The last marine and armor units of a Subterranean colony no longer die at end of turn when the maximum has been reached.
 - `[n/a]` Corrected race pick costs sync when loading net game (1.50.2 bug). -- a 1.50.2 bug, fixed later
@@ -1341,7 +1341,7 @@ A note after the text goes after ` -- `.
 - `[?]` Fixed ship defense racial trait not applying in combat (1.50.2 bug).
 - `[?]` Fixed ship defense -20 displaying as -19 in ship info (1.50.2 bug).
 - `[?]` Fixed bizarre damage visuals from ESD weapons (1.50.2 bug).
-- `[?]` Reverted telepaths can capture ships multiple times without losing control (1.50.2 change).
+- `[n/a]` Reverted telepaths can capture ships multiple times without losing control (1.50.2 change). -- reverts 1.50.2's own change
 
 ### Interface changes
 
@@ -1390,11 +1390,11 @@ A note after the text goes after ` -- `.
 - `[?]` Ghost colony can be bombed or captured.
 - `[?]` Ghost colony can die out even if colonists are inbound.
 - `[?]` Starvation can create ghost colonies.
-- `[?]` Bombardment can destroy capitol.
+- `[n/a]` Bombardment can destroy capitol. -- made optional (off) in 1.50.19
 - `[?]` Auto-designed ships are equivalent to manually designed.
 - `[?]` Satellite generation and repair uses systems size from correct hull table entries 6-8.
 - `[done]` Fixed strategic Doom Star having cost and displayed info of tactical one. -- docs/turn/design6.md
-- `[?]` Hard Shields now increase blocked damage in strategic combat.
+- `[n/a]` Hard Shields now increase blocked damage in strategic combat. -- added in 1.50.2, removed in 1.50.19
 - `[?]` Fixed Sub-Space Teleporter getting increased range for faster ships.
 - `[?]` Fixed Sub-Space Teleporter not breaking tractor beam out of range.
 - `[?]` Ship now loses shot right after weapon is destroyed.
@@ -1406,10 +1406,10 @@ A note after the text goes after ` -- `.
 - `[?]` Lightning field buggy roll fixed, now kills 1/2 missiles instead of 1/3.
 - `[?]` Fixed Antaran fighters not working on defensive Cruiser and Titan.
 - `[done]` Fixed AI stall when targeting missile from captured ship. -- docs/combat/tactical.md
-- `[?]` Scout lab and Galactic Lore now give bonus against antarans.
-- `[?]` Telepaths can capture ships multiple times without losing control.
+- `[n/a]` Scout lab and Galactic Lore now give bonus against antarans. -- reverted in 1.50.10
+- `[n/a]` Telepaths can capture ships multiple times without losing control. -- reverted in 1.50.3
 - `[done]` Crashes and quirks related to driveless trans dimensional ships fixed. -- docs/combat/tactical.md
-- `[?]` Zeroth weapon flag usable.
+- `[n/a]` Zeroth weapon flag usable. -- weapon flags are config
 - `[?]` No place for a new spy exploit fixed.
 
 ### Interface changes
@@ -1472,7 +1472,7 @@ A note after the text goes after ` -- `.
 - `[?]` Stealth specials now work properly.
 - `[?]` Diplomatic blunder and marriage events not working fixed.
 - `[?]` Diplomatic relation change overflow fixed.
-- `[?]` Improved spy formula (63rd spy receives additional +1 bonus).
+- `[n/a]` Improved spy formula (63rd spy receives additional +1 bonus). -- made optional (off) in 1.50.19
 
 ### Interface changes
 
@@ -1573,7 +1573,7 @@ A note after the text goes after ` -- `.
 - `[?]` Outpost ship conflicts colonization bug fixed.
 - `[?]` Colony ship conflicts outpost creation bug fixed.
 - `[?]` Discrepancy of communications and scanners fixed.
-- `[?]` Warp interdictor range now corresponds to its description.
+- `[n/a]` Warp interdictor range now corresponds to its description. -- reverted in 1.50.10
 - `[?]` Evolutionary Mutation unclickable picks bug fixed.*
 - `[?]` Tolerant races maintenance penalty display fixed.
 - `[?]` Navigator skill display bug fixed.*
